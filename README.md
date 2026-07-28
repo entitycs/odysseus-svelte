@@ -65,8 +65,10 @@ details:
     - Any TOP-LEVEL 'DOM READY' code or self-firing code has been, or will be moved to the given module's `init` method.
       - eg. `document.getElementById`, `window.moduleName = moduleName`, `(function _abc(){})())`
       - in all other instances, these are fine (though sub-optimal. They would be deprecated by the end of a full rewrite in favor of using the framework)
-    - `init` at will handle one-time initialization, and be called from `onMount` (inside of a svelte page / layout / component).
+    - `init` will handle one-time initialization, and be called from `onMount` (inside of a svelte page / layout / component).
   - If you're looking for an existing & more sparsely defined `init` method for a module that takes api_base as an argument, that method is now called `initLegacy`.
+- `web-build/200.html` is now served from `app.py` in place of `static/index.html`
+  - The `200.html` file is the *compilation* of `web/app.html`
 
 ```
 web/
@@ -108,7 +110,7 @@ pnpm dev
 
 If using **docker**, there's no need to run `docker compose up -d --build` to test every front-end change. Deploy it once, and use the same instructions above. Deploy again when done (to run the back-end tests that still touch the front-end).
 
-#### Testing
+### Testing
 
 A frontend test framework is now in place (vitest).
 
@@ -142,7 +144,8 @@ To run them manually, use `pnpm unit`
 ## Running through SvelteKit
 
 ![app viewed through sveltekit](docs/Odysseus-through-Sveltekit.png)
-If you do not see the svelte header and footer, you've reached a fallback page. Check the console for errors.
+
+**If you do not see the svelte header and footer, you've reached a fallback page. Check the console for errors.**
 
 ---
 
@@ -151,11 +154,9 @@ If you do not see the svelte header and footer, you've reached a fallback page. 
 ### SvelteKit POC Version Repo notes
 
 You can follow the legacy build and run steps as they are after you've compiled the svelte frontend with `npm run build`.
-
+> docker users may skip the above step, as it is performed in the Dockerfile
 
 `svelte-dev` is the default development branch.
-
-There is no fast-tracking `main` branch, but `svelte` exists - Major versions will exist there if we get that far.
 
 ---
 
