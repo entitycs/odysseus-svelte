@@ -45,7 +45,8 @@
   const sessionModel = $derived.by(() => {
     const sessions = _deps.getSessions();
     const _pendingChat = _deps.getPendingChat();
-    const s = sessions.find((x) => x.id === sessionId);
+    const id = page.state.sessionId;
+    const s = sessions.find((x) => x.id === id);
     let modelId = null;
     if (s && s.model) {
       modelId = s.model;

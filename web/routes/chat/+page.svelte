@@ -1,6 +1,6 @@
 <script lang="ts">
    import { onMount } from "svelte";
-   import { afterNavigate } from "$app/navigation";
+   import { afterNavigate, pushState } from "$app/navigation";
    import { syncGroupIndicator } from "$lib/chat/group";
    import { handleSubmit } from "$lib/chat/helpers";
    import MessageInput from "$lib/components/chat/MessageInput.svelte";
@@ -30,10 +30,14 @@
       return document.getElementById(id);
    }
 
-   afterNavigate((navigation) => {
+   function setSessionIdFromHash(){
       const hashId = window.location.hash.replace("#", "");
       if (hashId) sessionModule.selectSession(hashId);
       pageState.sessionId = hashId;
+   }
+
+   afterNavigate((navigation) => {
+      setSessionIdFromHash();
    });
 
    // Scrolling
@@ -102,10 +106,11 @@
          presetsModule.deactivateCharacter();
    }
    onMount(async () => {
-      pageState.sessionId =
-         sessionModule && sessionModule.getCurrentSessionId
-            ? sessionModule.getCurrentSessionId()
-            : null;
+      // pageState.sessionId =
+      //    sessionModule && sessionModule.getCurrentSessionId
+      //       ? sessionModule.getCurrentSessionId()
+      //       : null;
+
       // Message count in the header — recount on any DOM change in
       // #chat-history and write "· N msgs" next to the title. Counts top-
       // level .msg elements (one per user/assistant turn); excludes the
@@ -286,6 +291,9 @@
       // Modify form submit to handle special modes
       const chatForm = document.getElementById("chat-form");
       chatForm.onsubmit = handleSubmit;
+
+      setSessionIdFromHash();
+      pushState('',{sessionId: window.location.hash.replace("#","")});
    });
 </script>
 
@@ -356,7 +364,7 @@
    <input type="checkbox" id="rag-toggle" style="display:none;" />
    <input type="checkbox" id="incognito-toggle" style="display:none;" />
    <input type="file" id="file-input" class="hidden" multiple />
-   <MessageInput sessionId={chatSessionId ?? pageState.sessionId} />
+   <MessageInput sessionId={chatSessionId ?? page.state.sessionId} />
    <form
       id="chat-form"
       autocomplete="off"
