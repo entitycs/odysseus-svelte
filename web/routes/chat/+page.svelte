@@ -1,355 +1,367 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import { afterNavigate } from '$app/navigation';
-import { syncGroupIndicator } from '$lib/chat/group';
-import { handleSubmit } from '$lib/chat/helpers';
-import MessageInput from '$lib/components/chat/MessageInput.svelte';
-import {
-  isLoading,
-  modelItems,
-  refreshModels,
-} from '$lib/components/chat/models/modelItemStore.svelte';
-import ScrollChatBottom from '$lib/components/chat/ScrollChatBottom.svelte';
-import { deEmojify } from '$lib/emoji';
-import chatModule from '$lib/legacy/chat';
-import documentModule from '$lib/legacy/document';
-import fileHandlerModule from '$lib/legacy/fileHandler';
-import groupModule from '$lib/legacy/group';
-import presetsModule from '$lib/legacy/presets';
-import * as researchPanelModule from '$lib/legacy/research/panel.js';
-import * as sessionModule from '$lib/legacy/sessions';
-import uiModule from '$lib/legacy/ui';
-import { updatePlusDot } from '$lib/overflow';
-import UserMsgScrollMarker from '$lib/components/UserMsgScrollMarker.svelte';
-    import { page } from '$app/state';
+   import { onMount } from "svelte";
+   import { afterNavigate } from "$app/navigation";
+   import { syncGroupIndicator } from "$lib/chat/group";
+   import { handleSubmit } from "$lib/chat/helpers";
+   import MessageInput from "$lib/components/chat/MessageInput.svelte";
+   import {
+      isLoading,
+      modelItems,
+      refreshModels,
+   } from "$lib/components/chat/models/modelItemStore.svelte";
+   import ScrollChatBottom from "$lib/components/chat/ScrollChatBottom.svelte";
+   import { deEmojify } from "$lib/emoji";
+   import chatModule from "$lib/legacy/chat";
+   import documentModule from "$lib/legacy/document";
+   import fileHandlerModule from "$lib/legacy/fileHandler";
+   import groupModule from "$lib/legacy/group";
+   import presetsModule from "$lib/legacy/presets";
+   import * as researchPanelModule from "$lib/legacy/research/panel.js";
+   import * as sessionModule from "$lib/legacy/sessions";
+   import uiModule from "$lib/legacy/ui";
+   import { updatePlusDot } from "$lib/overflow";
+   import UserMsgScrollMarker from "$lib/components/UserMsgScrollMarker.svelte";
+   import { page } from "$app/state";
 
-let chatHistory: HTMLElement;
-let unsubscribeModelItems;
-let _modelList: any[] = [];
+   let chatHistory: HTMLElement;
+   let unsubscribeModelItems;
+   let _modelList: any[] = [];
 
-const _DEOJ_SKIP = '.sources-section, .thinking-toggle, .memory-used-pill';
+   const _DEOJ_SKIP = ".sources-section, .thinking-toggle, .memory-used-pill";
 
-/**
- * @param {string} id
- */
-function el(id: string) {
-  return document.getElementById(id);
-}
+   /**
+    * @param {string} id
+    */
+   function el(id: string) {
+      return document.getElementById(id);
+   }
 
-afterNavigate((navigation) => {
-  const hashId = window.location.hash.replace('#', '');
-  if (hashId) sessionModule.selectSession(hashId);
-  pageState.sessionId = hashId;
-});
+   afterNavigate((navigation) => {
+      const hashId = window.location.hash.replace("#", "");
+      if (hashId) sessionModule.selectSession(hashId);
+      pageState.sessionId = hashId;
+   });
 
-// Scrolling
-let onscroll = (event: Event) => {
-  uiModule.debounce(() => {
-    const box = event.currentTarget as HTMLElement;
-    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-    uiModule.setAutoScroll(atBottom);
-  }, 100);
-  document
-    .querySelectorAll('.ctx-popup, .memory-used-detail, .msg-overflow-menu')
-    .forEach((p) => p.remove());
-  document.querySelectorAll('.memory-used-pill').forEach((p) => {
-    p._openDetail = null;
-  });
-};
-
-let onwheel = (e: WheelEvent) => {
-  if (e.deltaY < 0) uiModule.setAutoScroll(false);
-};
-
-let _touchThrottled = false;
-let ontouchmove = () => {
-  if (_touchThrottled) return;
-  _touchThrottled = true;
-  uiModule.setAutoScroll(false);
-  requestAnimationFrame(() => {
-    _touchThrottled = false;
-  });
-};
-
-let pageState = $state({ sessionId: '' });
-const chatSessionId = $derived(page.state.sessionId); // This will correctly update id for usage on this page
-$inspect(chatSessionId);
-
-// ── Helper: start a fresh chat (deselect current, clear history, show welcome) ──
-function _startFreshChat() {
-  try {
-    const prevId =
-      sessionModule && sessionModule.getCurrentSessionId
-        ? sessionModule.getCurrentSessionId()
-        : null;
-    if (chatModule && chatModule.detachCurrentStream)
-      chatModule.detachCurrentStream(prevId);
-    else if (chatModule && chatModule.abortCurrentRequest)
-      chatModule.abortCurrentRequest();
-  } catch (e) {
-    console.warn('fresh chat stream detach failed:', e);
-  }
-  if (sessionModule) sessionModule.setCurrentSessionId(null);
-  const box = el('chat-history');
-  if (box) box.innerHTML = '';
-  if (chatModule && chatModule.showWelcomeScreen) {
-    chatModule.showWelcomeScreen();
-  }
-  // Close document panel if open
-  if (documentModule && documentModule.closePanel) documentModule.closePanel();
-  if (researchPanelModule && researchPanelModule.isOpen())
-    researchPanelModule.closePanel();
-  // Reset research overflow dot (but don't touch research state — caller manages that)
-  const _overflowRes = el('overflow-research-btn');
-  if (_overflowRes) _overflowRes.classList.remove('active');
-  if (typeof updatePlusDot === 'function') updatePlusDot();
-  // Reset agent mode to Chat
-  const modeToggle = el('agent-mode-toggle') as HTMLInputElement;
-  if (modeToggle && modeToggle.checked) {
-    modeToggle.checked = false;
-    modeToggle.dispatchEvent(new Event('change'));
-  }
-  // Clear character/persona
-  if (presetsModule && presetsModule.deactivateCharacter)
-    presetsModule.deactivateCharacter();
-}
-onMount(async () => {
-
-   pageState.sessionId = sessionModule && sessionModule.getCurrentSessionId
-        ? sessionModule.getCurrentSessionId()
-        : null;
-  // Message count in the header — recount on any DOM change in
-  // #chat-history and write "· N msgs" next to the title. Counts top-
-  // level .msg elements (one per user/assistant turn); excludes the
-  // welcome screen since it isn't inside chat-history.
-  const _metaCountEl = document.getElementById('current-meta-count');
-  // const chatHistory = document.getElementById("chat-history");
-  if (_metaCountEl && chatHistory) {
-    let _countScheduled = false;
-    const _updateMsgCount = () => {
-      _countScheduled = false;
-      const n = chatHistory.querySelectorAll(':scope > .msg').length;
-      _metaCountEl.textContent = n ? `· ${n} msg${n === 1 ? '' : 's'}` : '';
-    };
-    const _scheduleCount = () => {
-      if (_countScheduled) return;
-      _countScheduled = true;
-      requestAnimationFrame(_updateMsgCount);
-    };
-    new MutationObserver(_scheduleCount).observe(chatHistory, {
-      childList: true,
-    });
-    _updateMsgCount();
-  }
-
-  //   // Scrolling
-  //   document.getElementById('chat-history').addEventListener(
-  //     'scroll',
-  //     uiModule.debounce(() => {
-  //       const box = document.getElementById('chat-history');
-  //       const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-  //       uiModule.setAutoScroll(atBottom);
-  //     }, 100),
-  //   );
-  //   // Close all footer popups immediately on any scroll
-  //   document.getElementById('chat-history').addEventListener(
-  //     'scroll',
-  //     () => {
-  //       document
-  //         .querySelectorAll('.ctx-popup, .memory-used-detail, .msg-overflow-menu')
-  //         .forEach((p) => p.remove());
-  //       document.querySelectorAll('.memory-used-pill').forEach((p) => {
-  //         p._openDetail = null;
-  //       });
-  //     },
-  //     { passive: true },
-  //   );
-
-  //   document.getElementById('chat-history').addEventListener('wheel', (e) => {
-  //     // Only disable auto-scroll when user scrolls UP (deltaY < 0)
-  //     if (e.deltaY < 0) uiModule.setAutoScroll(false);
-  //   });
-
-  // Internal #session-id links from AI search results
-  chatHistory.addEventListener('click', (e) => {
-    const link = e.target.closest('a.chat-link');
-    if (!link) return;
-    const href = link.getAttribute('href');
-    if (href && href.startsWith('#') && sessionModule) {
-      e.preventDefault();
-      sessionModule.selectSession(href.slice(1));
-    }
-  });
-  // Export: PDF
-  const exportPdfBtn = el('export-pdf-btn');
-  const exportMenu = document.getElementById('export-dropdown-menu');
-  if (exportPdfBtn) {
-    exportPdfBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      const meta = sessionModule
-        .getSessions()
-        .find((s) => s.id === sessionModule.getCurrentSessionId());
-      const sessionName = meta ? meta.name : 'Odysseus Chat';
-      const originalTitle = document.title;
-      document.title = sessionName;
-      const chatHistory = document.getElementById('chat-history');
-      if (chatHistory) chatHistory.dataset.printTitle = sessionName;
+   // Scrolling
+   let onscroll = (event: Event) => {
+      uiModule.debounce(() => {
+         const box = event.currentTarget as HTMLElement;
+         const atBottom =
+            box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+         uiModule.setAutoScroll(atBottom);
+      }, 100);
       document
-        .querySelectorAll('#chat-history details:not([open])')
-        .forEach((d) => {
-          d.setAttribute('open', '');
-          d.dataset.printOpened = '1';
-        });
-      window.print();
-      document.title = originalTitle;
-      document
-        .querySelectorAll('#chat-history details[data-print-opened]')
-        .forEach((d) => {
-          d.removeAttribute('open');
-          d.removeAttribute('data-print-opened');
-        });
-    });
-  }
-  document.addEventListener('overflow-state-change', () => updatePlusDot());
+         .querySelectorAll(
+            ".ctx-popup, .memory-used-detail, .msg-overflow-menu",
+         )
+         .forEach((p) => p.remove());
+      document.querySelectorAll(".memory-used-pill").forEach((p) => {
+         p._openDetail = null;
+      });
+   };
 
-  // ── Prevent toolbar buttons from stealing focus (avoids mobile keyboard bounce) ──
-  const chatInputBar = document.querySelector('.chat-input-bar');
-  // ── Keep textarea focused when interacting with chat bar controls (mobile keyboard fix) ──
-  const _msgTextarea = el('message');
-  if (chatInputBar && _msgTextarea) {
-    let _refocusOnBlur = false;
-    function _flagRefocus(e) {
-      if (e.target.closest('textarea, input')) return;
-      // Don't refocus for attach — file picker needs full focus control
-      if (e.target.closest('#overflow-attach-btn')) return;
-      // Don't refocus for model picker button — focus should go to picker search input
-      if (e.target.closest('.model-picker-btn')) return;
-      // Don't refocus when tapping the +/chevron tools button — the user
-      // is explicitly trying to dismiss the keyboard and open the tools
-      // menu. Without this, the textarea blurs (keyboard down), then this
-      // handler re-focuses it (keyboard bounces back up).
-      if (e.target.closest('#overflow-plus-btn')) return;
-      if (document.activeElement === _msgTextarea) _refocusOnBlur = true;
-    }
-    chatInputBar.addEventListener('touchstart', _flagRefocus, {
-      passive: true,
-    });
-    // Overflow menu is position:fixed — may not bubble through chatInputBar on mobile
-    const _overflowMenu = el('overflow-menu');
-    if (_overflowMenu)
-      _overflowMenu.addEventListener('touchstart', _flagRefocus, {
-        passive: true,
+   let onwheel = (e: WheelEvent) => {
+      if (e.deltaY < 0) uiModule.setAutoScroll(false);
+   };
+
+   let _touchThrottled = false;
+   let ontouchmove = () => {
+      if (_touchThrottled) return;
+      _touchThrottled = true;
+      uiModule.setAutoScroll(false);
+      requestAnimationFrame(() => {
+         _touchThrottled = false;
       });
-    // Model picker menu too
-    const _pickerMenu = document.getElementById('model-picker-menu');
-    if (_pickerMenu)
-      _pickerMenu.addEventListener('touchstart', _flagRefocus, {
-        passive: true,
-      });
-    // Attach strip (outside chat-input-bar)
-    const _attachStrip = el('attach-strip');
-    if (_attachStrip)
-      _attachStrip.addEventListener('touchstart', _flagRefocus, {
-        passive: true,
-      });
-    _msgTextarea.addEventListener('blur', () => {
-      if (_refocusOnBlur) {
-        _refocusOnBlur = false;
-        setTimeout(() => _msgTextarea.focus(), 0);
+   };
+
+   let pageState = $state({ sessionId: "" });
+   const chatSessionId = $derived(page.state.sessionId); // This will correctly update id for usage on this page
+   $inspect(chatSessionId);
+
+   // ── Helper: start a fresh chat (deselect current, clear history, show welcome) ──
+   function _startFreshChat() {
+      try {
+         const prevId =
+            sessionModule && sessionModule.getCurrentSessionId
+               ? sessionModule.getCurrentSessionId()
+               : null;
+         if (chatModule && chatModule.detachCurrentStream)
+            chatModule.detachCurrentStream(prevId);
+         else if (chatModule && chatModule.abortCurrentRequest)
+            chatModule.abortCurrentRequest();
+      } catch (e) {
+         console.warn("fresh chat stream detach failed:", e);
       }
-    });
-    // Clear flag if touch ends without causing blur
-    document.addEventListener(
-      'touchend',
-      () => {
-        setTimeout(() => {
-          _refocusOnBlur = false;
-        }, 50);
-      },
-      { passive: true },
-    );
-  }
-  // ── Overflow Group Chat toggle ──
-  const overflowGroupBtn = el('overflow-group-btn');
-  if (overflowGroupBtn) {
-    overflowGroupBtn.addEventListener('click', async () => {
-      const chk = el('group-toggle');
-      const turningOn = chk ? !chk.checked : false;
-      if (turningOn) {
-        const picked = await groupModule.showModelPicker();
-        if (!picked || picked.length < 2) return;
-        groupModule.setActive(true); // Set early so updateModelPicker sees it
-        syncGroupIndicator(true);
-        _startFreshChat();
-        // Clear any leftover splash screens
-        const _chatBox = document.getElementById('chat-history');
-        if (_chatBox) {
-          _chatBox.querySelectorAll('.tool-splash').forEach((s) => s.remove());
-          // Also hide welcome screen
-          if (chatModule && chatModule.hideWelcomeScreen)
-            chatModule.hideWelcomeScreen();
-        }
-        // Start group — create participant sessions immediately
-        const sid =
-          sessionModule.getCurrentSessionId() || 'group-' + Date.now();
-        await groupModule.startGroup(picked, sid);
-        // Re-hide picker after everything settles
-        const _mpw = el('model-picker-wrap');
-        if (_mpw) _mpw.style.display = 'none';
-        uiModule.showToast(`Group chat ready — ${picked.length} models`);
-      } else {
-        syncGroupIndicator(false);
-        groupModule.stopGroup();
-        // Restore model picker
-        const _mpWrap2 = el('model-picker-wrap');
-        if (_mpWrap2) _mpWrap2.style.display = '';
+      if (sessionModule) sessionModule.setCurrentSessionId(null);
+      const box = el("chat-history");
+      if (box) box.innerHTML = "";
+      if (chatModule && chatModule.showWelcomeScreen) {
+         chatModule.showWelcomeScreen();
       }
-    });
-  }
+      // Close document panel if open
+      if (documentModule && documentModule.closePanel)
+         documentModule.closePanel();
+      if (researchPanelModule && researchPanelModule.isOpen())
+         researchPanelModule.closePanel();
+      // Reset research overflow dot (but don't touch research state — caller manages that)
+      const _overflowRes = el("overflow-research-btn");
+      if (_overflowRes) _overflowRes.classList.remove("active");
+      if (typeof updatePlusDot === "function") updatePlusDot();
+      // Reset agent mode to Chat
+      const modeToggle = el("agent-mode-toggle") as HTMLInputElement;
+      if (modeToggle && modeToggle.checked) {
+         modeToggle.checked = false;
+         modeToggle.dispatchEvent(new Event("change"));
+      }
+      // Clear character/persona
+      if (presetsModule && presetsModule.deactivateCharacter)
+         presetsModule.deactivateCharacter();
+   }
+   onMount(async () => {
+      pageState.sessionId =
+         sessionModule && sessionModule.getCurrentSessionId
+            ? sessionModule.getCurrentSessionId()
+            : null;
+      // Message count in the header — recount on any DOM change in
+      // #chat-history and write "· N msgs" next to the title. Counts top-
+      // level .msg elements (one per user/assistant turn); excludes the
+      // welcome screen since it isn't inside chat-history.
+      const _metaCountEl = document.getElementById("current-meta-count");
+      // const chatHistory = document.getElementById("chat-history");
+      if (_metaCountEl && chatHistory) {
+         let _countScheduled = false;
+         const _updateMsgCount = () => {
+            _countScheduled = false;
+            const n = chatHistory.querySelectorAll(":scope > .msg").length;
+            _metaCountEl.textContent = n
+               ? `· ${n} msg${n === 1 ? "" : "s"}`
+               : "";
+         };
+         const _scheduleCount = () => {
+            if (_countScheduled) return;
+            _countScheduled = true;
+            requestAnimationFrame(_updateMsgCount);
+         };
+         new MutationObserver(_scheduleCount).observe(chatHistory, {
+            childList: true,
+         });
+         _updateMsgCount();
+      }
 
-  // ── Group toggle button (chatbox indicator) — click to deactivate ──
-  const groupToggleBtn = el('group-toggle-btn');
-  if (groupToggleBtn) {
-    groupToggleBtn.addEventListener('click', () => {
-      syncGroupIndicator(false);
-      groupModule.stopGroup();
-    });
-  }
+      //   // Scrolling
+      //   document.getElementById('chat-history').addEventListener(
+      //     'scroll',
+      //     uiModule.debounce(() => {
+      //       const box = document.getElementById('chat-history');
+      //       const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+      //       uiModule.setAutoScroll(atBottom);
+      //     }, 100),
+      //   );
+      //   // Close all footer popups immediately on any scroll
+      //   document.getElementById('chat-history').addEventListener(
+      //     'scroll',
+      //     () => {
+      //       document
+      //         .querySelectorAll('.ctx-popup, .memory-used-detail, .msg-overflow-menu')
+      //         .forEach((p) => p.remove());
+      //       document.querySelectorAll('.memory-used-pill').forEach((p) => {
+      //         p._openDetail = null;
+      //       });
+      //     },
+      //     { passive: true },
+      //   );
 
-  // Observe chat history for new/changed messages — de-emojify on the fly
-  let _deEmojifyTimer = null;
-  const _chatObs = new MutationObserver(() => {
-    if (!document.body.classList.contains('text-emojis')) return;
-    clearTimeout(_deEmojifyTimer);
-    _deEmojifyTimer = setTimeout(() => {
-      document
-        .querySelectorAll('.msg .body')
-        .forEach((e) => deEmojify(e, _DEOJ_SKIP));
-    }, 150);
-  });
-  const _chatBox = document.getElementById('chat-history');
-  if (_chatBox) _chatObs.observe(_chatBox, { childList: true, subtree: true });
+      //   document.getElementById('chat-history').addEventListener('wheel', (e) => {
+      //     // Only disable auto-scroll when user scrolls UP (deltaY < 0)
+      //     if (e.deltaY < 0) uiModule.setAutoScroll(false);
+      //   });
 
-  // INITIALIZE EVENT LISTENERS
-  // Chat form submission
-  //  document.getElementById('chat-form').addEventListener('submit', chatModule.handleChatSubmit);
+      // Internal #session-id links from AI search results
+      chatHistory.addEventListener("click", (e) => {
+         const link = e.target.closest("a.chat-link");
+         if (!link) return;
+         const href = link.getAttribute("href");
+         if (href && href.startsWith("#") && sessionModule) {
+            e.preventDefault();
+            sessionModule.selectSession(href.slice(1));
+         }
+      });
+      // Export: PDF
+      const exportPdfBtn = el("export-pdf-btn");
+      const exportMenu = document.getElementById("export-dropdown-menu");
+      if (exportPdfBtn) {
+         exportPdfBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            exportMenu.classList.remove("open");
+            const meta = sessionModule
+               .getSessions()
+               .find((s) => s.id === sessionModule.getCurrentSessionId());
+            const sessionName = meta ? meta.name : "Odysseus Chat";
+            const originalTitle = document.title;
+            document.title = sessionName;
+            const chatHistory = document.getElementById("chat-history");
+            if (chatHistory) chatHistory.dataset.printTitle = sessionName;
+            document
+               .querySelectorAll("#chat-history details:not([open])")
+               .forEach((d) => {
+                  d.setAttribute("open", "");
+                  d.dataset.printOpened = "1";
+               });
+            window.print();
+            document.title = originalTitle;
+            document
+               .querySelectorAll("#chat-history details[data-print-opened]")
+               .forEach((d) => {
+                  d.removeAttribute("open");
+                  d.removeAttribute("data-print-opened");
+               });
+         });
+      }
+      document.addEventListener("overflow-state-change", () => updatePlusDot());
 
-  // File attachments (inside overflow menu)
-  const _overflowAttach = document.getElementById('overflow-attach-btn');
-  if (_overflowAttach)
-    _overflowAttach.addEventListener('click', fileHandlerModule.openPicker);
-  document.getElementById('file-input').addEventListener('change', (e) => {
-    for (const f of e.target.files) fileHandlerModule.addFiles([f]);
-    fileHandlerModule.renderAttachStrip();
-    // Refocus textarea after file picker closes (mobile keyboard)
-    const ta = document.getElementById('message');
-    if (ta) setTimeout(() => ta.focus(), 100);
-  });
-  // Modify form submit to handle special modes
-  const chatForm = document.getElementById('chat-form');
-  chatForm.onsubmit = handleSubmit;
-});
+      // ── Prevent toolbar buttons from stealing focus (avoids mobile keyboard bounce) ──
+      const chatInputBar = document.querySelector(".chat-input-bar");
+      // ── Keep textarea focused when interacting with chat bar controls (mobile keyboard fix) ──
+      const _msgTextarea = el("message");
+      if (chatInputBar && _msgTextarea) {
+         let _refocusOnBlur = false;
+         function _flagRefocus(e) {
+            if (e.target.closest("textarea, input")) return;
+            // Don't refocus for attach — file picker needs full focus control
+            if (e.target.closest("#overflow-attach-btn")) return;
+            // Don't refocus for model picker button — focus should go to picker search input
+            if (e.target.closest(".model-picker-btn")) return;
+            // Don't refocus when tapping the +/chevron tools button — the user
+            // is explicitly trying to dismiss the keyboard and open the tools
+            // menu. Without this, the textarea blurs (keyboard down), then this
+            // handler re-focuses it (keyboard bounces back up).
+            if (e.target.closest("#overflow-plus-btn")) return;
+            if (document.activeElement === _msgTextarea) _refocusOnBlur = true;
+         }
+         chatInputBar.addEventListener("touchstart", _flagRefocus, {
+            passive: true,
+         });
+         // Overflow menu is position:fixed — may not bubble through chatInputBar on mobile
+         const _overflowMenu = el("overflow-menu");
+         if (_overflowMenu)
+            _overflowMenu.addEventListener("touchstart", _flagRefocus, {
+               passive: true,
+            });
+         // Model picker menu too
+         const _pickerMenu = document.getElementById("model-picker-menu");
+         if (_pickerMenu)
+            _pickerMenu.addEventListener("touchstart", _flagRefocus, {
+               passive: true,
+            });
+         // Attach strip (outside chat-input-bar)
+         const _attachStrip = el("attach-strip");
+         if (_attachStrip)
+            _attachStrip.addEventListener("touchstart", _flagRefocus, {
+               passive: true,
+            });
+         _msgTextarea.addEventListener("blur", () => {
+            if (_refocusOnBlur) {
+               _refocusOnBlur = false;
+               setTimeout(() => _msgTextarea.focus(), 0);
+            }
+         });
+         // Clear flag if touch ends without causing blur
+         document.addEventListener(
+            "touchend",
+            () => {
+               setTimeout(() => {
+                  _refocusOnBlur = false;
+               }, 50);
+            },
+            { passive: true },
+         );
+      }
+      // ── Overflow Group Chat toggle ──
+      const overflowGroupBtn = el("overflow-group-btn");
+      if (overflowGroupBtn) {
+         overflowGroupBtn.addEventListener("click", async () => {
+            const chk = el("group-toggle");
+            const turningOn = chk ? !chk.checked : false;
+            if (turningOn) {
+               const picked = await groupModule.showModelPicker();
+               if (!picked || picked.length < 2) return;
+               groupModule.setActive(true); // Set early so updateModelPicker sees it
+               syncGroupIndicator(true);
+               _startFreshChat();
+               // Clear any leftover splash screens
+               const _chatBox = document.getElementById("chat-history");
+               if (_chatBox) {
+                  _chatBox
+                     .querySelectorAll(".tool-splash")
+                     .forEach((s) => s.remove());
+                  // Also hide welcome screen
+                  if (chatModule && chatModule.hideWelcomeScreen)
+                     chatModule.hideWelcomeScreen();
+               }
+               // Start group — create participant sessions immediately
+               const sid =
+                  sessionModule.getCurrentSessionId() || "group-" + Date.now();
+               await groupModule.startGroup(picked, sid);
+               // Re-hide picker after everything settles
+               const _mpw = el("model-picker-wrap");
+               if (_mpw) _mpw.style.display = "none";
+               uiModule.showToast(`Group chat ready — ${picked.length} models`);
+            } else {
+               syncGroupIndicator(false);
+               groupModule.stopGroup();
+               // Restore model picker
+               const _mpWrap2 = el("model-picker-wrap");
+               if (_mpWrap2) _mpWrap2.style.display = "";
+            }
+         });
+      }
+
+      // ── Group toggle button (chatbox indicator) — click to deactivate ──
+      const groupToggleBtn = el("group-toggle-btn");
+      if (groupToggleBtn) {
+         groupToggleBtn.addEventListener("click", () => {
+            syncGroupIndicator(false);
+            groupModule.stopGroup();
+         });
+      }
+
+      // Observe chat history for new/changed messages — de-emojify on the fly
+      let _deEmojifyTimer = null;
+      const _chatObs = new MutationObserver(() => {
+         if (!document.body.classList.contains("text-emojis")) return;
+         clearTimeout(_deEmojifyTimer);
+         _deEmojifyTimer = setTimeout(() => {
+            document
+               .querySelectorAll(".msg .body")
+               .forEach((e) => deEmojify(e, _DEOJ_SKIP));
+         }, 150);
+      });
+      const _chatBox = document.getElementById("chat-history");
+      if (_chatBox)
+         _chatObs.observe(_chatBox, { childList: true, subtree: true });
+
+      // INITIALIZE EVENT LISTENERS
+      // Chat form submission
+      //  document.getElementById('chat-form').addEventListener('submit', chatModule.handleChatSubmit);
+
+      // File attachments (inside overflow menu)
+      const _overflowAttach = document.getElementById("overflow-attach-btn");
+      if (_overflowAttach)
+         _overflowAttach.addEventListener(
+            "click",
+            fileHandlerModule.openPicker,
+         );
+      document.getElementById("file-input").addEventListener("change", (e) => {
+         for (const f of e.target.files) fileHandlerModule.addFiles([f]);
+         fileHandlerModule.renderAttachStrip();
+         // Refocus textarea after file picker closes (mobile keyboard)
+         const ta = document.getElementById("message");
+         if (ta) setTimeout(() => ta.focus(), 100);
+      });
+      // Modify form submit to handle special modes
+      const chatForm = document.getElementById("chat-form");
+      chatForm.onsubmit = handleSubmit;
+   });
 </script>
 
 <main
@@ -878,17 +890,21 @@ onMount(async () => {
    }
    :global(.chat-history > *) {
       flex: 0 0 auto;
+      animation:none !important;
    }
 
-.chat-container.welcome-active :global(.chat-input-bar)
-{
-   margin-bottom: 1vh;
-}
-
+   .chat-container.welcome-active :global(.chat-input-bar) {
+      margin-bottom: 1vh;
+   }
 
    .chat-history::-webkit-scrollbar-thumb {
       border-width: 1px;
       width: 3px;
+   }
+
+   :global(.chat-history .msg){
+      animation:none !important;
+      transition: padding
    }
 
    @media (width>=480px) {
