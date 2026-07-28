@@ -584,187 +584,189 @@ function initializeEventListeners() {
     return parts.join('\n\n');
   }
 
-  // Export: Copy all messages
-  const exportCopyBtn = el('export-copy-btn');
-  if (exportCopyBtn) {
-    exportCopyBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      const transcript = _serializeChatTranscript();
-      // A new/empty chat has nothing to copy — don't write an empty string and
-      // falsely report "Copied".
-      if (!transcript.trim()) {
-        uiModule.showToast('Nothing to copy yet');
-        return;
-      }
-      await uiModule.copyToClipboard(transcript);
-    });
-  }
+  /* Svelte * - moved to Export.svelte component */
+  
+  // // Export: Copy all messages
+  // const exportCopyBtn = el('export-copy-btn');
+  // if (exportCopyBtn) {
+  //   exportCopyBtn.addEventListener('click', async (e) => {
+  //     e.stopPropagation();
+  //     exportMenu.classList.remove('open');
+  //     const transcript = _serializeChatTranscript();
+  //     // A new/empty chat has nothing to copy — don't write an empty string and
+  //     // falsely report "Copied".
+  //     if (!transcript.trim()) {
+  //       uiModule.showToast('Nothing to copy yet');
+  //       return;
+  //     }
+  //     await uiModule.copyToClipboard(transcript);
+  //   });
+  // }
 
-  // Export menu: Compact current chat context
-  const exportCompactBtn = el('export-compact-btn');
-  if (exportCompactBtn) {
-    exportCompactBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      if (window.compactCurrentChatContext) {
-        await window.compactCurrentChatContext();
-      } else {
-        uiModule.showError('Compact action is not ready yet');
-      }
-    });
-  }
+  // // Export menu: Compact current chat context
+  // const exportCompactBtn = el('export-compact-btn');
+  // if (exportCompactBtn) {
+  //   exportCompactBtn.addEventListener('click', async (e) => {
+  //     e.stopPropagation();
+  //     exportMenu.classList.remove('open');
+  //     if (window.compactCurrentChatContext) {
+  //       await window.compactCurrentChatContext();
+  //     } else {
+  //       uiModule.showError('Compact action is not ready yet');
+  //     }
+  //   });
+  // }
 
-  // Export: PDF
-  const exportPdfBtn = el('export-pdf-btn');
-  if (exportPdfBtn) {
-    exportPdfBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      const meta = sessionModule
-        .getSessions()
-        .find((s) => s.id === sessionModule.getCurrentSessionId());
-      const sessionName = meta ? meta.name : 'Odysseus Chat';
-      const originalTitle = document.title;
-      document.title = sessionName;
-      const chatHistory = document.getElementById('chat-history');
-      if (chatHistory) chatHistory.dataset.printTitle = sessionName;
-      document
-        .querySelectorAll('#chat-history details:not([open])')
-        .forEach((d) => {
-          d.setAttribute('open', '');
-          d.dataset.printOpened = '1';
-        });
-      window.print();
-      document.title = originalTitle;
-      document
-        .querySelectorAll('#chat-history details[data-print-opened]')
-        .forEach((d) => {
-          d.removeAttribute('open');
-          d.removeAttribute('data-print-opened');
-        });
-    });
-  }
+  // // Export: PDF
+  // const exportPdfBtn = el('export-pdf-btn');
+  // if (exportPdfBtn) {
+  //   exportPdfBtn.addEventListener('click', (e) => {
+  //     e.stopPropagation();
+  //     exportMenu.classList.remove('open');
+  //     const meta = sessionModule
+  //       .getSessions()
+  //       .find((s) => s.id === sessionModule.getCurrentSessionId());
+  //     const sessionName = meta ? meta.name : 'Odysseus Chat';
+  //     const originalTitle = document.title;
+  //     document.title = sessionName;
+  //     const chatHistory = document.getElementById('chat-history');
+  //     if (chatHistory) chatHistory.dataset.printTitle = sessionName;
+  //     document
+  //       .querySelectorAll('#chat-history details:not([open])')
+  //       .forEach((d) => {
+  //         d.setAttribute('open', '');
+  //         d.dataset.printOpened = '1';
+  //       });
+  //     window.print();
+  //     document.title = originalTitle;
+  //     document
+  //       .querySelectorAll('#chat-history details[data-print-opened]')
+  //       .forEach((d) => {
+  //         d.removeAttribute('open');
+  //         d.removeAttribute('data-print-opened');
+  //       });
+  //   });
+  // }
 
-  // Export: Save to Docs
-  const exportDocBtn = el('export-doc-btn');
-  if (exportDocBtn) {
-    exportDocBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      try {
-        const sessionId = sessionModule.getCurrentSessionId();
-        const texts = _serializeChatTranscript();
-        const meta = sessionModule
-          .getSessions()
-          .find((s) => s.id === sessionId);
-        const title = meta?.name || 'Untitled';
-        const res = await fetch(`${API_BASE}/api/document`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            session_id: sessionId,
-            title,
-            content: texts,
-          }),
-        });
-        if (!res.ok) throw new Error('Failed');
-        const doc = await res.json();
-        if (documentModule) documentModule.loadDocument(doc.id);
-        uiModule.showToast('Saved to documents');
-      } catch (err) {
-        console.error('Save to docs failed:', err);
-        uiModule.showError('Failed to save to documents');
-      }
-    });
-  }
+  // // Export: Save to Docs
+  // const exportDocBtn = el('export-doc-btn');
+  // if (exportDocBtn) {
+  //   exportDocBtn.addEventListener('click', async (e) => {
+  //     e.stopPropagation();
+  //     exportMenu.classList.remove('open');
+  //     try {
+  //       const sessionId = sessionModule.getCurrentSessionId();
+  //       const texts = _serializeChatTranscript();
+  //       const meta = sessionModule
+  //         .getSessions()
+  //         .find((s) => s.id === sessionId);
+  //       const title = meta?.name || 'Untitled';
+  //       const res = await fetch(`${API_BASE}/api/document`, {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           session_id: sessionId,
+  //           title,
+  //           content: texts,
+  //         }),
+  //       });
+  //       if (!res.ok) throw new Error('Failed');
+  //       const doc = await res.json();
+  //       if (documentModule) documentModule.loadDocument(doc.id);
+  //       uiModule.showToast('Saved to documents');
+  //     } catch (err) {
+  //       console.error('Save to docs failed:', err);
+  //       uiModule.showError('Failed to save to documents');
+  //     }
+  //   });
+  // }
 
-  // Export menu: Delete current chat
-  const exportDeleteBtn = el('export-delete-btn');
-  if (exportDeleteBtn) {
-    exportDeleteBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      if (sessionModule?.deleteCurrentSessionFromTopMenu) {
-        await sessionModule.deleteCurrentSessionFromTopMenu();
-      }
-    });
-  }
+  // // Export menu: Delete current chat
+  // const exportDeleteBtn = el('export-delete-btn');
+  // if (exportDeleteBtn) {
+  //   exportDeleteBtn.addEventListener('click', async (e) => {
+  //     e.stopPropagation();
+  //     exportMenu.classList.remove('open');
+  //     if (sessionModule?.deleteCurrentSessionFromTopMenu) {
+  //       await sessionModule.deleteCurrentSessionFromTopMenu();
+  //     }
+  //   });
+  // }
 
-  // Rename session from top bar
-  const exportRenameBtn = el('export-rename-btn');
-  if (exportRenameBtn) {
-    exportRenameBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      exportMenu.classList.remove('open');
-      let sid = sessionModule.getCurrentSessionId();
-      // A brand-new chat has no session id yet — still allow renaming if there's
-      // a pending chat (we materialize it on commit so the name sticks).
-      const hasPending =
-        sessionModule.hasPendingChat && sessionModule.hasPendingChat();
-      if (!sid && !hasPending) return;
-      const meta = sid
-        ? sessionModule.getSessions().find((s) => s.id === sid)
-        : null;
-      const currentName = meta?.name || '';
-      const metaEl = el('current-meta');
-      if (!metaEl) return;
+  // // Rename session from top bar
+  // const exportRenameBtn = el('export-rename-btn');
+  // if (exportRenameBtn) {
+  //   exportRenameBtn.addEventListener('click', (e) => {
+  //     e.stopPropagation();
+  //     exportMenu.classList.remove('open');
+  //     let sid = sessionModule.getCurrentSessionId();
+  //     // A brand-new chat has no session id yet — still allow renaming if there's
+  //     // a pending chat (we materialize it on commit so the name sticks).
+  //     const hasPending =
+  //       sessionModule.hasPendingChat && sessionModule.hasPendingChat();
+  //     if (!sid && !hasPending) return;
+  //     const meta = sid
+  //       ? sessionModule.getSessions().find((s) => s.id === sid)
+  //       : null;
+  //     const currentName = meta?.name || '';
+  //     const metaEl = el('current-meta');
+  //     if (!metaEl) return;
 
-      // Replace title with an input
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = currentName;
-      input.className = 'session-rename-input';
-      input.style.cssText =
-        'font-size:inherit;background:transparent;border:none;border-bottom:1px solid var(--accent, var(--red));color:var(--fg);outline:none;width:100%;padding:0;';
-      const origText = metaEl.textContent;
-      metaEl.textContent = '';
-      metaEl.appendChild(input);
-      input.focus();
-      input.select();
+  //     // Replace title with an input
+  //     const input = document.createElement('input');
+  //     input.type = 'text';
+  //     input.value = currentName;
+  //     input.className = 'session-rename-input';
+  //     input.style.cssText =
+  //       'font-size:inherit;background:transparent;border:none;border-bottom:1px solid var(--accent, var(--red));color:var(--fg);outline:none;width:100%;padding:0;';
+  //     const origText = metaEl.textContent;
+  //     metaEl.textContent = '';
+  //     metaEl.appendChild(input);
+  //     input.focus();
+  //     input.select();
 
-      const commit = async () => {
-        const newName = input.value.trim();
-        if (newName && newName !== currentName) {
-          // Materialize a pending (new) chat first so it has an id to rename.
-          if (!sid && sessionModule.materializePendingSession) {
-            try {
-              await sessionModule.materializePendingSession();
-              sid = sessionModule.getCurrentSessionId();
-            } catch (_) {}
-          }
-          if (!sid) {
-            metaEl.textContent = newName;
-            return;
-          }
-          const fd = new FormData();
-          fd.append('name', newName);
-          await fetch(`${API_BASE}/api/session/${sid}`, {
-            method: 'PATCH',
-            body: fd,
-          });
-          const _m = sessionModule.getSessions().find((s) => s.id === sid);
-          if (_m) _m.name = newName;
-          metaEl.textContent = newName;
-          uiModule.showToast('Renamed');
-          sessionModule.loadSessions();
-        } else {
-          metaEl.textContent = origText;
-        }
-      };
-      input.addEventListener('blur', commit);
-      input.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter') {
-          ev.preventDefault();
-          input.blur();
-        }
-        if (ev.key === 'Escape') {
-          input.removeEventListener('blur', commit);
-          metaEl.textContent = origText;
-        }
-      });
-    });
-  }
+  //     const commit = async () => {
+  //       const newName = input.value.trim();
+  //       if (newName && newName !== currentName) {
+  //         // Materialize a pending (new) chat first so it has an id to rename.
+  //         if (!sid && sessionModule.materializePendingSession) {
+  //           try {
+  //             await sessionModule.materializePendingSession();
+  //             sid = sessionModule.getCurrentSessionId();
+  //           } catch (_) {}
+  //         }
+  //         if (!sid) {
+  //           metaEl.textContent = newName;
+  //           return;
+  //         }
+  //         const fd = new FormData();
+  //         fd.append('name', newName);
+  //         await fetch(`${API_BASE}/api/session/${sid}`, {
+  //           method: 'PATCH',
+  //           body: fd,
+  //         });
+  //         const _m = sessionModule.getSessions().find((s) => s.id === sid);
+  //         if (_m) _m.name = newName;
+  //         metaEl.textContent = newName;
+  //         uiModule.showToast('Renamed');
+  //         sessionModule.loadSessions();
+  //       } else {
+  //         metaEl.textContent = origText;
+  //       }
+  //     };
+  //     input.addEventListener('blur', commit);
+  //     input.addEventListener('keydown', (ev) => {
+  //       if (ev.key === 'Enter') {
+  //         ev.preventDefault();
+  //         input.blur();
+  //       }
+  //       if (ev.key === 'Escape') {
+  //         input.removeEventListener('blur', commit);
+  //         metaEl.textContent = origText;
+  //       }
+  //     });
+  //   });
+  // }
 
   // Custom preset modal handlers
   const closeCustomPreset = el('close-custom-preset');
