@@ -31,8 +31,8 @@ export default defineConfig({
     // During `vite dev` (Track B), proxy API + legacy static assets to the FastAPI
     // backend so SvelteKit routes can hit the real API and load the legacy shell.
     proxy: {
-      '/api': 'http://localhost:7000',
-      '/static': 'http://localhost:7000',
+      '/api': 'http://localhost:7001',
+      '/static': 'http://localhost:7001',
     },
   },
 });
