@@ -4,11 +4,6 @@
    import { syncGroupIndicator } from "$lib/chat/group";
    import { handleSubmit } from "$lib/chat/helpers";
    import MessageInput from "$lib/components/chat/MessageInput.svelte";
-   import {
-      isLoading,
-      modelItems,
-      refreshModels,
-   } from "$lib/components/chat/models/modelItemStore.svelte";
    import ScrollChatBottom from "$lib/components/chat/ScrollChatBottom.svelte";
    import { deEmojify } from "$lib/emoji";
    import chatModule from "$lib/legacy/chat";
@@ -24,8 +19,6 @@
    import { page } from "$app/state";
 
    let chatHistory: HTMLElement;
-   let unsubscribeModelItems;
-   let _modelList: any[] = [];
 
    const _DEOJ_SKIP = ".sources-section, .thinking-toggle, .memory-used-pill";
 
@@ -64,18 +57,8 @@
       if (e.deltaY < 0) uiModule.setAutoScroll(false);
    };
 
-   let _touchThrottled = false;
-   let ontouchmove = () => {
-      if (_touchThrottled) return;
-      _touchThrottled = true;
-      uiModule.setAutoScroll(false);
-      requestAnimationFrame(() => {
-         _touchThrottled = false;
-      });
-   };
-
    let pageState = $state({ sessionId: "" });
-   const chatSessionId = $derived(page.state.sessionId); // This will correctly update id for usage on this page
+   const chatSessionId = $derived(page.state.sessionId);
    $inspect(chatSessionId);
 
    // ── Helper: start a fresh chat (deselect current, clear history, show welcome) ──
@@ -147,34 +130,6 @@
          });
          _updateMsgCount();
       }
-
-      //   // Scrolling
-      //   document.getElementById('chat-history').addEventListener(
-      //     'scroll',
-      //     uiModule.debounce(() => {
-      //       const box = document.getElementById('chat-history');
-      //       const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-      //       uiModule.setAutoScroll(atBottom);
-      //     }, 100),
-      //   );
-      //   // Close all footer popups immediately on any scroll
-      //   document.getElementById('chat-history').addEventListener(
-      //     'scroll',
-      //     () => {
-      //       document
-      //         .querySelectorAll('.ctx-popup, .memory-used-detail, .msg-overflow-menu')
-      //         .forEach((p) => p.remove());
-      //       document.querySelectorAll('.memory-used-pill').forEach((p) => {
-      //         p._openDetail = null;
-      //       });
-      //     },
-      //     { passive: true },
-      //   );
-
-      //   document.getElementById('chat-history').addEventListener('wheel', (e) => {
-      //     // Only disable auto-scroll when user scrolls UP (deltaY < 0)
-      //     if (e.deltaY < 0) uiModule.setAutoScroll(false);
-      //   });
 
       // Internal #session-id links from AI search results
       chatHistory.addEventListener("click", (e) => {
@@ -890,7 +845,6 @@
    }
    :global(.chat-history > *) {
       flex: 0 0 auto;
-      animation:none !important;
    }
 
    .chat-container.welcome-active :global(.chat-input-bar) {
