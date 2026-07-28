@@ -1,0 +1,3016 @@
+/* The email notification gets a soft breathing glow so new-mail catches
+       the eye without being shouty. Vertical alignment stays with the
+       inherited .sidebar-notif-dot rule so it lines up with chats/assistant. */
+    #email-unread-dot.sidebar-notif-dot {
+      animation: email-notif-breathe 2.2s ease-in-out infinite;
+      /* Nudge in from the far-right edge so it doesn't crowd the corner. */
+      margin-right: 4px;
+      /* Tiny vertical nudge to center with the email label. */
+      position: relative;
+      top: 0.1px;
+    }
+
+#email-lib-bulk-delete.email-bulk-loading,
+#email-lib-bulk-actions.email-bulk-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0.9;
+  cursor: wait;
+}
+
+#email-lib-bulk-delete.email-bulk-loading .email-bulk-whirlpool,
+#email-lib-bulk-actions.email-bulk-loading .email-bulk-whirlpool {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  position: relative;
+  top: -1px;
+}
+
+#email-lib-bulk-delete.email-bulk-loading .email-bulk-loading-label,
+#email-lib-bulk-actions.email-bulk-loading .email-bulk-loading-label {
+  position: relative;
+  top: -2px;
+}
+
+/* Custom email filter picker (All / Unread / Favorites / …). Replaces the
+   native <select> so options can carry SVG icons. The hidden source
+   <select id="email-lib-filter"> is the value store and dispatches
+   'change' on selection. */
+.email-filter-picker {
+  position: relative;
+  top: 3px;
+}
+
+.email-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  height: 24px;
+  padding: 0 8px 0 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+  position: relative;
+  top: -4px;
+}
+
+.email-filter-btn:hover { border-color: color-mix(in srgb, var(--accent, var(--red)) 50%, var(--border)); }
+
+.email-filter-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent, var(--red));
+}
+
+.email-filter-current {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-filter-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  color: var(--accent, var(--red));
+  flex-shrink: 0;
+}
+
+.email-filter-icon svg { width: 13px; height: 13px; }
+
+.email-filter-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-filter-caret {
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: transform 0.15s;
+}
+
+.email-filter-picker .email-filter-btn[aria-expanded="true"] .email-filter-caret {
+  transform: rotate(180deg);
+}
+
+.email-filter-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--panel, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.email-filter-menu[hidden] { display: none; }
+
+.email-filter-group {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  padding: 8px 9px 3px;
+}
+
+.email-filter-item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 9px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--fg);
+  box-sizing: border-box;
+}
+
+.email-filter-item:hover,
+.email-filter-item:focus-visible {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.email-filter-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--accent, var(--red));
+  flex-shrink: 0;
+}
+
+.email-filter-item-icon svg { width: 13px; height: 13px; }
+
+.email-filter-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The "open in new tab" email modal inherited the 1rem doclib header, which
+   read way bigger than the email subject in the regular (inline) reader. Pin
+   it smaller so the two views are consistent. */
+.email-reader-tab-modal .modal-header h4 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Domino cascade on first open of the email library — mirrors the sidebar
+   .section-just-expanded recipe so list items spring in staggered. Class
+   is applied to #email-lib-grid in emailLibrary.js on the first render
+   only, then removed after the longest delay so re-renders feel instant. */
+.email-lib-just-opened :is(.doclib-card, .date-section-header) {
+  animation: section-domino-in 0.36s cubic-bezier(0.22, 1.61, 0.36, 1) backwards;
+}
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(1)  { animation-delay: 0.02s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(2)  { animation-delay: 0.04s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(3)  { animation-delay: 0.06s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(4)  { animation-delay: 0.08s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(5)  { animation-delay: 0.10s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(6)  { animation-delay: 0.12s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(7)  { animation-delay: 0.14s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(8)  { animation-delay: 0.16s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(9)  { animation-delay: 0.18s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(10) { animation-delay: 0.20s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(11) { animation-delay: 0.22s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(12) { animation-delay: 0.24s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(13) { animation-delay: 0.26s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(14) { animation-delay: 0.28s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(15) { animation-delay: 0.30s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(16) { animation-delay: 0.32s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(17) { animation-delay: 0.34s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(18) { animation-delay: 0.36s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(19) { animation-delay: 0.38s; }
+
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(20) { animation-delay: 0.40s; }
+
+/* Cap the cascade at 20 — beyond that they animate together so opening a
+   long inbox doesn't take forever to settle. */
+.email-lib-just-opened :is(.doclib-card, .date-section-header):nth-child(n+21) { animation-delay: 0.42s; }
+
+/* Inside the email library modal, the grid needs to grow with the modal —
+   but `flex: 1 1 0` collapses to 0 when the parent isn't height-constrained
+   (which is the non-fullscreen default). Use `auto` basis + a sensible
+   `min-height` floor so it shows ~400px naturally and absorbs more when
+   the modal is resized / fullscreened. */
+#email-lib-modal .doclib-grid {
+  max-height: none;
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 400px;
+}
+
+/* ── Mobile compose FAB (email) ──
+   Replaces the top-right "New" button on phones with a round mail-icon button
+   bottom-right that collapses to a circle while the list scrolls and springs
+   back out to "New" when scrolling stops. Desktop is unchanged. */
+.email-lib-fab { display: none; }
+
+/* When the modal-content has explicit height (fullscreen or user-resized),
+   drop the floor so the grid sizes purely from flex. */
+#email-lib-modal.email-lib-fullscreen .doclib-grid,
+#email-lib-modal .modal-content[style*="height"] .doclib-grid {
+  min-height: 0;
+}
+
+/* Firefox-mobile (no :has()) fallback: when reading an email, fully remove the
+   list-mode chrome (accounts row, toolbar, bulk bar, desc) — display:none so no
+   residual flex-gap leaves an empty strip above the reader — and zero the
+   admin-card gap so the grid/reader starts flush at the top. */
+#email-lib-modal.email-reading .admin-card > *:not(.doclib-grid):not(.hwfit-cached-list) {
+  display: none !important;
+}
+
+#email-lib-modal .admin-card:has(.doclib-card-expanded),
+#email-lib-modal.email-reading .admin-card {
+  gap: 0 !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* Email modal needs the grid to STAY a constrained flex container when
+   expanded — overflow:visible (set above for cookbook) lets content escape
+   instead of letting the expanded reader fill via flex:1. We keep the same
+   max-height:none + min-height:0 but flip overflow back so the reader
+   actually fills the modal. */
+#email-lib-modal .admin-card:has(.doclib-card-expanded) > .doclib-grid,
+#email-lib-modal.email-reading .admin-card > .doclib-grid {
+  overflow: hidden !important;
+  display: flex !important;
+  flex: 1 1 auto !important;
+}
+
+#email-lib-modal.email-reading #email-lib-grid > .date-section-header {
+  display: none !important;
+}
+
+#email-lib-modal.email-reading .doclib-modal-content {
+  min-height: var(--email-reading-modal-min-h, auto);
+}
+
+#email-lib-modal .doclib-card.doclib-card-expanded {
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  /* Neutral frame on the active email — the accent border + glow felt
+     overbearing on desktop; the size jump alone is enough signal. */
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important;
+  animation: none !important;
+}
+
+/* When the from-sender sidebar is open inside the email card, the email
+   body would otherwise lose 280px to padding-right and read as a narrow
+   strip. Widen the whole modal so the body keeps its normal text width
+   and the sidebar appears alongside, not on top of it. Also force the
+   modal to its full max-height — short emails would otherwise leave the
+   sidebar squeezed into a tiny vertical strip. */
+#email-lib-modal .modal-content:has(.from-sender-panel) {
+  width: min(1020px, 95vw) !important;
+  height: 85vh !important;
+  transition: width 0.22s ease-out, height 0.22s ease-out;
+}
+
+#email-lib-modal .modal-content {
+  transition: width 0.22s ease-out, height 0.22s ease-out;
+}
+
+/* Email reader window — make the body always fill the available vertical
+   space regardless of how the window is positioned/resized. The user can
+   drag the bottom-right corner to resize; the body re-flexes automatically. */
+.email-window-modal .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  resize: both;
+  overflow: hidden;
+  min-width: 320px;
+  min-height: 240px;
+  /* When user resizes/drags so the window covers a side, force the inner
+     body to fill all the way to the bottom. The default max-height: 85vh
+     (set inline by _makeDraggable's exitFullscreen) and 80vh from the
+     opener both cap at the *viewport* — if the browser window then changes
+     size (e.g. OS aero-snap), the modal stays at the old height and
+     truncates rows. Drop the cap whenever an explicit width OR height has
+     been written inline by the resize handle / drag handler. */
+}
+
+.email-window-modal .modal-content[style*="width"],
+.email-window-modal .modal-content[style*="height"] {
+  max-height: calc(100vh - 16px) !important;
+}
+
+.email-window-modal .email-window-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  /* Explicit basis of 0 makes the body grow to fill remaining space rather
+     than its content's intrinsic height (which was capping the thread). */
+  flex-basis: 0 !important;
+  max-height: none !important;
+  overflow: auto !important;
+  overscroll-behavior: contain;
+}
+
+/* Make the inner panes actually grow to fill the fullscreen container
+   instead of staying at their natural size. The body owns the remaining
+   height below the header; the admin-card + grid then expand into it. */
+#email-lib-modal.email-lib-fullscreen .modal-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#email-lib-modal.email-lib-fullscreen .modal-body > .admin-card {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+#email-lib-modal.email-lib-fullscreen .doclib-grid {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+
+.email-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg);
+  opacity: 0.5;
+  min-width: 50px;
+  text-align: right;
+}
+
+.email-field input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--fg);
+  outline: none;
+}
+
+.email-field input:focus {
+  border-color: var(--accent, #4a9eff);
+}
+
+.email-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.email-draft-btn {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.email-draft-btn:hover { background: var(--hover-bg, rgba(255,255,255,0.05)); }
+
+.email-draft-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Email inbox list ── */
+.email-body { border-top: 1px solid var(--border); }
+
+.email-folder-bar { padding: 4px 8px; border-bottom: 1px solid var(--border); }
+
+.email-folder-select {
+  background: transparent; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--fg); font-size: 11px; padding: 2px 6px; cursor: pointer; width: 100%; height: 26px;
+}
+
+.email-list { overflow-y: auto; max-height: 400px; }
+
+.email-item {
+  display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px;
+  cursor: pointer; border-bottom: 1px solid var(--border); position: relative; transition: background 0.1s;
+}
+
+.email-item:hover { background: var(--hover-bg, rgba(255,255,255,0.03)); }
+
+.email-item:hover .email-menu-btn { opacity: 0.5; }
+
+.email-item-spam { opacity: 0.4; }
+
+.email-item-spam:hover { opacity: 0.75; }
+
+.email-tag-spam {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: color-mix(in srgb, var(--accent, var(--red)) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 30%, transparent);
+  color: var(--accent, var(--red));
+  border-radius: 10px; padding: 1px 6px; font-size: 9px; font-weight: 600;
+  text-transform: lowercase; letter-spacing: 0.3px;
+}
+
+.email-spam-unflag {
+  background: none; border: none; color: inherit; cursor: pointer;
+  padding: 0 2px; font-size: 10px; line-height: 1; opacity: 0.6;
+}
+
+.email-spam-unflag:hover { opacity: 1; color: var(--fg); }
+
+/* Unread state is now a subtle icon, not full styling */
+.email-done-check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; background: transparent;
+  border: 1.5px solid var(--border); color: transparent;
+  flex-shrink: 0; cursor: pointer; transition: all 0.15s;
+  margin-right: 4px;
+}
+
+.email-done-check:hover { border-color: var(--accent, #4a9eff); }
+
+.email-done-check.active { background: var(--accent, #4a9eff); border-color: var(--accent, #4a9eff); color: #fff; }
+
+.email-done-check.active svg { display: block; }
+
+.email-done-check svg { display: none; }
+
+.email-item.email-auto-done-flash { animation: email-auto-done-row 1.2s ease-out; }
+
+.email-item.email-auto-done-flash .email-done-check { animation: email-auto-done-check 0.6s ease-out; }
+
+#email-lib-grid .doclib-card.email-card-unread:not(.email-card-expanded) {
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 58%, var(--border)) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent, var(--red)) 24%, transparent),
+    0 0 10px -4px color-mix(in srgb, var(--accent, var(--red)) 55%, transparent);
+}
+
+#email-lib-grid .doclib-card.email-card-unread:not(.email-card-expanded):hover {
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 76%, var(--border)) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent, var(--red)) 32%, transparent),
+    0 0 12px -3px color-mix(in srgb, var(--accent, var(--red)) 65%, transparent);
+}
+
+.email-delete-busy > :not(.email-delete-overlay) {
+  opacity: 0.42;
+  transition: opacity 0.12s ease;
+}
+
+.email-delete-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--panel, var(--bg)) 82%, transparent);
+  pointer-events: none;
+}
+
+.email-delete-overlay .spinner-whirlpool,
+.email-delete-overlay .ai-spinner-whirlpool {
+  margin: 0 !important;
+}
+
+/* Library card done check — always visible, subtle icon next to title */
+.email-card-done {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; cursor: pointer;
+  transition: opacity 0.15s, color 0.15s;
+  opacity: 0.15; color: var(--fg);
+}
+
+/* Hover preview: bright accent when unchecked so the user sees a check coming.
+   Once active, keep the exact same color on hover so the done state does not
+   visually flip while the pointer is still over it. */
+.email-card-done:not(.active):hover {
+  opacity: 0.75 !important;
+  color: var(--accent-primary, var(--red));
+}
+
+.email-card-done.active { opacity: 0.95; color: var(--accent-primary, var(--red)); }
+
+.email-card-done.active:hover {
+  opacity: 0.95 !important;
+  color: var(--accent-primary, var(--red)) !important;
+}
+
+.email-card-done.just-checked {
+  animation: check-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Reverse animation when un-checking — shrink-and-fade so the click is
+   obviously felt even when hover styling otherwise keeps the icon visible. */
+.email-card-done.just-unchecked {
+  animation: check-unpop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.email-card-reader {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  font-size: 12px;
+}
+
+.email-card-reader-loading {
+  background: color-mix(in srgb, var(--bg) 86%, #000 14%);
+  border-top: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  min-height: 240px;
+}
+
+.email-card-reader-loading .spinner-whirlpool,
+.email-card-reader-loading .ai-spinner-whirlpool {
+  opacity: 0.85;
+}
+
+.email-skeleton-line,
+.email-skeleton-dot {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--fg) 12%, transparent) 0%,
+    color-mix(in srgb, var(--fg) 22%, transparent) 45%,
+    color-mix(in srgb, var(--fg) 12%, transparent) 90%
+  );
+  background-size: 220% 100%;
+  animation: email-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.email-skeleton-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+}
+
+.email-list-skeleton {
+  position: absolute;
+  inset: 0;
+  padding: 10px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.email-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+}
+
+.email-skeleton-row.compact { min-height: 42px; opacity: 0.72; }
+
+.email-skeleton-lines {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.email-skeleton-line.title { width: min(88%, 520px); height: 9px; }
+
+.email-skeleton-line.meta { width: min(72%, 420px); height: 7px; opacity: 0.78; }
+
+.email-skeleton-line.date { width: 72px; height: 7px; flex: 0 0 auto; opacity: 0.72; }
+
+.email-reader-skeleton {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  flex: 1;
+}
+
+.email-reader-skeleton-header {
+  min-height: 60px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+}
+
+.email-reader-skeleton-header .chip { width: 132px; height: 18px; }
+
+.email-reader-skeleton-header .chip.short { width: 78px; }
+
+.email-reader-skeleton-header .action {
+  width: 38px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 6px;
+}
+
+.email-reader-skeleton-header .action + .action { margin-left: 0; }
+
+.email-reader-skeleton-atts {
+  display: flex;
+  gap: 7px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.email-reader-skeleton-atts .attachment { width: 126px; height: 20px; border-radius: 6px; }
+
+.email-reader-skeleton-atts .attachment.short { width: 88px; }
+
+.email-reader-skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 16px 14px;
+  min-height: 340px;
+  flex: 1;
+}
+
+.email-reader-skeleton-body .body { width: 88%; height: 9px; border-radius: 6px; }
+
+.email-reader-skeleton-body .body.wide { width: 100%; }
+
+.email-reader-skeleton-body .body.medium { width: 94%; }
+
+.email-reader-skeleton-body .body.short { width: 62%; }
+
+.email-reader-skeleton-body .body.gap {
+  margin-top: 12px;
+  width: 78%;
+}
+
+.email-search-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.email-search-progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary, var(--red));
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-primary, var(--red)) 35%, transparent);
+  animation: email-search-progress-pulse 1.2s ease-in-out infinite;
+}
+
+/* Per-email unread dot in the expanded reader's title row. Background color
+   stays inline (per-sender hue from _senderColor), but the dot gets a soft
+   breathing glow + a 4px vertical nudge so it reads as centered against
+   the row instead of riding the baseline. */
+.email-card-unread-dot {
+  position: relative;
+  top: 0;
+  animation: email-card-unread-breathe 2.2s ease-in-out infinite;
+}
+
+.email-reader-header {
+  display: flex;
+  flex-direction: row;
+  /* Top-align so when the user expands To/Cc, the action cluster
+     stays on the From line above instead of drifting to the middle. */
+  align-items: flex-start;
+  gap: 12px;
+  /* Taller header so the 44px-tall absolute-positioned action
+     cluster inside the From row has vertical breathing room. */
+  padding: 8px 14px;
+  min-height: 60px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  /* Containing block for the absolute action cluster. */
+  position: relative;
+  /* Container so the action-cluster wrap breakpoints below react to
+     the reader's own width instead of the page viewport. */
+  container-type: inline-size;
+  container-name: emailreader;
+}
+
+.email-reader-header > .email-reader-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Meta block stacks the From / To / Cc rows; each row keeps label
+   tight to its chip(s) on the same line. The recipient-chips inside
+   scroll horizontally so long lists slide under the floating action
+   cluster on the right. */
+.email-reader-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  /* Positioning context for the absolute action cluster. */
+  position: relative;
+}
+
+.email-reader-meta .recipient-chips {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 4px;
+  max-width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.email-reader-meta .recipient-chips::-webkit-scrollbar { display: none; }
+
+.email-reader-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.email-reader-meta-row.email-reader-meta-from {
+  position: relative;
+  /* Never wrap "From:" off the chip onto its own line — the chip
+     span has overflow-x scroll built in, so it shrinks/scrolls
+     instead of jumping to a new row. */
+  flex-wrap: nowrap;
+  min-width: 0;
+  /* Reserve space on the right for the 1-row cluster in wide mode. */
+  padding-right: 320px;
+}
+
+.email-reader-meta > .email-reader-meta-details {
+  min-width: 0;
+  padding-right: 320px;
+}
+
+.email-reader-meta > .email-reader-actions-inline {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 4px;
+  z-index: 2;
+  /* Sit visually above the From baseline like the lifted overlay. */
+  margin-top: -9px;
+}
+
+/* Recipient chip span keeps at least ~4 characters visible (60px)
+   before the overflow-scroll kicks in, so the sender / first
+   recipient name is always partly readable. */
+.email-reader-meta .recipient-chips {
+  min-width: 60px;
+}
+
+/* Docked panes used to flow the cluster under the meta; now they
+   share the same absolute-top-right + wrap behaviour as undocked.
+   No docked-specific overrides — the container queries below pick
+   the right cluster size and overlay state from the reader width. */
+/* Accent-tint the email-search (from-sender) magnifying glass so
+   it reads as a deliberate search action against the other icons. */
+.email-reader-actions-inline .reader-icon-btn[data-act="from-sender"] svg {
+  color: var(--accent-primary, var(--red));
+  stroke: var(--accent-primary, var(--red));
+}
+
+/* Gmail-style chevron — collapsed view shows only From; the chevron
+   reveals the To/Cc details inline below. */
+.email-reader-meta-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: -3px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.email-reader-meta-toggle:hover { opacity: 1; background: color-mix(in srgb, currentColor 10%, transparent); }
+
+.email-reader-meta-toggle svg { transition: transform 0.15s ease; }
+
+.email-reader-meta-toggle.open svg { transform: rotate(180deg); }
+
+.email-reader-meta-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.email-reader-meta-details[hidden] { display: none; }
+
+/* When expanded, To/Cc details live in the header flow. A floating popover
+   can overlap the folded attachment strip directly beneath the header. */
+.email-reader-meta > .email-reader-meta-details:not([hidden]) {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  margin-top: 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  z-index: 1;
+}
+
+.email-reader-header > .email-reader-meta {
+  flex: 1; min-width: 0;
+  opacity: 0.85; line-height: 1.7; font-size: 11px;
+}
+
+/* Reserve a fixed label width so From: / To: / Cc: all align and
+   their chips start at the same x. */
+.email-reader-meta-row strong { opacity: 0.5; font-weight: 600; flex-shrink: 0; min-width: 36px; }
+
+.email-reader-meta-row > span {
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.email-reader-actions {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
+  flex-shrink: 0;
+  margin-top: -4px;
+}
+
+/* Two stacked rows: Reply/Reply-all/Forward on the From line, with
+   Summary/AI-reply/More on a row below. */
+.email-reader-actions-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.email-reader-atts {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.email-reader-body {
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  min-height: 0;
+  background: var(--panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--border) 65%, transparent);
+  /* Use the OS colored emoji font for incoming mail content */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif,
+               "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla";
+  font-variant-emoji: emoji;
+}
+
+/* When rendering HTML emails, override pre-wrap so layout works */
+.email-reader-body.html-body {
+  white-space: normal;
+}
+
+.email-reader-body.html-body img { max-width: 100%; height: auto; }
+
+.email-reader-body.html-body [style*="max-width:600px"],
+.email-reader-body.html-body [style*="max-width: 600px"],
+.email-reader-body.html-body [style*="width:600px"],
+.email-reader-body.html-body [style*="width: 600px"],
+.email-reader-body.html-body table[width="600"] {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.email-reader-body.html-body [align="center"] {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.email-reader-body .email-inline-image-placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(100%, 360px);
+  min-height: 58px;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  color: var(--fg);
+  vertical-align: middle;
+}
+
+.email-reader-body .email-inline-image-placeholder.is-error {
+  border-color: color-mix(in srgb, var(--red, #ff5555) 45%, var(--border));
+}
+
+.email-inline-image-skeleton {
+  width: 58px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--fg) 7%, transparent) 0%,
+    color-mix(in srgb, var(--fg) 13%, transparent) 45%,
+    color-mix(in srgb, var(--fg) 7%, transparent) 90%
+  );
+  background-size: 220% 100%;
+  animation: email-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.email-inline-image-icon {
+  opacity: 0.52;
+  display: inline-flex;
+}
+
+.email-inline-image-placeholder.is-loading .email-inline-image-icon {
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in srgb, var(--fg) 20%, transparent);
+  border-top-color: var(--accent, var(--red));
+  border-radius: 50%;
+  animation: email-inline-image-spin 0.75s linear infinite;
+}
+
+.email-inline-image-placeholder.is-loading .email-inline-image-icon svg {
+  display: none;
+}
+
+.email-inline-image-info {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.email-inline-image-title {
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-inline-image-sub {
+  font-size: 10px;
+  opacity: 0.58;
+}
+
+.email-inline-image-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.email-inline-image-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-2px);
+  height: 24px;
+  line-height: 1;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  color: inherit;
+  font: inherit;
+  font-size: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.email-inline-image-btn:hover {
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 55%, var(--border));
+  color: var(--accent-primary, var(--red));
+}
+
+.email-inline-image-download-btn {
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
+}
+
+.email-inline-image-btn[data-email-img-load] {
+  transform: translateY(-4px);
+}
+
+.email-inline-image-loaded {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.email-inline-image-frame {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: min(360px, 100%);
+  min-height: 90px;
+  margin: 6px 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--fg) 7%, transparent) 0%,
+    color-mix(in srgb, var(--fg) 13%, transparent) 45%,
+    color-mix(in srgb, var(--fg) 7%, transparent) 90%
+  );
+  background-size: 220% 100%;
+}
+
+.email-inline-image-frame.is-loading {
+  animation: email-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.email-inline-image-frame .email-inline-image-loaded {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.email-inline-image-frame .email-inline-image-loaded.is-visible {
+  opacity: 1;
+}
+
+.email-inline-image-load-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  margin: -4px 0 6px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  font-size: 11px;
+}
+
+.email-inline-image-load-all span {
+  opacity: 0.68;
+  margin-right: auto;
+}
+
+.email-inline-image-load-all button {
+  transform: translateY(-4px);
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  color: inherit;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.email-inline-image-load-all button:hover {
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 55%, var(--border));
+  color: var(--accent-primary, var(--red));
+}
+
+.email-reader-body.html-body table { max-width: 100%; border-collapse: collapse; }
+
+/* Gmail Drive chips arrive with inline width/height/border/padding from
+   Gmail's composer (border:1px solid #ddd, white-ish bg assumed). On a
+   dark theme that reads as a near-invisible white box. Override with a
+   theme-aware chip surface so the filename + icon stay visible. */
+.email-reader-body .gmail_chip,
+.email-reader-body .gmail_drive_chip {
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px;
+  padding: 6px 10px !important;
+  margin: 6px 0 !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.email-reader-body .gmail_chip:hover,
+.email-reader-body .gmail_drive_chip:hover {
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 45%, var(--border)) !important;
+  background: color-mix(in srgb, var(--accent, var(--red)) 6%, transparent);
+}
+
+.email-reader-body .gmail_chip a,
+.email-reader-body .gmail_drive_chip a {
+  color: var(--accent, var(--red)) !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  max-width: 100% !important;
+}
+
+.email-reader-body .gmail_chip a > span,
+.email-reader-body .gmail_drive_chip a > span {
+  color: var(--fg) !important;
+  font-size: 12px;
+}
+
+.email-reader-body .gmail_chip img,
+.email-reader-body .gmail_drive_chip img {
+  width: 16px !important;
+  height: 16px !important;
+  padding-right: 0 !important;
+  filter: none;
+}
+
+/* Preserve highlights — sender's intent (snark, callouts) gets through, but
+   rendered with a theme-aware accent so it stays legible in any theme. The
+   sanitizer rewrites `<span style="background:yellow">…</span>` to <mark>. */
+.email-reader-body mark {
+  background: color-mix(in srgb, var(--accent, var(--red)) 22%, transparent);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* "Other from this sender" — slide-out panel inside the email reader. */
+.email-card-reader.from-sender-open { position: relative; }
+
+.email-card-reader.from-sender-open .email-reader-body { padding-right: 292px; }
+
+/* Force any phone/sms/date/address auto-link to inherit the body color so
+   numbers don't render as bright-blue browser-default text inside email
+   content. format-detection in <head> turns off detection on iOS, but some
+   mail clients ship pre-wrapped tel: links — those still need taming. */
+.email-reader-body a[href^="tel:"],
+.email-reader-body a[href^="sms:"],
+.email-reader-body a[x-apple-data-detectors],
+.email-bubble-body a[href^="tel:"],
+.email-bubble-body a[href^="sms:"],
+.email-bubble-body a[x-apple-data-detectors],
+.email-thread-turn-body a[href^="tel:"],
+.email-thread-turn-body a[href^="sms:"],
+.email-thread-turn-body a[x-apple-data-detectors] {
+  color: inherit !important;
+  text-decoration: none !important;
+  pointer-events: auto;
+}
+
+.email-reader-body a,
+.email-bubble-body a,
+.email-thread-turn-body a {
+  color: var(--accent-primary, var(--red));
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  cursor: pointer;
+}
+
+.email-reader-body a:hover,
+.email-bubble-body a:hover,
+.email-thread-turn-body a:hover { opacity: 0.8; }
+
+/* Summary block — same band chrome as Attachments / Signature / Earlier-
+   thread (no accent tint, no rounded corners, no leading star icon). The
+   only difference is the label, so all collapsible sections in the email
+   reader look uniform. */
+.email-summary-panel {
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 30%, transparent);
+  border-radius: 6px;
+}
+
+.email-summary-header {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  color: var(--accent-primary, var(--red)); opacity: 0.85;
+  margin-bottom: 6px; letter-spacing: 0.4px;
+}
+
+.email-summary-content {
+  font-size: 12px; line-height: 1.5; color: var(--fg); white-space: pre-wrap;
+}
+
+/* Click-to-fold: tap the summary header to collapse/expand. The chevron
+   flips when collapsed, the content hides + the panel's bottom margin
+   tightens so a folded summary doesn't take up vertical space. */
+.email-summary-toggle { cursor: pointer; user-select: none; }
+
+.email-summary-toggle:hover { opacity: 1; }
+
+.email-summary-panel.collapsed { padding-bottom: 6px; margin-bottom: 6px; }
+
+.email-summary-panel.collapsed .email-summary-header { margin-bottom: 0; }
+
+.email-summary-panel.collapsed .email-summary-content { display: none; }
+
+.email-summary-panel.collapsed .email-summary-chevron { transform: rotate(-90deg); }
+
+.email-translation-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+}
+
+.email-translation-busy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.email-translation-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
+.email-translation-loading-text {
+  opacity: 0.68;
+  font-size: 12px;
+}
+
+.email-translation-panel .email-translation-icon {
+  color: var(--accent-primary, var(--red));
+}
+
+.email-translation-panel { margin-top: 0; }
+
+/* Foldable attachments — same fold-on-click UX as the summary panel. */
+.email-reader-atts-wrap {
+  display: flex; flex-direction: column;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.email-reader-atts-header {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 14px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  color: var(--fg); opacity: 0.7;
+  cursor: pointer; user-select: none;
+  letter-spacing: 0.4px;
+}
+
+.email-attachments-download-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 9%, transparent);
+  color: var(--accent-primary, var(--red));
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.email-attachments-download-all:hover {
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 60%, transparent);
+}
+
+.email-attachments-download-all.is-loading {
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.email-attachments-download-all .spinner-whirlpool,
+.email-attachments-download-all .ai-spinner-whirlpool {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 !important;
+}
+
+.email-reader-atts-wrap > .email-reader-atts {
+  border-bottom: none !important;
+}
+
+.email-reader-atts-wrap.collapsed > .email-reader-atts,
+.email-reader-atts-wrap.collapsed > .email-reader-atts-hidden-note { display: none; }
+
+.email-reader-atts-wrap.collapsed .email-summary-chevron { transform: rotate(-90deg); }
+
+.email-reader-atts-hidden-note {
+  padding: 0 14px 6px;
+  font-size: 10px;
+  color: var(--fg-muted);
+  opacity: 0.65;
+}
+
+/* Quote fold = neutral full-width band (matches attachments header). */
+.email-quote-fold {
+  margin: 0 -14px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0;
+  outline: 0 !important;
+  box-shadow: none !important;
+  /* Neutralise any rich-mail HTML that injects a yellow / colored bg
+     or border onto blockquote ancestors. */
+  background: transparent !important;
+}
+
+/* Same neutralisation for any element nested inside the fold (the inner
+   blockquote, paragraphs, divs from the original message). Yellow outlines
+   in Outlook-style mails almost always come from inline border-color or
+   box-shadow on these. */
+.email-quote-fold *,
+.email-quote-fold *::before,
+.email-quote-fold *::after {
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.email-quote-fold blockquote,
+.email-quote-fold blockquote[type="cite"],
+.email-quote-fold table,
+.email-quote-fold div {
+  border-color: var(--border) !important;
+  /* Override the .msg blockquote rule that sets a colored left border via
+     var(--hl-function) — that's where the "yellow" outline was coming from. */
+  border-left-color: var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* JS marks the last .email-quote-fold in each email body with this class,
+   so it's the only one that gets rounded bottom corners. Avoids :has()
+   browser-support quirks. */
+.email-quote-fold.last-fold {
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+/* ── Threaded reply turns (recursive parser) ── */
+.email-thread-turn-body {
+  padding: 8px 14px 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Nested turns indent slightly + get their own card outline so the
+   reply hierarchy is obvious at a glance. */
+.email-thread-turn-body .email-thread-turn {
+  margin: 8px 0 4px;
+  margin-left: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 2%, transparent);
+}
+
+.email-thread-turn-body .email-thread-turn .email-fold-summary {
+  padding: 5px 10px;
+}
+
+.email-thread-turn-body .email-thread-turn .email-thread-turn-body {
+  padding: 6px 10px 2px;
+  font-size: 11px;
+}
+
+/* The original blockquote's left stripe is redundant when each turn is
+   already a card — drop it inside thread bodies. */
+.email-thread-turn-body blockquote {
+  border-left: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Flatten the inner blockquote: no rounded corners, no yellow tint
+   inherited from rich-mail HTML. Subtle left border + neutral bg. */
+.email-quote-fold blockquote {
+  margin: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-left: 2px solid var(--border);
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit;
+}
+
+/* "From … · Date …" chip appended to the summary line */
+.email-fold-summary-meta {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Sender name is the primary affordance — slightly larger and not all-caps so
+   "From: Sam" feels like a click target on the person, not a section label. */
+.email-fold-summary-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.1px;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.email-quote-fold .email-fold-summary {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 14px;
+  cursor: pointer; list-style: none;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.4px;
+  /* Force neutral page colors regardless of any rich-mail HTML wrapping us */
+  color: var(--fg) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+  font-style: normal !important;
+  opacity: 0.7;
+  user-select: none;
+  border-radius: 0;
+}
+
+.email-quote-fold .email-fold-summary > * {
+  /* Prevent inline-color attrs on summary children (icon SVGs, meta span)
+     from picking up a forced color from ancestor email HTML. */
+  color: inherit !important;
+  background: transparent !important;
+}
+
+.email-quote-fold .email-fold-summary::-webkit-details-marker,
+.email-quote-fold .email-fold-summary::marker { display: none; content: none; }
+
+.email-quote-fold .email-fold-summary { list-style: none; list-style-type: none; }
+
+.email-quote-fold .email-fold-summary:hover { opacity: 1; }
+
+.email-quote-fold[open] .email-summary-chevron { transform: rotate(180deg); }
+
+.email-quote-fold[open] > *:not(summary) {
+  padding: 8px 14px 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* Signature fold = clean full-width band like the attachments header. No
+   accent overlay, no rounded corners — neutral chrome so it doesn't look
+   like the AI Summary panel. */
+.email-sig-fold {
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--fg) 18%, transparent);
+  background: transparent;
+  border-radius: 0;
+}
+
+.email-sig-fold .email-fold-summary {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 0;
+  cursor: pointer;
+  list-style: none; list-style-type: none;
+  font-size: 9.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--fg); opacity: 0.55;
+  user-select: none;
+}
+
+/* Suppress the global `summary::before { content: '▶' }` rule from
+   leaking the chevron-emoji onto our header — we use the trailing SVG
+   chevron only. */
+.email-sig-fold .email-fold-summary::before,
+.email-quote-fold .email-fold-summary::before { content: none !important; }
+
+.email-sig-fold .email-fold-summary::-webkit-details-marker,
+.email-sig-fold .email-fold-summary::marker { display: none; content: none; }
+
+.email-sig-fold .email-fold-summary:hover { opacity: 1; }
+
+.email-sig-fold[open] .email-summary-chevron { transform: rotate(180deg); }
+
+.email-sig-fold[open] > *:not(summary) {
+  padding: 6px 0 0;
+  border-top: 0;
+  font-size: 11px; line-height: 1.45;
+  color: color-mix(in srgb, var(--fg) 75%, transparent);
+  white-space: pre-wrap;
+}
+
+/* ── Chat-bubble layout for email threads ──
+   Each parsed turn becomes a bubble. The active account's outgoing
+   replies align right (mine); everyone else aligns left (theirs).
+   Bubbles read top→bottom oldest→newest, like a chat. */
+.email-bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0 8px;
+  margin: 0 -2px;
+}
+
+.email-bubble-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.email-bubble-row.email-bubble-mine {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+.email-bubble-row.email-bubble-theirs {
+  /* Avatar lives at the END of the row (right side) so the bubble has
+     the full left edge to start from — gives bigger reading width and
+     a cleaner left margin. */
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.email-bubble {
+  flex: 0 1 auto;
+  max-width: 90%;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  font-size: 12.5px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+}
+
+.email-bubble-mine .email-bubble {
+  background: color-mix(in srgb, var(--bubble-accent, var(--fg)) 10%, var(--bg));
+  border-color: color-mix(in srgb, var(--bubble-accent, var(--border)) 35%, var(--border));
+  border-radius: 14px 14px 4px 14px;
+}
+
+.email-bubble-theirs .email-bubble {
+  background: color-mix(in srgb, var(--bubble-accent, var(--fg)) 5%, var(--panel));
+  border-color: color-mix(in srgb, var(--bubble-accent, var(--border)) 25%, var(--border));
+  border-radius: 14px 14px 14px 4px;
+}
+
+.email-bubble-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 10.5px;
+  margin-bottom: 4px;
+  opacity: 0.7;
+  min-width: 0;
+}
+
+.email-bubble-mine .email-bubble-head { justify-content: flex-end; }
+
+.email-bubble-author {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50ch;
+}
+
+.email-bubble-date {
+  opacity: 0.7;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.email-bubble-body {
+  white-space: normal;
+  /* Reader-controlled typography — override sender's inline styles AND
+     attribute-based sizing (<font size>, <big>, <small>, h1..h6). Weight
+     and italics still pass through for emphasis. */
+  font-family: inherit;
+  font-size: var(--email-body-size, 13.5px);
+  line-height: 1.5;
+}
+
+.email-bubble-body *:not(code):not(pre):not(kbd):not(samp) {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Heading tags carry browser-default font-size multipliers that bypass
+   `font-size: inherit` when an inline style was set; pin them too. */
+.email-bubble-body h1,
+.email-bubble-body h2,
+.email-bubble-body h3,
+.email-bubble-body h4,
+.email-bubble-body h5,
+.email-bubble-body h6,
+.email-bubble-body big,
+.email-bubble-body small,
+.email-bubble-body font {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.email-bubble-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Sender HTML often wraps content in a fixed-width <div style="width:600px">
+   or <table width="600">. Override so content fills the reader's available
+   width — otherwise resizing the email window doesn't reflow anything. */
+.email-bubble-body,
+.email-bubble-body * {
+  max-width: 100% !important;
+}
+
+.email-bubble-body div[style*="width"],
+.email-bubble-body table[width],
+.email-bubble-body table {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.email-bubble-body blockquote {
+  border-left: 2px solid var(--border) !important;
+  margin: 4px 0 !important;
+  padding: 4px 10px !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: inherit;
+}
+
+.email-bubble-body table {
+  max-width: 100%;
+}
+
+.email-bubble-avatar {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  /* Per-sender color set inline (`style="background:hsl(...)"`); this
+     fallback only kicks in when JS hasn't assigned one. */
+  background: color-mix(in srgb, var(--fg) 14%, transparent);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  user-select: none;
+}
+
+/* Sig folds inside a bubble: tone down — no full-bleed band, since the
+   bubble already provides the chrome. */
+.email-bubble-body .email-sig-fold {
+  margin: 8px 0 0;
+  border-top: 1px dashed var(--border);
+}
+
+.email-bubble-body .email-sig-fold .email-fold-summary,
+.email-bubble-body .email-quote-fold .email-fold-summary {
+  padding: 4px 0;
+}
+
+.email-bubble-body .email-sig-fold[open] > *:not(summary),
+.email-bubble-body .email-quote-fold[open] > *:not(summary) {
+  padding: 6px 0 0;
+  border-top: 0;
+}
+
+/* Senders embed inline colors in their HTML that clash with the app's
+   theme (black text in dark mode, white backgrounds, yellow highlights,
+   etc.). Force theme colors on every descendant of the rendered body so
+   emails inherit the user's chosen palette regardless of what the
+   sender's mail client emits. */
+.email-reader-body *,
+.email-bubble-body * {
+  color: var(--fg) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.email-reader-body a,
+.email-bubble-body a,
+.email-thread-turn-body a {
+  color: var(--hl-function) !important;
+}
+
+.email-reader-body a[href^="tel:"],
+.email-reader-body a[href^="sms:"],
+.email-reader-body a[href^="x-apple-data-detectors:"],
+.email-reader-body a[x-apple-data-detectors],
+.email-bubble-body a[href^="tel:"],
+.email-bubble-body a[href^="sms:"],
+.email-bubble-body a[href^="x-apple-data-detectors:"],
+.email-bubble-body a[x-apple-data-detectors],
+.email-thread-turn-body a[href^="tel:"],
+.email-thread-turn-body a[href^="sms:"],
+.email-thread-turn-body a[href^="x-apple-data-detectors:"],
+.email-thread-turn-body a[x-apple-data-detectors] {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-decoration: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+}
+
+.email-avatar {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--accent, #4a9eff);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; flex-shrink: 0; margin-top: 1px;
+}
+
+.email-item-content { flex: 1; min-width: 0; overflow: hidden; }
+
+.email-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+
+.email-sender { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.email-sender-clickable { cursor: pointer; }
+
+.email-sender-clickable:hover { text-decoration: underline; }
+
+.email-filter-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 4px 8px 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 40%, transparent);
+  color: var(--fg);
+}
+
+.email-filter-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.email-filter-chip-clear {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.6;
+}
+
+.email-filter-chip-clear:hover { opacity: 1; }
+
+.email-date { font-size: 10px; opacity: 0.5; white-space: nowrap; flex-shrink: 0; }
+
+.email-subject { font-size: 11px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+
+.email-sent-chip,
+.email-folder-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 14px;
+  padding: 0 5px;
+  margin-right: 5px;
+  border-radius: 999px;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  color: var(--accent, var(--red));
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 28%, transparent);
+  vertical-align: 1px;
+}
+
+.email-folder-chip {
+  color: color-mix(in srgb, var(--fg) 75%, transparent);
+  background: rgba(127, 127, 127, 0.13);
+  border-color: rgba(127, 127, 127, 0.24);
+}
+
+.email-tags { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; position: relative; top: -2px; }
+
+.email-card-expanded .email-tags,
+.email-card-reader .email-tags { top: -4px; }
+
+.email-card-expanded .email-card-titlerow .email-tag,
+.email-card-expanded .email-card-titlerow .email-tags-more {
+  transform: translateY(-2px);
+}
+
+.email-tags-collapsed .email-tag-extra { display: none; }
+
+.email-tags-expanded .email-tag-extra { display: inline-block; }
+
+.email-tags-more {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.16);
+  color: var(--fg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  height: 15px;
+  min-width: 23px;
+  padding: 1px 4px;
+  font-family: inherit;
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.68;
+  position: relative;
+  top: 0;
+}
+
+.email-tags-more:hover { opacity: 0.92; }
+
+.email-tags-expanded .email-tags-more svg { transform: rotate(180deg); }
+
+.email-tags-toggle-inline {
+  position: absolute;
+  right: 94px;
+  top: 50%;
+  transform: translateY(calc(-50% - 3px));
+  height: 20px !important;
+  min-width: 34px;
+  padding: 2px 6px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  opacity: 0.62;
+  border-radius: 999px !important;
+}
+
+.email-tags-toggle-inline.active {
+  opacity: 1;
+  color: var(--accent, var(--red));
+  background: color-mix(in srgb, var(--accent, var(--red)) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 36%, transparent);
+}
+
+.email-tag {
+  display: inline-block;
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: rgba(127, 127, 127, 0.18);
+  color: var(--fg);
+}
+
+.email-tag-clickable {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  display: inline-block;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 500;
+  height: auto !important;
+  min-height: 0 !important;
+  line-height: 1;
+  margin: 0;
+  padding: 2px 5px !important;
+  text-transform: uppercase;
+  vertical-align: baseline;
+}
+
+.email-tag-clickable:hover {
+  filter: brightness(1.12);
+}
+
+.email-tag-work { background: rgba(96, 165, 250, 0.22); color: #60a5fa; }
+
+.email-tag-personal { background: rgba(74, 222, 128, 0.22); color: #4ade80; }
+
+.email-tag-finance { background: rgba(250, 204, 21, 0.22); color: #facc15; }
+
+.email-tag-bills { background: rgba(251, 146, 60, 0.22); color: #fb923c; }
+
+.email-tag-receipt { background: rgba(251, 146, 60, 0.22); color: #fb923c; }
+
+.email-tag-travel { background: rgba(167, 139, 250, 0.22); color: #a78bfa; }
+
+.email-tag-newsletter { background: rgba(148, 163, 184, 0.22); color: #94a3b8; }
+
+.email-tag-promo,
+.email-tag-marketing { background: rgba(244, 114, 182, 0.22); color: #f472b6; }
+
+.email-tag-notification { background: rgba(148, 163, 184, 0.22); color: #94a3b8; }
+
+.email-tag-security { background: rgba(248, 113, 113, 0.22); color: #f87171; }
+
+.email-tag-urgent { background: color-mix(in srgb, var(--color-error, #e06c75) 25%, transparent); color: var(--color-error, #e06c75); font-weight: 600; }
+
+.email-tag-reply-soon { background: rgba(240, 173, 78, 0.22); color: #f0ad4e; }
+
+.email-tag-social { background: rgba(56, 189, 248, 0.22); color: #38bdf8; }
+
+.email-tag-shopping { background: rgba(236, 72, 153, 0.22); color: #ec4899; }
+
+.email-tag-calendar { background: rgba(167, 139, 250, 0.22); color: #a78bfa; }
+
+.email-menu-wrap { position: relative; flex-shrink: 0; }
+
+.email-menu-btn {
+  background: none; border: none; color: var(--fg); opacity: 0; cursor: pointer;
+  padding: 4px; transition: opacity 0.15s;
+  position: relative; top: 0px;
+}
+
+.email-dropdown {
+  position: absolute; right: 0; top: 100%; z-index: 9999;
+  min-width: 120px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); padding: 4px 0;
+}
+
+.email-loading { padding: 16px; text-align: center; font-size: 12px; opacity: 0.5; }
+
+.email-load-more { padding: 8px; text-align: center; }
+
+.email-load-more-btn {
+  background: transparent; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--fg); padding: 4px 12px; font-size: 11px; cursor: pointer;
+}
+
+.email-load-more-btn:hover { background: var(--hover-bg, rgba(255,255,255,0.05)); }
+
+.email-spinner {
+  display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%; animation: email-spin 0.6s linear infinite;
+  vertical-align: middle; margin-right: 4px;
+}
+
+/* Email section doesn't collapse — hide the auto-injected chevron */
+#email-section .section-collapse-btn { display: none !important; }
+
+/* Compose + button: show on section hover, spin on button hover */
+#email-compose-btn {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+#email-section:hover #email-compose-btn {
+  opacity: 0.7;
+}
+
+#email-compose-btn:hover {
+  opacity: 1 !important;
+  background: none !important;
+}
+
+#email-compose-btn svg {
+  width: 11px;
+  height: 11px;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#email-compose-btn .list-item-plus-label {
+  top: calc(50% - 0.5px);
+  color: var(--fg);
+  font-size: 10px;
+}
+
+#email-compose-btn:hover svg {
+  transform: rotate(180deg) scale(1.15);
+}
+
+/* Satisfying send effect: email slides out to the right and fades */
+.email-send-fx {
+  animation: email-send-slide 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+/* Email modal title unread badge — small accent pill next to "Email". */
+.email-lib-unread-badge {
+  display: inline-block;
+  font-size: 0.55em;
+  font-weight: 700;
+  background: var(--accent-primary, var(--red));
+  color: var(--bg, #1a1a1a);
+  border-radius: 9px;
+  padding: 1px 7px;
+  margin-left: 8px;
+  vertical-align: 2px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.email-lib-unread-badge:hover { filter: brightness(1.08); }
+
+#email-lib-modal.email-lib-unread-active .doclib-modal-content {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent, var(--red)) 22%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent, var(--red)) 18%, transparent),
+    var(--shadow-lg, 0 18px 50px rgba(0, 0, 0, 0.35));
+}
+
+#email-lib-modal .email-lib-header-actions .minimize-btn {
+  position: relative;
+  left: 6px;
+}
+
+/* Per-card prev/next nav — only visible on the currently expanded card,
+   sits at the right of the title row next to the done check. */
+.email-card-nav-arrows {
+  display: none;
+  margin-left: auto;
+  gap: 2px;
+  flex-shrink: 0;
+  align-items: center;
+  position: relative;
+  top: -3px;
+  left: 19px;
+}
+
+.email-card-header-menu {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--fg);
+  opacity: 0.65;
+  cursor: pointer;
+  position: relative;
+  top: -3px;
+  transition: opacity 0.12s, background 0.12s;
+}
+
+.email-card-header-menu:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.email-card-nav-btn {
+  background: none;
+  border: none;
+  color: var(--fg);
+  opacity: 0.65;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.12s, background 0.12s;
+}
+
+.email-card-nav-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.email-card-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+.email-field { display: flex; align-items: center; gap: 8px; position: relative; }
+
+.email-field label { font-size: 11px; font-weight: 600; color: var(--fg); opacity: 0.5; min-width: 50px; text-align: right; flex-shrink: 0; }
+
+.email-field input {
+  flex: 1; width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 4px;
+  padding: 5px 8px; font-size: 13px; font-family: inherit; color: var(--fg); outline: none;
+  min-width: 0;
+}
+
+.email-field input:focus { border-color: var(--accent, #4a9eff); }
+
+/* Cc toggle and attach button are absolute so they don't steal width
+   from the To input. Anchored to the input's vertical center + 4px
+   nudge so the label sits where the user expects it. */
+.email-field .email-cc-toggle {
+  position: absolute; right: 6px; top: calc(50% + 1px); transform: translateY(-50%);
+  z-index: 2;
+}
+
+/* Accent-tinted prefix label (To / Cc / Bcc / Subject) sitting at
+   the left edge of each input. Replaces both the old <label> tag
+   and the all-placeholder accent. */
+.email-field .email-field-prefix {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-primary, var(--red));
+  pointer-events: none;
+  z-index: 1;
+  line-height: 1;
+}
+
+.email-field input { padding-left: 44px; }
+
+.email-field #doc-email-subject { padding-left: 64px; }
+
+/* X close button inside Cc / Bcc fields. */
+.email-field .email-cc-close {
+  position: absolute; right: 6px; top: calc(50% + 1px); transform: translateY(-50%);
+  background: none; border: none; color: var(--fg);
+  opacity: 0.4; cursor: pointer;
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  padding: 0;
+  z-index: 2;
+}
+
+.email-field .email-cc-close:hover {
+  opacity: 1;
+  color: var(--accent, var(--red));
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.email-field input { padding-right: 60px; }
+
+.email-field #doc-email-cc, .email-field #doc-email-bcc { padding-right: 32px; }
+
+.email-field #doc-email-subject { padding-right: 8px; }
+
+.email-more-menu {
+  position: absolute; bottom: 100%; right: 0; margin-bottom: 6px;
+  min-width: 160px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; box-shadow: 0 -4px 12px rgba(0,0,0,0.2); padding: 4px;
+  z-index: 100;
+}
+
+.email-send-btn {
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 20%, transparent);
+  color: var(--accent-primary, var(--red));
+  border: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 50%, transparent);
+  border-radius: 6px;
+  padding: 0 14px; height: 28px; font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: all 0.15s; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+/* Split send button: [ Send │ ▾ ] — the caret drops the send-options menu UP. */
+.email-send-split { position: relative; display: inline-flex; }
+
+.email-send-split .email-send-main {
+  border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none;
+}
+
+.email-send-split .email-send-caret {
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+  padding: 0 8px; gap: 0;
+  /* its left border is the single divider between the two halves */
+  border-left: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 50%, transparent);
+}
+
+.email-send-split .email-send-caret svg { transition: transform 0.15s ease; }
+
+.email-send-split .email-send-caret[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+.email-send-btn svg { flex-shrink: 0; }
+
+.email-send-btn:hover {
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 30%, transparent);
+  border-color: var(--accent-primary, var(--red));
+}
+
+.email-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.email-draft-btn {
+  background: none; border: 1px solid var(--border);
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  border-radius: 6px;
+  padding: 0 12px; height: 28px; font-size: 11px; cursor: pointer;
+  font-family: inherit; transition: all 0.15s; white-space: nowrap;
+}
+
+.email-draft-btn:hover { border-color: var(--fg); color: var(--fg); }
+
+.email-draft-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.email-discard-btn {
+  background: transparent;
+  /* Dim the label text via color-mix instead of `opacity:0.6` on the whole
+     button — opacity multiplies through to the SVG and washes out the accent
+     X glyph. Per-element color dimming keeps the X at full accent strength. */
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 14px; font-size: 12px; cursor: pointer; font-family: inherit;
+}
+
+/* The ✕ glyph itself reads in accent. */
+.email-discard-btn svg { color: var(--accent-primary, var(--red)); opacity: 1; }
+
+.email-discard-btn:hover { opacity: 1; color: var(--red, #e55); border-color: var(--red, #e55); }
+
+.email-more-wrap { display: inline-flex; }
+
+.email-attachments {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 0 58px;
+}
+
+.email-attachment-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 8px; font-size: 11px; background: var(--hover-bg, rgba(255,255,255,0.05));
+  border: 1px solid var(--border); border-radius: 12px; color: var(--fg);
+  text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  max-width: 200px; min-width: 0;
+}
+
+.email-attachment-chip:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+}
+
+.email-attachment-chip.is-expanded {
+  max-width: 90vw;
+}
+
+.email-attachment-chip > span:not(.att-size):not(.email-attachment-open) {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1 1 auto; min-width: 0;
+}
+
+.email-attachment-chip.is-expanded > span:not(.att-size):not(.email-attachment-open) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-attachment-chip .att-size { opacity: 0.5; font-size: 10px; flex-shrink: 0; }
+
+.email-attachment-chip-muted { opacity: 0.65; }
+
+.email-attachment-chip-muted:hover { opacity: 1; }
+
+.email-attachment-chip-related {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+/* "Open in editor" launch icon — same prominent style on desktop AND mobile
+   (was 24px / dim / no border on desktop, easy to miss). Accent-tinted
+   background + border makes it read as a real action. */
+.email-attachment-open {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 22px; padding: 0 9px; border-radius: 999px;
+  margin-left: 6px; flex: 0 0 auto;
+  min-width: 52px; justify-content: center;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--accent-primary, var(--red));
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 40%, transparent);
+  cursor: pointer; transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.email-attachment-open svg,
+.email-attachment-open > svg {
+  width: 12px; height: 12px;
+  opacity: 0.9;
+}
+
+.email-attachment-open:hover {
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 22%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 70%, transparent);
+}
+
+.email-attachment-open.is-loading {
+  pointer-events: none;
+  opacity: 0.82;
+}
+
+.email-attachment-open.is-loading .spinner-whirlpool,
+.email-attachment-open.is-loading .ai-spinner-whirlpool {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 !important;
+  position: relative;
+  top: 0;
+}
+
+.email-attachment-open-label { line-height: 1; }
+
+.email-attachment-chip.is-expanded .email-attachment-open {
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.email-attachment-chip.is-expanded .email-attachment-open-label {
+  display: none;
+}
+
+/* Compose attachment chips (when sending new email) */
+.email-compose-atts {
+  display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 6px 0 0 0;
+}
+
+.email-compose-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: min(240px, 100%);
+  padding: 4px 4px 4px 8px; font-size: 11px;
+  background: var(--hover-bg, rgba(255,255,255,0.05));
+  border: 1px solid var(--border); border-radius: 12px; color: var(--fg);
+}
+
+.email-compose-chip .compose-chip-name { max-width: 180px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.email-compose-chip .att-size { opacity: 0.5; font-size: 10px; flex-shrink: 0; }
+
+.email-compose-chip .compose-chip-remove {
+  background: none; border: none; color: var(--fg); opacity: 0.5;
+  font-size: 16px; line-height: 1; padding: 0 4px; cursor: pointer;
+  flex-shrink: 0;
+}
+
+.email-compose-chip .compose-chip-remove:hover { opacity: 1; color: var(--red, #e55); }
+
+.email-odysseus-attach-menu {
+  position: fixed;
+  z-index: 10050;
+  width: 300px;
+  max-width: calc(100vw - 16px);
+  max-height: min(420px, calc(100vh - 16px));
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+  overflow: hidden;
+}
+
+.email-odysseus-attach-local {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 35%, var(--border));
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 9%, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.email-odysseus-attach-local:hover {
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 55%, var(--border));
+}
+
+.email-odysseus-attach-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin: 7px 0;
+}
+
+.email-odysseus-attach-tabs button {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--fg);
+  opacity: 0.72;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.email-odysseus-attach-tabs button.active {
+  opacity: 1;
+  color: var(--accent-primary, var(--red));
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 8%, transparent);
+}
+
+.email-odysseus-attach-tabs button svg {
+  flex-shrink: 0;
+}
+
+.email-odysseus-attach-search-wrap {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -1px 0 7px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  color: color-mix(in srgb, var(--fg) 48%, transparent);
+}
+
+.email-odysseus-attach-search-wrap:focus-within {
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 45%, var(--border));
+  color: var(--accent-primary, var(--red));
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 6%, transparent);
+}
+
+.email-odysseus-attach-search {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 11px;
+}
+
+.email-odysseus-attach-search::placeholder {
+  color: color-mix(in srgb, var(--fg) 38%, transparent);
+}
+
+.email-odysseus-attach-list {
+  max-height: 320px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.email-odysseus-attach-row {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.email-odysseus-attach-row:hover {
+  background: var(--hover-bg, rgba(255,255,255,0.06));
+  border-color: var(--border);
+}
+
+.email-odysseus-attach-row.is-selected {
+  background: color-mix(in srgb, var(--accent-primary, var(--red)) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 45%, var(--border));
+}
+
+.email-odysseus-attach-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.email-odysseus-attach-row.is-selected .email-odysseus-attach-dot {
+  border-color: var(--accent-primary, var(--red));
+  background: var(--accent-primary, var(--red));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--red)) 18%, transparent);
+}
+
+.email-odysseus-attach-icon,
+.email-odysseus-attach-thumb {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+  overflow: hidden;
+}
+
+.email-odysseus-attach-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.email-odysseus-attach-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.email-odysseus-attach-title,
+.email-odysseus-attach-meta {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-odysseus-attach-title {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.email-odysseus-attach-meta {
+  font-size: 10px;
+  line-height: 1.15;
+  opacity: 0.52;
+}
+
+.email-odysseus-attach-empty {
+  padding: 14px 8px;
+  color: var(--muted, #888);
+  font-size: 11px;
+  text-align: center;
+}
+
+.email-odysseus-attach-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  background: var(--bg);
+  position: sticky;
+  bottom: 0;
+}
+
+.email-odysseus-attach-count {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted, #888);
+  font-size: 11px;
+}
+
+.email-odysseus-attach-selected {
+  height: 28px;
+  min-width: 72px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary, var(--red)) 45%, var(--border));
+  background: var(--accent-primary, var(--red));
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.email-odysseus-attach-selected svg {
+  flex-shrink: 0;
+}
+
+.email-odysseus-attach-selected:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.email-odysseus-attach-selected.is-loading {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.email-cc-toggle {
+  background: none; border: none; color: var(--fg);
+  opacity: 0.4; font-size: 11px; cursor: pointer;
+  padding: 4px 8px; font-family: inherit;
+}
+
+.email-cc-toggle:hover {
+  opacity: 1;
+  color: var(--accent, #4a9eff);
+  background: none !important;
+}
+
+.email-autocomplete {
+  position: absolute; top: 100%; left: 58px; right: 0; z-index: 1000;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2); max-height: 240px; overflow-y: auto;
+  margin-top: 2px;
+}
+
+.email-ai-reply-btn {
+  background: none;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px; height: 28px; font-size: 11px; cursor: pointer;
+  font-family: inherit; transition: all 0.15s;
+  display: inline-flex; align-items: center; white-space: nowrap;
+}
+
+.email-ai-reply-btn:hover {
+  border-color: var(--accent, #4a9eff);
+  color: var(--accent, #4a9eff);
+}
+
+.email-ai-reply-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Align select/new buttons in popup library toolbar */
+#email-lib-select-btn, #email-lib-refresh-btn, #email-lib-compose-btn { position: relative; top: -4px; }
+
+/* Select + Refresh sit slightly lower than Compose on desktop. */
+#email-lib-select-btn, #email-lib-refresh-btn { top: -2px; }
+
+/* Envelope icon picks up the user's accent so the primary action is
+   easy to spot at any size. The SVG already uses stroke=currentColor,
+   so a color: rule on the svg propagates. */
+#email-lib-compose-btn svg { color: var(--accent, var(--red)); }
+
+.email-undone-toggle.active,
+.email-attach-toggle.active {
+  background: color-mix(in srgb, var(--accent, var(--red)) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 50%, transparent);
+  color: var(--accent, var(--red));
+  font-weight: 600;
+}
+
+/* Inline attachment-filter toggle nested inside the search input. The
+   input has padding-right:34px set inline so its text doesn't slide
+   under the button. */
+.email-search-wrap { display: flex; align-items: center; }
+
+/* Keep the email search input and the adjacent "Select" button identical in
+   height regardless of base-vs-mobile overrides — pin both explicitly. */
+.email-search-row .memory-search-input {
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+.email-search-row .email-search-select-btn {
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.email-attach-toggle-inline {
+  position: absolute !important;
+  right: 4px !important;
+  top: 50%;
+  transform: translateY(calc(-50% - 3px));
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0.55;
+}
+
+.email-attach-toggle-inline:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 10%, transparent) !important;
+}
+
+.email-attach-toggle-inline.active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent, var(--red)) 16%, transparent) !important;
+  color: var(--accent, var(--red)) !important;
+}
+
+/* Inline undone-toggle nested inside the search input, sits LEFT of the
+   attach toggle. Same visual treatment. */
+.email-undone-toggle-inline {
+  position: absolute !important;
+  right: 34px !important;
+  top: 50%;
+  transform: translateY(calc(-50% - 3px));
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0.55;
+}
+
+.email-reminder-toggle-inline {
+  position: absolute !important;
+  right: 64px !important;
+  top: 50%;
+  transform: translateY(calc(-50% - 3px));
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0.55;
+}
+
+.email-search-wrap.email-reminder-bell-hidden .memory-search-input {
+  padding-right: 66px !important;
+}
+
+.email-reminder-toggle-inline:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 10%, transparent) !important;
+}
+
+.email-reminder-toggle-inline:hover svg {
+  animation: none !important;
+  transform: none !important;
+}
+
+.email-reminder-toggle-inline.active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent, var(--red)) 16%, transparent) !important;
+  color: var(--accent, var(--red)) !important;
+}
+
+.email-undone-toggle-inline:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 10%, transparent) !important;
+}
+
+.email-undone-toggle-inline.active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent, var(--red)) 16%, transparent) !important;
+  color: var(--accent, var(--red)) !important;
+}
+
+/* Round (circular) toggles in the search bar, matching the app's default icon
+   buttons. Always fully visible (not dimmed until hover). */
+.email-attach-toggle-inline,
+.email-undone-toggle-inline,
+.email-reminder-toggle-inline { border-radius: 50% !important; opacity: 1 !important; }
+
+.email-attach-toggle:not(.email-attach-toggle-inline):hover svg {
+  animation: email-undone-jiggle 0.45s ease-in-out;
+  transform-origin: 50% 50%;
+}
+
+.email-undone-toggle:not(.email-undone-toggle-inline):hover svg,
+.email-compose-jiggle:hover svg {
+  animation: email-undone-jiggle 0.45s ease-in-out;
+  transform-origin: 50% 50%;
+}
+
+.email-accounts-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 6px;
+}
+
+.email-accounts-row .doclib-desc { flex-shrink: 0; }
+
+/* Only the direct-child compose button gets pushed right; nested chips
+   inside #email-lib-accounts pack to the left as normal flex items. */
+.email-accounts-row > .memory-toolbar-btn { flex-shrink: 0; margin-left: auto; }
+
+/* Account chips collapse to a single horizontally-scrollable strip
+   at every breakpoint, instead of stacking onto multiple rows when
+   there are several accounts. The compose "New" button stays outside
+   the scroller (it's a sibling of #email-lib-accounts inside
+   .email-accounts-row) so it remains pinned on the right. */
+#email-lib-accounts {
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+#email-lib-accounts::-webkit-scrollbar { display: none; height: 0; }
+
+#email-lib-accounts > * { flex-shrink: 0; scroll-snap-align: start; }
+
+.email-accounts-loading-whirlpool {
+  width: 14px;
+  height: 14px;
+  margin: 3px 4px 0 1px;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.email-accounts-loading-label {
+  font-size: 10px;
+  opacity: 0.55;
+  position: relative;
+  top: 2px;
+  white-space: nowrap;
+}
+
+.email-loading-with-label {
+  /* Fill the email list grid so the spinner lands in the middle of the
+     email window rather than the top of the empty list section. */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  pointer-events: none;
+}
+
+#email-lib-grid { position: relative; }
+
+#email-lib-grid .date-section-header {
+  padding: 10px 5px 3px;
+}
+
+#email-lib-modal .email-lib-sync-status {
+  flex: 0 0 auto;
+  min-height: 14px;
+  padding: 1px 4px 0;
+  font-size: 10.5px;
+  line-height: 1.2;
+  text-align: center;
+  opacity: 0.58;
+  color: var(--muted-text, currentColor);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  top: 4px;
+}
+
+#email-lib-modal.email-reading .email-lib-sync-status {
+  display: none;
+}
+
+/* Nudge the subject + sender/date meta line 4px right inside each
+   email card so they don't sit flush against the read/unread/done
+   markers on the left. Includes #email-lib-modal selector to
+   override the expanded card's `padding: 4px 0 6px` shorthand
+   which was zeroing out the title's padding-left. */
+#email-lib-grid .email-card-titlerow,
+#email-lib-grid .memory-item-meta,
+#email-lib-modal .doclib-card-expanded .email-card-titlerow {
+  padding-left: 4px;
+}
+
+.email-loading-label {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+/* Refresh button now lives top-right in the modal header next to the close X.
+   Borderless (matches the close X), and a fixed square box so the spin and the
+   refresh→checkmark icon swap never change its size or nudge neighbours. */
+.email-lib-header-actions #email-lib-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+}

@@ -1,6 +1,6 @@
 """Regression guard for the frontend error-surfacing follow-up to #1346.
 
-`uploadPending()` in static/js/fileHandler.js used to read `data.files` from the
+`uploadPending()` in web/lib/legacy/fileHandler.js used to read `data.files` from the
 `/api/upload` response without checking `res.ok`, so a non-OK response (429 rate
 limit, 413 too large, …) was swallowed: the files silently vanished and the chat
 sent with no attachments, with no feedback to the user. It now checks `res.ok`
@@ -12,7 +12,7 @@ fix at the source level.
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/fileHandler.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/fileHandler.js"
 
 
 def _upload_pending_body() -> str:

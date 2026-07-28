@@ -9,7 +9,7 @@ guards the durations at the source level.
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/cookbookDownload.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/cookbookDownload.js"
 _MIN_MS = 5000
 
 

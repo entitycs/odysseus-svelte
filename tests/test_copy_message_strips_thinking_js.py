@@ -40,6 +40,7 @@ def _extract_thinking_blocks(text: str) -> dict:
         r"""
         import fs from 'node:fs';
 
+        // Minimal DOM + globals required by markdown.js
         globalThis.window = { location: { origin: 'http://localhost' }, katex: null };
         globalThis.document = {
           readyState: 'loading',
@@ -56,25 +57,43 @@ def _extract_thinking_blocks(text: str) -> dict:
         };
         globalThis.MutationObserver = class { observe() {} };
 
-        let source = fs.readFileSync('./static/js/markdown.js', 'utf8');
+        // Load markdown.js
+        let source = fs.readFileSync('web/lib/legacy/markdown.js', 'utf8');
+
+        // Remove ui.js import entirely
         source = source.replace(
-          /import uiModule from ['"]\.\/ui\.js['"];/,
+          /import\s+[^;]*['"]\.\/ui\.js['"]\s*;/g,
           ''
         );
+
+        // Inline splitTableRow instead of importing tableRow.js
         source = source.replace(
-          /import \{ splitTableRow \} from ['"]\.\/markdown\/tableRow\.js['"];/,
+          /import\s+[^;]*tableRow\.js['"]\s*;/g,
           `function splitTableRow(row) {
-            return (row || '').replace(/^\\s*\\|/, '').replace(/\\|\\s*$/, '').split('|').map(c => c.trim());
+            return (row || '').replace(/^\\s*\\|/, '').replace(/\\|\\s*$/, '')
+              .split('|').map(c => c.trim());
           }`
         );
-        const emojiSource = fs.readFileSync('./static/js/emojiShortcodes.js', 'utf8')
+
+        // Load emojiShortcodes.js and convert it to inline code
+        const emojiSource = fs.readFileSync('web/lib/legacy/emojiShortcodes.js', 'utf8')
           .replace(/^export default .*$/m, '')
           .replace(/export const /g, 'const ')
           .replace(/export function /g, 'function ');
+
+        // Replace ANY import referencing emojiShortcodes.js
         source = source.replace(
-          /import \{ replaceEmojiShortcodes, hasEmojiShortcode \} from ['"]\.\/emojiShortcodes\.js['"];/,
-          () => emojiSource
+          /import\s+[^;]*emojiShortcodes\.js['"]\s*;/g,
+          emojiSource
         );
+
+        // Remove ALL SvelteKit alias imports ($lib/...)
+        source = source.replace(
+          /import\s+[^;]*['"]\$lib\/[^'"]+['"]\s*;/g,
+          ''
+        );
+
+        // Replace escapeHtml reference
         source = source.replace(
           /var escapeHtml = uiModule\.esc;/,
           `var escapeHtml = (value) => String(value ?? '')
@@ -85,12 +104,16 @@ def _extract_thinking_blocks(text: str) -> dict:
             .replace(/'/g, '&#39;');`
         );
 
-        const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(source).toString('base64');
+        // Convert patched source into a data: URL module
+        const moduleUrl = 'data:text/javascript;base64,' +
+          Buffer.from(source).toString('base64');
+
         const mod = await import(moduleUrl);
         const input = JSON.parse(process.argv[1]);
         console.log(JSON.stringify({ out: mod.extractThinkingBlocks(input) }));
         """
     )
+
     result = subprocess.run(
         ["node", "--input-type=module", "-e", script, json.dumps(text)],
         cwd=_REPO,
@@ -98,9 +121,14 @@ def _extract_thinking_blocks(text: str) -> dict:
         timeout=15,
         text=True,
     )
+
     if result.returncode != 0:
-        raise AssertionError(f"node failed:\nSTDERR:\n{result.stderr}\nSTDOUT:\n{result.stdout}")
+        raise AssertionError(
+            f"node failed:\nSTDERR:\n{result.stderr}\nSTDOUT:\n{result.stdout}"
+        )
+
     return json.loads(result.stdout.splitlines()[-1])["out"]
+
 
 
 def test_issue_payload_copy_text_excludes_thinking(node_available):
@@ -162,7 +190,7 @@ def _function_body(text: str, marker: str) -> str:
 
 
 def test_copy_message_text_mirrors_display_pipeline():
-    text = (_REPO / "static/js/chatRenderer.js").read_text(encoding="utf-8")
+    text = (_REPO / "web/lib/legacy/chatRenderer.js").read_text(encoding="utf-8")
     body = _function_body(text, "export function copyMessageText")
     # Mirrors the display path: tool blocks stripped, then thinking extracted.
     assert "extractThinkingBlocks" in body
@@ -171,7 +199,7 @@ def test_copy_message_text_mirrors_display_pipeline():
 
 
 def test_copy_handlers_route_through_copy_message_text():
-    for path, count in (("static/js/chatRenderer.js", 1), ("static/js/slashCommands.js", 1)):
+    for path, count in (("web/lib/legacy/chatRenderer.js", 1), ("web/lib/legacy/slashCommands.js", 1)):
         text = (_REPO / path).read_text(encoding="utf-8")
         assert text.count("copyToClipboard(copyMessageText(") + text.count(
             "copyToClipboard(chatRenderer.copyMessageText("

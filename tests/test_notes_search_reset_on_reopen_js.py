@@ -8,7 +8,7 @@ reset is present in openPanel, beside the existing _editingId reset.
 import re
 from pathlib import Path
 
-SRC = Path("static/js/notes.js").read_text(encoding="utf-8")
+SRC = Path("web/lib/legacy/notes.js").read_text(encoding="utf-8")
 
 
 def _open_panel_body():

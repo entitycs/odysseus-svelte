@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "providers.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "providers.js"
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="node not on PATH")
 
 

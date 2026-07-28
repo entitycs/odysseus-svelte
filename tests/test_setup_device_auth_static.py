@@ -1,10 +1,10 @@
 """Static regressions for `/setup` account sign-in providers."""
 
 from pathlib import Path
-
+import re
 
 _REPO = Path(__file__).resolve().parent.parent
-_SLASH = (_REPO / "static" / "js" / "slashCommands.js").read_text(encoding="utf-8")
+_SLASH = (_REPO / "web" / "lib" / "legacy" / "slashCommands.js").read_text(encoding="utf-8")
 
 
 def _between(src: str, start: str, end: str) -> str:
@@ -38,5 +38,9 @@ def test_setup_chatgpt_subscription_prints_auth_url_without_auto_opening_tab():
     assert "providerKey === 'chatgpt-subscription'" in flow_block
     assert "Open this URL" in flow_block
     assert "authUrl" in flow_block
-    assert 'href="\' + uiModule.esc(authUrl || \'\') + \'"' in flow_block
+    pattern = re.compile(
+        r"href=['\"]\s*\+\s*uiModule\.esc\(authUrl\s*||\s*''\)\s*\+['\"]",
+        re.MULTILINE
+    )
+    assert pattern.search(flow_block), "uimodule uses auth url"
     assert "if (providerKey === 'chatgpt-subscription') return;" in flow_block

@@ -1,7 +1,7 @@
 """Regression for issue #1568 — installing a heavy dependency (vllm) in the
 Cookbook crashes in a "stale — restarting" loop.
 
-The download/install watchdog (static/js/cookbookRunning.js) decides a task is
+The download/install watchdog (web/lib/legacy/cookbookRunning.js) decides a task is
 stalled when its progress signal stays unchanged for STALE_PROGRESS_MS. That
 signal used to be the downloaded-byte counter only, which freezes during the long
 no-byte-counter phases of a dependency install — pip dependency resolution and
@@ -51,7 +51,7 @@ def test_download_phase_uses_byte_counter_and_ignores_animated_tail(node_availab
     only the ETA/spinner keeps animating must yield the SAME signal (so a real
     download stall is still detected)."""
     script = textwrap.dedent("""
-        const { computeProgressSignal } = await import('./static/js/cookbookProgressSignal.js');
+        const { computeProgressSignal } = await import('./web/lib/legacy/cookbookProgressSignal.js');
         // Same downloaded bytes, different animated ETA/spinner in the tail.
         const a = computeProgressSignal('1.81G', null, '73', 'Downloading 73%| 1.81G/2.49G [eta 0:05:11]');
         const b = computeProgressSignal('1.81G', null, '73', 'Downloading 73%| 1.81G/2.49G [eta 0:09:42] -');
@@ -70,7 +70,7 @@ def test_build_phase_progresses_on_new_output(node_available):
     output must change the signal so it isn't falsely declared stale — whereas a
     byte-only signal would read '0' for both and trip the stall timer."""
     script = textwrap.dedent("""
-        const { computeProgressSignal } = await import('./static/js/cookbookProgressSignal.js');
+        const { computeProgressSignal } = await import('./web/lib/legacy/cookbookProgressSignal.js');
         const s1 = computeProgressSignal(null, null, null, 'Building wheel for vllm ... compiling csrc/attention.cu');
         const s2 = computeProgressSignal(null, null, null, 'Building wheel for vllm ... compiling csrc/cache_kernels.cu');
         const hung1 = computeProgressSignal(null, null, null, 'Building wheel for vllm ... (no output)');

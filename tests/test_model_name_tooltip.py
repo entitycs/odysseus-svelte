@@ -3,13 +3,13 @@ two surfaces (the model-picker dropdown items and the chat-header model
 indicator) with no tooltip, so the suffix/variant tag is undiscoverable.
 
 The fix adds a `title` (native hover tooltip) carrying the full name to both
-render sites in static/js/modelPicker.js. The module pulls in browser globals so
+render sites in web/lib/legacy/modelPicker.js. The module pulls in browser globals so
 it can't be imported under node; this guards the two title assignments at source.
 """
 import re
 from pathlib import Path
 
-SRC = (Path(__file__).resolve().parent.parent / "static/js/modelPicker.js").read_text(encoding="utf-8")
+SRC = (Path(__file__).resolve().parent.parent / "web/lib/legacy/modelPicker.js").read_text(encoding="utf-8")
 
 
 def test_dropdown_item_has_title_tooltip():

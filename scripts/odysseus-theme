@@ -28,7 +28,7 @@ import argparse, json, logging, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 _USER_PREFS_PATH = _REPO_ROOT / "data" / "user_prefs.json"
-_THEME_JS = _REPO_ROOT / "static" / "js" / "theme.js"
+_THEME_JS = _REPO_ROOT / "web" / "lib" / "legacy" / "theme.js"
 
 
 def _load_prefs() -> dict:

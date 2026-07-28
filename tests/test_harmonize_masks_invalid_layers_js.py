@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "editor" / "harmonize-masks.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "editor" / "harmonize-masks.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

@@ -1,0 +1,335 @@
+/* ── Layout ── */
+
+    /* Top bar — session meta + incognito, single row */
+    .chat-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 2;
+      padding: 5px 0 0;
+      min-height: 25px;
+      box-sizing: border-box;
+    }
+
+.chat-top-bar::after {
+      content: none;
+    }
+
+.chat-new-btn {
+      position: absolute;
+      right: 7px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--fg);
+      opacity: 0.6;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.08s, background 0.08s, left 0.15s, right 0.15s;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+.chat-new-btn:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+/* Session meta — sits at top of chat area, scrolls with content */
+    .chat-meta-overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      transform: translateY(calc(-50% - 2px));
+      font-size: 0.75em;
+      line-height: 1;
+      /* 70% mix keeps the chat title clearly above the WCAG AA 4.5:1
+         contrast threshold (40% only reached ~2.8:1). */
+      color: color-mix(in srgb, var(--fg) 70%, transparent);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      pointer-events: none;
+    }
+
+.chat-meta-overlay > * {
+      pointer-events: auto;
+    }
+
+.chat-meta-overlay #current-meta {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+.chat-meta-overlay:hover {
+      color: color-mix(in srgb, var(--fg) 75%, transparent);
+    }
+
+.chat-meta-overlay:empty,
+    .chat-meta-overlay:not(:has(#current-meta:not(:empty))) {
+      display: none;
+    }
+
+#chat-form button[type="submit"] { height:38px; }
+
+.chat-container {
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      padding:0 16px;
+      overflow:hidden;
+      position:relative;
+      min-height:0;
+      min-width:0;
+      margin-top:8px;
+      margin-bottom: 0;
+      transition: margin-left 160ms cubic-bezier(0.22, 0.61, 0.36, 1),
+                  margin-right 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+.chat-meta { font-size:12px; color:color-mix(in srgb, var(--fg) 60%, transparent); margin-bottom:6px; }
+
+.chat-history {
+      display:flex;
+      flex-direction:column;
+      flex:1;
+      overflow-y:auto;
+      overflow-x:hidden;
+      overscroll-behavior-y: none;
+      margin-bottom:8px;
+      white-space:normal;
+      min-height:0;
+      --chat-max: 800px;
+      padding-left: max(0px, calc((100% - var(--chat-max)) / 2));
+      padding-right: max(12px, calc((100% - var(--chat-max)) / 2 + 12px));
+    }
+
+.chat-history > * {
+      flex: 0 0 auto;
+    }
+
+/* When welcome is active, push input bar up toward center */
+    .chat-container .chat-input-bar {
+      transition: margin 0.3s ease, max-width 0.3s ease;
+    }
+
+.chat-container.welcome-active .chat-input-bar {
+      margin-bottom:30vh;
+      margin-left:auto;
+      margin-right:auto;
+      max-width: 800px;
+      width: 100%;
+    }
+
+.chat-queued-bubble-host {
+      order: 2147483647;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+    }
+
+#chat-form { display:none; }
+
+/* Unified chat input bar */
+    .chat-input-bar {
+      background: var(--input-bg, var(--panel));
+      border: 1px solid var(--input-border, var(--border));
+      border-radius: 16px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+
+.chat-input-top {
+      width: 100%;
+      position: relative;
+    }
+
+.chat-input-top > .model-picker-wrap {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 250;
+      transform-origin: top right;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      will-change: opacity, transform;
+    }
+
+.chat-input-top > .model-picker-wrap.model-picker-autohide {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px) scale(0.96);
+    }
+
+.chat-input-bar textarea#message {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--fg);
+      min-height: 24px;
+      max-height: 200px;
+      padding: 0;
+      font-family: inherit;
+      transition: height 0.12s ease-out;
+    }
+
+.chat-input-bar textarea#message::placeholder {
+      color: color-mix(in srgb, var(--fg) 35%, transparent);
+    }
+
+.chat-input-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+/* Progressive shrinkage: as the chat input bar gets narrow, sacrifice
+       chrome before the typing area. First the Agent/Chat toggle drops out,
+       then the model picker — textarea + send button always stay. Container
+       queries so it responds to *bar width*, not viewport width (the bar
+       can be in a split pane). */
+    .chat-input-bar { container-type: inline-size; container-name: chatbar; }
+
+.chat-input-left {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      min-width: 0;
+      flex: 1;
+    }
+
+/* Collapsible buttons shrink away; collapsed ones disappear */
+    .chat-input-left > .input-icon-btn {
+      flex-shrink: 0;
+    }
+
+.chat-input-left > .input-icon-btn.toolbar-collapsed {
+      display: none !important;
+    }
+
+/* Always keep overflow wrapper visible and leftmost */
+    .chat-input-left > .overflow-wrapper {
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+.chat-input-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+/* Message count badge in the chat-meta header (next to the title).
+       Auto-hides when empty so a brand-new chat doesn't show "0 msgs". */
+    .chat-meta-count {
+      font-size: inherit;
+      font-weight: 400;
+      color: color-mix(in srgb, var(--fg) 35%, transparent);
+      white-space: nowrap;
+      user-select: none;
+      margin-left: 6px;
+    }
+
+.chat-meta-count:empty { display: none; }
+
+/* Eval-prompts picker — only shown during compare; absolute top-right
+       inside .chat-input-top, matching .model-picker-wrap's slot. */
+    .chat-input-top > .cmp-eval-wrap {
+      position: absolute;
+      top: -2px; right: 0;
+      z-index: 2;
+    }
+
+/* Expected-answer panel — floats as its own little window above the
+       chat-input-bar. Distinct surface, padded, drop-shadow, slightly
+       lifted so it reads as a separate UI element, not part of the input. */
+    .chat-input-bar:has(.cmp-eval-expected) { position: relative; }
+
+.chat-container.compare-active {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+      animation: compare-enter 0.3s ease-out;
+    }
+
+.chat-container.compare-active .chat-input-bar {
+      margin-bottom: 0;
+    }
+
+.chat-container.compare-active #model-picker-wrap {
+      display: none !important;
+    }
+
+/* Custom preset modal — inherits from .modal base class */
+
+/* Unified chat input area */
+.chat-input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chat-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-input-form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+/* Disable entrance animations when loading chat history (bulk render) */
+.chat-history.no-animate .msg {
+  animation: none;
+}

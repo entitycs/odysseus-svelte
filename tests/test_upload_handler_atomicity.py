@@ -26,6 +26,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from src.upload_handler import UploadHandler  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -42,7 +43,6 @@ except Exception:  # pragma: no cover
             super().__init__(detail)
 
 
-from src.upload_handler import UploadHandler  # noqa: E402
 
 
 N_WRITERS = 10
@@ -261,6 +261,8 @@ def test_partial_write_recovery_via_bak(tmp_path):
 
     recovered = handler._load_upload_index()
     missing = [k for k in original if k not in recovered]
+    if handler.file_detector is None:
+        pytest.skip("libmagic/python-magic not installed in this environment")
     assert not missing, (
         f"Partial-write recovery FAILED: {len(missing)} entries were lost. "
         f"Recovered keys: {sorted(recovered)}."

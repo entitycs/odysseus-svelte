@@ -1,4 +1,4 @@
-"""Pin the pure hexToRgb helper (static/js/color/hex.js).
+"""Pin the pure hexToRgb helper (web/lib/legacy/color/hex.js).
 
 Driven through `node --input-type=module` (same approach as test_compare_js.py);
 skips when `node` is not installed.
@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "color" / "hex.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "color" / "hex.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

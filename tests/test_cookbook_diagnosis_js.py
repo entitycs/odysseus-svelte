@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-DIAGNOSIS_JS = ROOT / "static" / "js" / "cookbook-diagnosis.js"
+DIAGNOSIS_JS = ROOT / "web" / "lib" / "legacy" / "cookbook-diagnosis.js"
 
 
 def test_repair_kernels_pip_spec_is_shell_quoted():

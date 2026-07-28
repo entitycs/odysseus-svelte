@@ -21,7 +21,7 @@ class _InputParser(HTMLParser):
 
 def _inputs():
     parser = _InputParser()
-    parser.feed((ROOT / "static" / "index.html").read_text(encoding="utf-8"))
+    parser.feed((ROOT / "web" / "routes" / "chat" / "+page.svelte").read_text(encoding="utf-8"))
     return parser.inputs
 
 

@@ -1,4 +1,4 @@
-"""Pin canvasCoords (static/js/editor/canvas-coords.js) against an empty
+"""Pin canvasCoords (web/lib/legacy/editor/canvas-coords.js) against an empty
 touch list. Driven through `node --input-type=module` (same approach as
 tests/test_markdown_table_row_js.py); skips when `node` is missing.
 
@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_MOD = _REPO / "static" / "js" / "editor" / "canvas-coords.js"
+_MOD = _REPO / "web" / "lib" / "legacy" / "editor" / "canvas-coords.js"
 _HAS_NODE = shutil.which("node") is not None
 
 _CANVAS = "{width:800,height:600,getBoundingClientRect:()=>({width:400,height:300,left:100,top:50})}"

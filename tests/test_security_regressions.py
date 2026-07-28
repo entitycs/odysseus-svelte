@@ -11,6 +11,7 @@
 These are pure-function tests — no FastAPI app boot, no DB.
 """
 
+import re
 import sys
 import types
 import json
@@ -133,7 +134,7 @@ def test_readme_native_quickstart_uses_loopback():
 
 def test_ollama_cookbook_runner_does_not_force_public_bind():
     route = Path("routes/cookbook_routes.py").read_text(encoding="utf-8")
-    cookbook_js = Path("static/js/cookbook.js").read_text(encoding="utf-8")
+    cookbook_js = Path("web/lib/legacy/cookbook.js").read_text(encoding="utf-8")
     assert 'OLLAMA_HOST="0.0.0.0:${ODYSSEUS_OLLAMA_PORT}" ollama serve' not in route
     assert 'OLLAMA_HOST="${ODYSSEUS_OLLAMA_HOST}:${ODYSSEUS_OLLAMA_PORT}" ollama serve' in route
     assert '_ollama_default_host = "0.0.0.0" if remote else "127.0.0.1"' in route
@@ -982,7 +983,7 @@ def test_diagnostics_routes_are_admin_gated():
 def test_email_thread_rendering_sanitizes_body_html():
     """Both threaded render paths must run server-parsed body_html through the
     allowlist sanitizer (the flat path already did)."""
-    src = Path(__file__).resolve().parents[1] / "static" / "js" / "emailLibrary.js"
+    src = Path(__file__).resolve().parents[1] / "web" / "lib" / "legacy" / "emailLibrary.js"
     text = src.read_text()
     # every `t.body_html` reference is wrapped by _sanitizeHtml(...)
     assert text.count("t.body_html") == text.count("_sanitizeHtml(t.body_html")
@@ -1080,14 +1081,26 @@ def test_mcp_oauth_config_sanitizes_paths_and_env(tmp_path, monkeypatch):
 
 
 def test_gmail_mcp_preset_uses_contained_oauth_paths():
-    src = Path(__file__).resolve().parents[1] / "static" / "js" / "admin.js"
+    src = Path(__file__).resolve().parents[1] / "web" / "lib" / "legacy" / "admin.js"
     text = src.read_text()
-    preset = text.split('{ name: "Gmail"', 1)[1].split('{ name: "Email (IMAP/SMTP)"', 1)[0]
 
+    gmail_pat = r'\{ name: ["\']Gmail["\']'
+    imap_pat  = r'\{ name: ["\']Email \(IMAP/SMTP\)["\']'
+
+    parts = re.split(gmail_pat, text, maxsplit=1)
+    assert len(parts) == 2
+    after_gmail = parts[1]
+
+    parts = re.split(imap_pat, after_gmail, maxsplit=1)
+    assert len(parts) == 2
+    preset = parts[0]
+
+    # Quote-agnostic checks
     assert "~/.gmail-mcp" not in preset
-    assert 'oauthFile: { dir: "gmail"' in preset
-    assert 'keys_file: "gmail/gcp-oauth.keys.json"' in preset
-    assert 'token_file: "gmail/credentials.json"' in preset
+
+    assert re.search(r'oauthFile:\s*\{\s*dir:\s*["\']gmail["\']', preset)
+    assert re.search(r'keys_file:\s*["\']gmail/gcp-oauth\.keys\.json["\']', preset)
+    assert re.search(r'token_file:\s*["\']gmail/credentials\.json["\']', preset)
 
 
 

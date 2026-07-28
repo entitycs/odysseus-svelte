@@ -1,0 +1,472 @@
+.model-endpoint-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 7px;
+  padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--red) 34%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  color: var(--red);
+  font: inherit;
+  font-size: 0.78em;
+  line-height: 1.45;
+  cursor: pointer;
+  vertical-align: 1px;
+}
+
+.model-endpoint-add-btn:hover {
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+  border-color: color-mix(in srgb, var(--red) 55%, var(--border));
+}
+
+.model-endpoint-add-btn:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.model-endpoint-add-btn.added {
+  color: var(--color-save-green, #4caf50);
+  border-color: color-mix(in srgb, var(--color-save-green, #4caf50) 45%, var(--border));
+  background: color-mix(in srgb, var(--color-save-green, #4caf50) 9%, transparent);
+}
+
+/* Model picker — input bar drop-up */
+    .model-picker-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+.model-picker-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 21px;
+      padding: 0 6px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: inherit;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      /* 65% mix lifts the model label above the WCAG AA 4.5:1 threshold
+         against the dark chat-bar (40% only reached ~2.9:1). */
+      color: color-mix(in srgb, var(--fg) 65%, transparent);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+.model-picker-btn:hover {
+      border-color: var(--border);
+      background: color-mix(in srgb, var(--fg) 8%, transparent);
+      color: var(--fg);
+    }
+
+.model-picker-btn #model-picker-label {
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+.model-picker-btn svg {
+      flex-shrink: 0;
+      opacity: 0.5;
+    }
+
+.model-picker-logo {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: -2px;
+    }
+
+.model-picker-logo svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0.7;
+    }
+
+.model-picker-menu {
+      position: absolute;
+      bottom: calc(100% + 16px);
+      right: 0;
+      z-index: 250;
+      min-width: 260px;
+      max-width: 360px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+      padding: 6px;
+      animation: picker-roll-up 0.2s ease-out;
+      transform-origin: bottom right;
+    }
+
+.model-picker-menu.closing {
+      animation: picker-roll-down 0.15s ease-in forwards;
+    }
+
+.model-picker-menu.hidden { display: none; }
+
+.model-picker-search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 30px;
+      gap: 4px;
+      align-items: center;
+      margin-bottom: 4px;
+      transition: grid-template-columns 0.18s ease, gap 0.18s ease;
+    }
+
+.model-picker-menu.no-models .model-picker-search-row {
+      margin-bottom: 0;
+    }
+
+.model-picker-search-row.searching {
+      grid-template-columns: minmax(0, 1fr) 0px;
+      gap: 0;
+    }
+
+.model-picker-search-row.searching .model-picker-action-btn {
+      opacity: 0;
+      transform: translateX(10px) scale(0.88);
+      pointer-events: none;
+    }
+
+.model-picker-search-wrap {
+      position: relative;
+      min-width: 0;
+    }
+
+.model-picker-menu input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 30px 6px 8px;
+      font-size: 0.82em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: inherit;
+      outline: none;
+      min-width: 0;
+      transition: border-color 0.15s, padding 0.18s ease, background 0.18s ease;
+    }
+
+.model-picker-menu input[type="text"]:focus {
+      border-color: var(--red);
+    }
+
+.model-picker-menu input[type="text"]::placeholder {
+      color: color-mix(in srgb, var(--fg) 30%, transparent);
+    }
+
+.model-picker-refresh-btn {
+      appearance: none;
+      position: absolute;
+      top: 50%;
+      right: 4px;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: color-mix(in srgb, var(--fg) 54%, transparent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      cursor: pointer;
+    }
+
+.model-picker-refresh-btn:hover,
+    .model-picker-refresh-btn:focus-visible {
+      color: var(--fg);
+      background: color-mix(in srgb, var(--fg) 8%, transparent);
+      outline: none;
+    }
+
+.model-picker-refresh-btn:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+
+.model-picker-refresh-btn.spinning svg {
+      animation: model-picker-refresh-spin 0.75s linear infinite;
+    }
+
+.model-picker-action-btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--fg) 4%, transparent);
+      color: color-mix(in srgb, var(--fg) 66%, transparent);
+      cursor: pointer;
+      padding: 0;
+      overflow: hidden;
+      transform: translateX(0) scale(1);
+      transition: opacity 0.16s ease, transform 0.18s ease, border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+.model-picker-action-btn:hover,
+    .model-picker-action-btn:focus-visible {
+      border-color: var(--red);
+      color: var(--fg);
+      background: color-mix(in srgb, var(--red) 10%, var(--panel));
+      outline: none;
+    }
+
+.model-picker-action-btn.primary {
+      color: var(--red);
+      background: color-mix(in srgb, var(--red) 8%, transparent);
+    }
+
+.model-picker-action-btn svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.28s ease;
+    }
+
+.model-picker-action-btn:hover svg,
+    .model-picker-action-btn:focus-visible svg {
+      transform: rotate(90deg);
+    }
+
+.model-picker-list {
+      max-height: min(280px, 50dvh);
+      overflow-y: auto;
+    }
+
+.model-picker-list.is-empty {
+      max-height: 0;
+      overflow: hidden;
+    }
+
+.model-picker-list .model-switch-item {
+      display: flex;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.82em;
+      color: var(--fg);
+      gap: 6px;
+    }
+
+.model-picker-list .model-switch-item:hover {
+      background: color-mix(in srgb, var(--red) 8%, transparent);
+    }
+
+.model-picker-list .model-switch-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 8px;
+      color: color-mix(in srgb, var(--fg) 50%, transparent);
+      font-size: 0.82em;
+    }
+
+.model-picker-list .mp-section-label {
+      font-size: 0.72em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.4;
+      padding: 6px 8px 2px;
+    }
+
+.model-picker-list .mp-section-label:first-child {
+      padding-top: 2px;
+    }
+
+/* Model name takes the slack so the endpoint label + favorite dot sit on the right. */
+    .model-picker-list .model-switch-item .mp-model-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+.model-picker-list .model-switch-item .model-switch-ep {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.9em;
+      opacity: 0.45;
+    }
+
+/* Keyboard navigation highlight (Arrow keys in the search box). */
+    .model-picker-list .model-switch-item.kb-active {
+      background: color-mix(in srgb, var(--red) 14%, transparent);
+    }
+
+/* Inline favorite dot — always visible (works on touch), active when on. */
+    .model-picker-list .mp-fav-dot {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 24px;
+      margin: -5px -8px -5px 8px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: color-mix(in srgb, var(--fg) 22%, transparent);
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1;
+      transition: color 0.15s ease, opacity 0.15s ease, transform 0.12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+.model-picker-list .mp-fav-dot:hover {
+      color: color-mix(in srgb, var(--fg) 68%, transparent);
+    }
+
+.model-picker-list .mp-fav-dot:focus-visible {
+      outline: none;
+      color: color-mix(in srgb, var(--fg) 68%, transparent);
+    }
+
+.model-picker-list .mp-fav-dot.active {
+      color: var(--accent, var(--red));
+      opacity: 1;
+    }
+
+.model-picker-list .mp-fav-dot.active:hover {
+      color: var(--accent, var(--red));
+      opacity: 0.72;
+    }
+
+.model-picker-list .mp-fav-dot.pulse {
+      animation: mpFavPulse 0.32s ease-out;
+    }
+
+/* First-run hint when a large catalog has no Recent/Favorites yet. */
+    .model-picker-list .mp-empty-hint {
+      flex-direction: column;
+      gap: 2px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+
+.model-picker-list .mp-empty-hint .mp-empty-title {
+      font-size: 1.05em;
+      color: color-mix(in srgb, var(--fg) 70%, transparent);
+    }
+
+.model-picker-list .mp-empty-hint .mp-empty-sub {
+      font-size: 0.92em;
+      opacity: 0.7;
+    }
+
+/* Provider group headers */
+    .model-picker-list .mp-provider-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 0.78em;
+      font-weight: 500;
+      color: var(--fg);
+      border-radius: 4px;
+      user-select: none;
+    }
+
+.model-picker-list .mp-provider-header:hover {
+      background: color-mix(in srgb, var(--fg) 6%, transparent);
+    }
+
+.model-picker-list .mp-provider-chevron {
+      display: inline-flex;
+      opacity: 0.4;
+      transition: transform 0.2s, opacity 0.15s;
+      flex-shrink: 0;
+    }
+
+.model-picker-list .mp-provider-header:hover .mp-provider-chevron {
+      opacity: 0.7;
+    }
+
+.model-picker-list .mp-provider-chevron.collapsed {
+      transform: rotate(-90deg);
+    }
+
+.model-picker-list .mp-provider-name { flex: 1; }
+
+.model-picker-list .mp-provider-count { font-size: 0.85em; opacity: 0.4; }
+
+.model-chat-btn {
+      height:32px; padding:0 10px; margin-left:auto;
+    }
+
+/* Nudge the "+ Chat" label down 1px to sit centered in the button. */
+    .model-chat-btn-label {
+      position: relative;
+      top: 1px;
+    }
+
+.model-fav-btn {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid color-mix(in srgb, var(--fg) 22%, transparent);
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      margin-left: 4px;
+    }
+
+.model-fav-btn::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: -10px; right: -10px; bottom: -10px;
+    }
+
+.model-fav-btn:hover {
+      border-color: var(--fg);
+      background: color-mix(in srgb, var(--fg) 27%, transparent);
+      transform: scale(1.3);
+    }
+
+.model-fav-btn.active {
+      background: var(--fg);
+      border-color: var(--fg);
+    }
+
+.model-fav-btn.active:hover {
+      opacity: 0.6;
+    }
+
+.model-search-input {
+      width: 100%;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 0.8rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+
+.model-search-input:focus {
+      border-color: var(--red);
+    }
+
+.model-search-input::placeholder {
+      color: color-mix(in srgb, var(--fg) 30%, transparent);
+    }

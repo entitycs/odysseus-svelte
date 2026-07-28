@@ -11,14 +11,14 @@ chat.js pulls in browser globals so it can't run under node; guard at the source
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/chat.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/chat.js"
 
 
 def _delete_message_body() -> str:
     text = SRC.read_text(encoding="utf-8")
     start = text.index("export async function deleteMessage(")
     rest = text[start:]
-    m = re.search(r"\n  export (async )?function ", rest[1:])
+    m = re.search(r"\n\s*export (async )?function ", rest[1:])
     return rest[: m.start() + 1] if m else rest
 
 

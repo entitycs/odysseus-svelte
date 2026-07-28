@@ -16,7 +16,7 @@ import re
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
-_UI_PATH = _REPO / "static" / "js" / "ui.js"
+_UI_PATH = _REPO / "web" / "lib" / "legacy" / "ui.js"
 
 
 def _read_ui():

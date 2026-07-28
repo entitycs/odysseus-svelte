@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "util" / "ordinal.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "util" / "ordinal.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

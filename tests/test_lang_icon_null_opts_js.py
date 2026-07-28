@@ -1,4 +1,4 @@
-"""Pin langIcon (static/js/langIcons.js) against an explicit null opts.
+"""Pin langIcon (web/lib/legacy/langIcons.js) against an explicit null opts.
 Driven through `node --input-type=module`; skips without node.
 """
 import json
@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "langIcons.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "langIcons.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

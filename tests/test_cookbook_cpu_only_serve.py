@@ -1,6 +1,6 @@
 """Regression guard for issue #1291 - CPU-only serve still emitted GPU-only flags.
 
-The llama.cpp serve command builder (static/js/cookbook.js) added
+The llama.cpp serve command builder (web/lib/legacy/cookbook.js) added
 `--flash-attn on` and exported `GGML_CUDA_ENABLE_UNIFIED_MEMORY=1` from
 independent toggles, so a CPU-only config (`-ngl 0`, often with flash-attn left
 on by an Auto profile) produced a command that mixes "zero GPU layers" with
@@ -14,9 +14,9 @@ the CUDA unified-memory env.
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/cookbook.js"
-SERVE_SRC = Path(__file__).resolve().parent.parent / "static/js/cookbookServe.js"
-ROOT = SRC.parent.parent.parent
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/cookbook.js"
+SERVE_SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/cookbookServe.js"
+ROOT = SRC.parent.parent.parent.parent
 ROUTES_SRC = ROOT / "routes/cookbook_routes.py"
 
 def test_cpu_only_drops_gpu_only_flags():
@@ -41,11 +41,13 @@ def test_diffusers_is_not_blocked_on_windows_dependencies_panel():
 
 def test_diffusers_is_available_only_on_local_windows_serve_panel():
     text = SERVE_SRC.read_text(encoding="utf-8")
-
     assert "function _remoteWindowsDiffusersUnsupported(target)" in text
     assert "return !!(target?.host && target?.platform === 'windows');" in text
-    assert "if (_remoteWindowsDiffusersUnsupported(target)) return [['llamacpp','llama.cpp']];" in text
-    assert "return [['llamacpp','llama.cpp'],['diffusers','Diffusers']];" in text
+    pattern = re.compile(r"if\s*\(\s*_remoteWindowsDiffusersUnsupported\(target\)\)\s*return\s*\[\['llamacpp',\s*'llama.cpp'\]\];", re.MULTILINE)
+    assert pattern.search(text), (
+        "returns 'llamacpp','llama.cpp' on unsupported target"
+    )
+    pattern = re.compile(r"\[\['llamacpp',\s*'llama.cpp'\],\s*\['diffusers',\s*'Diffusers'\]\];", re.MULTILINE)
     assert "Diffusers serving is not supported on remote Windows servers yet." in text
 
 
@@ -60,9 +62,25 @@ def test_windows_diffusers_uses_python_not_python3():
 def test_vllm_blank_swap_omits_swap_space_flag():
     text = SRC.read_text(encoding="utf-8")
 
-    assert "const _swapRaw = (f.swap ?? '').toString().trim().toLowerCase();" in text
-    assert "['0', 'off', 'none', 'false'].includes(_swapRaw)" in text
-    assert "if (_swapRaw && !['0', 'off', 'none', 'false'].includes(_swapRaw)) cmd += ` --swap-space ${_swapRaw}`;" in text
+    # const _swapRaw = (f.swap ?? '').toString().trim().toLowerCase();
+    assert re.search(
+        r"const\s+_swapRaw\s*=\s*\(\s*f\.swap\s*\?\?\s*['\"]\s*['\"]\s*\)"
+        r"\.toString\(\)\.trim\(\)\.toLowerCase\(\)",
+        text,
+    ), "missing _swapRaw initialization"
+    # ['0', 'off', 'none', 'false'].includes(_swapRaw)
+    assert re.search(
+        r"\[\s*['\"]0['\"]\s*,\s*['\"]off['\"]\s*,\s*['\"]none['\"]\s*,\s*['\"]false['\"]\s*\]"
+        r"\.includes\s*\(\s*_swapRaw\s*\)",
+        text,
+    ), "missing includes(_swapRaw) check"
+    # if (_swapRaw && !['0', 'off', 'none', 'false'].includes(_swapRaw)) cmd += ` --swap-space ${_swapRaw}`;
+    assert re.search(
+        r"if\s*\(\s*_swapRaw\s*&&\s*!\s*\[\s*['\"]0['\"]\s*,\s*['\"]off['\"]\s*,\s*['\"]none['\"]\s*,\s*['\"]false['\"]\s*\]"
+        r"\.includes\s*\(\s*_swapRaw\s*\)\s*\)\s*cmd\s*\+\=\s*`[^`]*\$\{\s*_swapRaw\s*\}[^`]*`",
+        text,
+    ), "missing guarded swap-space command"
+
 
 
 def test_serve_preflight_uses_selected_server_not_stale_env_host():
@@ -94,7 +112,11 @@ def test_local_windows_platform_comes_from_backend_host_state():
     assert "hostPlatform" in text
     assert "navigator.platform" not in text
     assert "hostOrTask === 'local'" in text
-    assert "if (hostOrTask === 'local') return _envState.hostPlatform || '';" in text
+    assert re.search(
+        r"if ?(hostOrTask === 'local')\s*return _envState.hostPlatform || '';",
+        text,
+    ), "missing expected host or task return"
+
     assert "return _envState.hostPlatform || _envState.platform || ''" not in text
     assert "s.platform = _envState.hostPlatform || '';" in text
     assert "platform: _envState.hostPlatform || ''" in text

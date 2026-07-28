@@ -17,7 +17,7 @@ def test_backend_status_treats_download_exit_zero_as_completed():
 
 
 def test_background_status_poll_reconciles_into_local_tasks():
-    source = _read("static/js/cookbookRunning.js")
+    source = _read("web/lib/legacy/cookbookRunning.js")
 
     assert "const statusById = new Map(tasks.map(t => [t.session_id, t]));" in source
     assert "const completedByOutput = depDone || downloadDone;" in source
@@ -31,7 +31,7 @@ def test_background_status_poll_reconciles_into_local_tasks():
 
 
 def test_windows_session_commands_use_shared_powershell_wrapper_and_local_log_dir():
-    source = _read("static/js/cookbookRunning.js")
+    source = _read("web/lib/legacy/cookbookRunning.js")
 
     assert "const host = task.remoteHost;" in source
     assert "host ? '$env:TEMP\\\\odysseus-sessions' : '$env:TEMP\\\\odysseus-tmux'" in source
@@ -46,7 +46,7 @@ def test_dep_install_success_recognized_from_exit_sentinel():
     sentinel / pip's "Successfully installed" line, not the HuggingFace
     download markers. The shared helper must key off those, so an install
     whose tmux pane is gone isn't misread as crashed."""
-    source = _read("static/js/cookbookRunning.js")
+    source = _read("web/lib/legacy/cookbookRunning.js")
 
     assert "function _depInstallSucceeded(output) {" in source
     assert "=== Process exited with code" in source
@@ -57,7 +57,7 @@ def test_session_gone_heuristic_honors_dep_install_success():
     """The reconnect loop's session-gone branch (download tasks need an HF
     marker to look successful) must also accept a finished dependency install,
     otherwise a clean pip install with no HF markers is marked crashed."""
-    source = _read("static/js/cookbookRunning.js")
+    source = _read("web/lib/legacy/cookbookRunning.js")
 
     assert "const depInstallSucceeded = !!task.payload?._dep && _depInstallSucceeded(lastOutput);" in source
     # Whitespace-normalized so the check survives line-wrapping/formatting while
@@ -75,7 +75,7 @@ def test_background_poll_recovers_done_for_stopped_dependency_install():
     (its pip package is never in the HF cache the dead-session check inspects),
     the reconciler must recover "done" from the retained output instead of
     downgrading the card to crashed."""
-    source = _read("static/js/cookbookRunning.js")
+    source = _read("web/lib/legacy/cookbookRunning.js")
 
     assert "const combinedOutput = `${task.output || ''}\\n${live.output_tail || ''}`;" in source
     assert "const depDone = !!task.payload?._dep && _depInstallSucceeded(combinedOutput);" in source
@@ -89,7 +89,7 @@ def test_background_poll_recovers_done_for_completed_download():
     DOWNLOAD_OK sentinel instead of downgrading the card to crashed. The
     background poll keys off DOWNLOAD_OK only (not the "/snapshots/" path, which
     can appear mid-stream for multi-file downloads)."""
-    source = _read("static/js/cookbookRunning.js")
+    source = _read("web/lib/legacy/cookbookRunning.js")
 
     normalized = " ".join(source.split())
     assert (
@@ -99,7 +99,7 @@ def test_background_poll_recovers_done_for_completed_download():
 
 
 def test_dependency_install_payload_keeps_env_path_for_refresh():
-    source = _read("static/js/cookbook.js")
+    source = _read("web/lib/legacy/cookbook.js")
 
     assert "env_path: targetEnvPath || ''" in source
 

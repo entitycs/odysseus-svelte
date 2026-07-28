@@ -17,7 +17,7 @@ guard, so both are covered here.
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/skills.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/skills.js"
 
 # The guard the fix introduces inside the card click handler.
 GUARD = re.compile(r"querySelector\(\s*['\"]\.skill-md-editor['\"]\s*\)\s*\)\s*return")

@@ -25,6 +25,7 @@ from routes.research.research_routes import (
     _find_research_path,
     _require_research_path,
 )
+from routes.research.research_helpers import ResearchPathNotOwnedError
 
 
 @pytest.fixture(autouse=True)
@@ -166,7 +167,16 @@ def test_find_owned_returns_none_for_other_owner(tmp_path, monkeypatch):
     _write_research(data_dir, "rp-ownedbybob12", owner="bob")
     monkeypatch.setattr("routes.research_routes.DEEP_RESEARCH_DIR", str(data_dir))
 
-    assert _find_owned_research_path("rp-ownedbybob12", "alice") is None
+    with pytest.raises(ResearchPathNotOwnedError) as exc:
+        _find_owned_research_path("rp-ownedbybob12", "alice")
+    err = exc.value
+
+    # Assert the fields your exception sets
+    assert err.session_id == "rp-ownedbybob12"
+    assert err.owner == "bob"
+
+    # Optional: assert on the message
+    assert "not owned by 'alice'" in str(err)
 
 
 # ---------------------------------------------------------------------------

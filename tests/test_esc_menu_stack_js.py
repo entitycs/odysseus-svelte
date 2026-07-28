@@ -1,4 +1,4 @@
-"""Pin the DOM-free Escape-dismissal registry in static/js/escMenuStack.js.
+"""Pin the DOM-free Escape-dismissal registry in web/lib/legacy/escMenuStack.js.
 
 Driven through `node --input-type=module` so we exercise the real JS without a
 full Vitest/Jest setup (same spirit as test_reply_recipients_js.py). Skips when
@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "escMenuStack.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "escMenuStack.js"
 _HAS_NODE = shutil.which("node") is not None
 _SRC = _HELPER.read_text(encoding="utf-8") if _HELPER.exists() else ""
 

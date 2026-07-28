@@ -1,4 +1,4 @@
-"""Pin matchModelKey (static/js/model/matchKey.js).
+"""Pin matchModelKey (web/lib/legacy/model/matchKey.js).
 
 Driven through `node --input-type=module` (same approach as test_compare_js.py);
 skips when `node` is not installed.
@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "model" / "matchKey.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "model" / "matchKey.js"
 _HAS_NODE = shutil.which("node") is not None
 
 _KEYS = ["gpt-4o", "gpt-4o-mini", "gpt-4", "o1", "o1-mini", "o1-pro", "o3", "o3-mini"]

@@ -27,7 +27,7 @@ def test_censor_pref_falls_back_when_storage_throws():
         globalThis.localStorage = {
           getItem() { throw new Error('blocked'); }
         };
-        const { _prefEnabled } = await import('./static/js/censor.js');
+        const { _prefEnabled } = await import('./web/lib/legacy/censor.js');
         console.log(JSON.stringify({ enabled: _prefEnabled() }));
         """
     )
@@ -41,7 +41,7 @@ def test_censor_pref_reads_enabled_flag():
         globalThis.localStorage = {
           getItem(key) { return key === 'odysseus-sensitive-blur' ? 'on' : null; }
         };
-        const { _prefEnabled } = await import('./static/js/censor.js');
+        const { _prefEnabled } = await import('./web/lib/legacy/censor.js');
         console.log(JSON.stringify({ enabled: _prefEnabled() }));
         """
     )

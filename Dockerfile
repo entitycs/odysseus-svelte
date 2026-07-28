@@ -5,7 +5,7 @@
 # docker/build-realesrgan-wheels.sh for the full rationale.
 FROM python:3.14-slim AS realesrgan-wheels
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+&& rm -rf /var/lib/apt/lists/*
 COPY docker/build-realesrgan-wheels.sh /usr/local/bin/build-realesrgan-wheels.sh
 RUN bash /usr/local/bin/build-realesrgan-wheels.sh /wheels
 
@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     nodejs \
-    npm \
     chromium \
     tmux \
     openssh-client \
@@ -56,20 +55,39 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # /var/run/docker.sock mount). The Debian `docker.io` package ships
 # dockerd but not the client binary on slim, so grab the static client
 # tarball from download.docker.com instead.
-ARG DOCKER_CLI_VERSION=29.6.2
-RUN ARCH="$(dpkg --print-architecture)" \
-    && case "$ARCH" in \
-         amd64) DARCH=x86_64 ;; \
-         arm64) DARCH=aarch64 ;; \
-         *) echo "unsupported arch $ARCH"; exit 1 ;; \
-       esac \
-    && curl -fsSL "https://download.docker.com/linux/static/stable/${DARCH}/docker-${DOCKER_CLI_VERSION}.tgz" \
-       -o /tmp/docker.tgz \
-    && tar -xzf /tmp/docker.tgz -C /tmp \
-    && install -m 0755 /tmp/docker/docker /usr/local/bin/docker \
-    && rm -rf /tmp/docker /tmp/docker.tgz
+# ARG DOCKER_CLI_VERSION=27.5.1
+# RUN ARCH="$(dpkg --print-architecture)" \
+#     && case "$ARCH" in \
+#          amd64) DARCH=x86_64 ;; \
+#          arm64) DARCH=aarch64 ;; \
+#          *) echo "unsupported arch $ARCH"; exit 1 ;; \
+#        esac \
+#     && curl -fsSL "https://download.docker.com/linux/static/stable/${DARCH}/docker-${DOCKER_CLI_VERSION}.tgz" \
+#        -o /tmp/docker.tgz \
+#     && tar -xzf /tmp/docker.tgz -C /tmp \
+#     && install -m 0755 /tmp/docker/docker /usr/local/bin/docker \
+#     && rm -rf /tmp/docker /tmp/docker.tgz
+
+# Install Node 22
+# hadolint ignore=SC3040,DL4006
+RUN set -o pipefail && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs
+
+    # Speed up pnpm by configuring cache + store
+RUN corepack enable
+ENV PNPM_HOME="/usr/local/share/pnpm"
+ENV PNPM_CACHE_DIR="/pnpm-store"
+ENV PNPM_SKIP_METADATA_CHECKS="1"
+
+RUN mkdir -p /pnpm-store
 
 WORKDIR /app
+
+# ---- Cache-friendly dependency layer ----
+COPY package.json pnpm-lock.yaml ./
+
+# Fetch dependencies into the store (super fast)
+RUN pnpm fetch
 
 # Install Python deps first (layer cache). Optional extras (PyMuPDF AGPL, etc.)
 # are opt-in so the default image stays MIT-core; see requirements-optional.txt.
@@ -97,6 +115,9 @@ COPY . .
 
 # Create data directory (mount a volume here for persistence)
 RUN mkdir -p data logs services/cache/search
+
+# Build SvelteKit (Track B)
+RUN pnpm install --frozen-lockfile && rm -rf web-build && pnpm build:app
 
 # Entrypoint that drops to PUID/PGID (default 1000:1000) and repairs
 # ownership on the bind-mounted /app/data and /app/logs. Without this,

@@ -7,7 +7,7 @@ Two guards are pinned here:
    of any ``[CMP] …`` helper session in the session list, so the sidebar /
    ``/api/sessions`` can't be used to map a neutral pane label ("Model A")
    back to its real model.
-2. Frontend: every ``[CMP]`` session name built in ``static/js/compare/`` is
+2. Frontend: every ``[CMP]`` session name built in ``web/lib/legacy/compare/`` is
    guarded by ``state._blindMode`` so blind sessions are named by slot rather
    than by the real model.
 
@@ -74,18 +74,47 @@ def test_compare_prefix_constant_matches_frontend():
 # ── frontend: every [CMP] session name is blind-guarded ────────────────────
 
 def test_compare_session_names_are_blind_guarded():
-    """Every line in static/js/compare/ that builds a '[CMP]' session name
+    """Every line in web/lib/legacy/compare/ that builds a '[CMP]' session name
     must branch on state._blindMode, so a blind comparison is never named
     after its real model. Pins the #1285 fix against regressions."""
-    compare_dir = _REPO / "static" / "js" / "compare"
+    compare_dir = _REPO / "web" / "lib" / "legacy" / "compare"
     assert compare_dir.is_dir(), f"missing {compare_dir}"
+
     offenders = []
+
     for path in sorted(compare_dir.glob("*.js")):
-        for lineno, line in enumerate(
-            path.read_text(encoding="utf-8").splitlines(), 1
-        ):
-            if "'[CMP] '" in line and "_blindMode" not in line:
-                offenders.append(f"{path.name}:{lineno}: {line.strip()}")
+        lines = path.read_text(encoding="utf-8").splitlines()
+
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
+            # Look for the start of a CMP name expression
+            if "'[CMP] '" in line or '"[CMP] "' in line:
+                block = [line]
+                j = i + 1
+
+                # Collect continuation lines until the expression ends
+                # (heuristic: stop at semicolon or closing paren)
+                while j < len(lines) and not lines[j].strip().endswith((";", ")")):
+                    block.append(lines[j])
+                    j += 1
+                if j < len(lines):
+                    block.append(lines[j])
+
+                block_text = "\n".join(block)
+
+                # Check if the entire expression contains a blindMode guard
+                if "_blindMode" not in block_text:
+                    offenders.append(
+                        f"{path.name}:{i+1}: CMP name not blind-guarded:\n{block_text}"
+                    )
+
+                # Skip ahead
+                i = j
+            else:
+                i += 1
+
     assert not offenders, (
         "Compare session names must be blind-guarded (issue #1285):\n"
         + "\n".join(offenders)

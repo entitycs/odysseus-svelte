@@ -1,0 +1,1226 @@
+/* Research bulk bar — right-align the action buttons (keep All + count on
+   the left). Cancel now lives on the Select toggle, so Archive anchors. */
+#doclib-research-bulk #doclib-research-bulk-archive {
+  margin-left: auto;
+}
+
+#doclib-research-bulk .memory-toolbar-btn {
+  position: relative;
+  top: 3px;
+  right: 16px;
+}
+
+/* Archive bulk buttons — nudge down 1px to match research. */
+#doclib-arc-bulk .memory-toolbar-btn {
+  position: relative;
+  top: 1px;
+}
+
+/* Same right-aligned layout for the other bulk bars — Chats, Documents,
+   Archive, Skills, Memories. Cancel's auto-margin pushes the action group
+   to the right; 8px of extra right padding seats it off the edge (matching
+   the research bar's 8px nudge). */
+#doclib-chats-bulk #doclib-chats-bulk-archive,
+#doclib-bulk-bar #doclib-bulk-archive,
+#doclib-arc-bulk #doclib-arc-bulk-restore,
+#email-lib-bulk #email-lib-bulk-actions,
+#tasks-bulk-bar #tasks-bulk-delete,
+#serve-bulk-bar #serve-bulk-delete,
+#gallery-bulk-bar #gallery-bulk-actions,
+#gallery-editor-drafts-bulk #gallery-editor-drafts-bulk-delete,
+#memory-modal .memory-bulk-bar #memory-bulk-delete,
+#memory-modal .memory-bulk-bar #skills-bulk-publish {
+  margin-left: auto;
+  position: relative;
+  top: -1px;
+}
+
+#doclib-chats-bulk,
+#doclib-bulk-bar,
+#doclib-arc-bulk,
+#email-lib-bulk,
+#tasks-bulk-bar,
+#serve-bulk-bar,
+#gallery-bulk-bar,
+#gallery-editor-drafts-bulk,
+#memory-modal .memory-bulk-bar {
+  padding-right: 18px;
+}
+
+/* Research-preview sub-sections — used by the research-tab expand pattern. */
+.doclib-research-section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin: 8px 0 4px;
+}
+
+.doclib-research-sources ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.doclib-research-sources a {
+  color: var(--accent, var(--red));
+  text-decoration: none;
+}
+
+.doclib-research-sources a:hover { text-decoration: underline; }
+
+.doclib-research-summary {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.doclib-research-summary p { margin: 4px 0; }
+
+/* ---- Document Library ---- */
+
+.doclib-modal-content {
+  width: min(600px, 92vw);
+  max-height: 85vh;
+  font-size: 12px;
+  background: var(--bg);
+}
+
+/* Anchor doclib modal to top so only the bottom edge moves on resize */
+#doclib-modal {
+  align-items: flex-start;
+  padding-top: 8vh;
+}
+
+.doclib-modal-content .modal-header h4 {
+  font-size: 1rem;
+}
+
+/* Match the sticky modal-header to the doclib modal-content body color
+   (var(--bg)) instead of the global var(--panel) default — otherwise the
+   header reads as a darker stripe above the email list. */
+.doclib-modal-content > .modal-header {
+  background: var(--bg);
+}
+
+.doclib-stats {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-bottom: 8px;
+}
+
+.doclib-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.doclib-search {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.doclib-search:focus {
+  border-color: var(--red);
+}
+
+.doclib-sort {
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.doclib-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.doclib-chip {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.doclib-chip:hover {
+  border-color: var(--red);
+}
+
+.doclib-chip.active {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border-color: color-mix(in srgb, var(--red) 40%, transparent);
+  color: var(--red);
+}
+
+/* Document library — language chip row */
+.doclib-lang-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 0;
+  max-height: 52px;
+  overflow-y: auto;
+}
+
+.doclib-lang-chips:empty { display: none; }
+
+#doclib-tidy-btn, #doclib-select-btn, #doclib-chats-tidy-btn {
+  position: relative;
+  top: -3px;
+}
+
+/* Document library — list layout */
+.doclib-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0;
+  position: relative;
+}
+
+/* Document library cascade — same recipe as email library, applied per-tab
+   the first time content loads (chats / archive / research / documents).
+   Module-level Set in documentLibrary.js prevents re-firing on tab swaps
+   or filter/sort re-renders within the same page session. */
+.doclib-just-opened > .memory-item,
+.doclib-just-opened > .doclib-card {
+  animation: section-domino-in 0.36s cubic-bezier(0.22, 1.61, 0.36, 1) backwards;
+}
+
+.doclib-just-opened > :nth-child(1)  { animation-delay: 0.02s; }
+
+.doclib-just-opened > :nth-child(2)  { animation-delay: 0.04s; }
+
+.doclib-just-opened > :nth-child(3)  { animation-delay: 0.06s; }
+
+.doclib-just-opened > :nth-child(4)  { animation-delay: 0.08s; }
+
+.doclib-just-opened > :nth-child(5)  { animation-delay: 0.10s; }
+
+.doclib-just-opened > :nth-child(6)  { animation-delay: 0.12s; }
+
+.doclib-just-opened > :nth-child(7)  { animation-delay: 0.14s; }
+
+.doclib-just-opened > :nth-child(8)  { animation-delay: 0.16s; }
+
+.doclib-just-opened > :nth-child(9)  { animation-delay: 0.18s; }
+
+.doclib-just-opened > :nth-child(10) { animation-delay: 0.20s; }
+
+.doclib-just-opened > :nth-child(11) { animation-delay: 0.22s; }
+
+.doclib-just-opened > :nth-child(12) { animation-delay: 0.24s; }
+
+.doclib-just-opened > :nth-child(13) { animation-delay: 0.26s; }
+
+.doclib-just-opened > :nth-child(14) { animation-delay: 0.28s; }
+
+.doclib-just-opened > :nth-child(15) { animation-delay: 0.30s; }
+
+.doclib-just-opened > :nth-child(16) { animation-delay: 0.32s; }
+
+.doclib-just-opened > :nth-child(17) { animation-delay: 0.34s; }
+
+.doclib-just-opened > :nth-child(18) { animation-delay: 0.36s; }
+
+.doclib-just-opened > :nth-child(19) { animation-delay: 0.38s; }
+
+.doclib-just-opened > :nth-child(20) { animation-delay: 0.40s; }
+
+.doclib-just-opened > :nth-child(n+21) { animation-delay: 0.42s; }
+
+/* Document library: same fix as the email library (#74). When fullscreened
+   the modal-content gets an inline `height: 100vh`, but the inner
+   .doclib-grid stays capped at the 400px default so the list looks like a
+   tiny strip floating in a giant empty modal. Mirror the email recipe:
+   make the modal a flex column, give the body/admin-card claim of the
+   remaining height, and let the grid take the rest. Scoped to the
+   fullscreen class so windowed-mode layout is unchanged. */
+/* Inner flex chain that lets the chats/documents grid claim the full
+   remaining height of the modal. Applies in BOTH fullscreen AND
+   right-docked states — without the docked state included, dragging a
+   fullscreen doclib to the right snap zone breaks the flex layout
+   because exitFullscreen removes .doclib-fullscreen, and the grid
+   falls back to its base max-height: 400px showing only ~8 items.
+   The CSS variable :is() selector lets both states share one rule. */
+#doclib-modal.doclib-fullscreen .doclib-modal-content,
+#doclib-modal.modal-right-docked .doclib-modal-content,
+#doclib-modal.modal-left-docked .doclib-modal-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Fullscreen positioning — scoped to NOT apply when also right-docked.
+   Without this exclusion, dragging a fullscreen doclib to the right snap
+   zone keeps .doclib-fullscreen on the modal and these !important rules
+   override the dock's inline styles, leaving the modal stuck fullscreen
+   instead of becoming a side panel. */
+#doclib-modal.doclib-fullscreen:not(.modal-right-docked) .doclib-modal-content {
+  position: fixed !important;
+  top: 0 !important;
+  left: calc(var(--icon-rail-w, 48px) + var(--sidebar-w, 0px)) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+
+#doclib-modal.doclib-fullscreen .modal-header,
+#doclib-modal.doclib-fullscreen .lib-tabs,
+#doclib-modal.modal-right-docked .modal-header,
+#doclib-modal.modal-right-docked .lib-tabs,
+#doclib-modal.modal-left-docked .modal-header,
+#doclib-modal.modal-left-docked .lib-tabs {
+  flex: 0 0 auto;
+}
+
+#doclib-modal.doclib-fullscreen .modal-body,
+#doclib-modal.modal-right-docked .modal-body,
+#doclib-modal.modal-left-docked .modal-body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#doclib-modal.doclib-fullscreen .admin-card,
+#doclib-modal.modal-right-docked .admin-card,
+#doclib-modal.modal-left-docked .admin-card {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#doclib-modal.doclib-fullscreen .doclib-grid:not(:has(.doclib-card-expanded)),
+#doclib-modal.modal-right-docked .doclib-grid:not(:has(.doclib-card-expanded)),
+#doclib-modal.modal-left-docked .doclib-grid:not(:has(.doclib-card-expanded)) {
+  max-height: none;
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Library tab panels — Chats / Archive / Research / Documents share the
+   same toolbar dimensions so the sort dropdown + Select button line up
+   identically across tabs. */
+#doclib-panel-chats .memory-sort-select,
+#doclib-panel-archive .memory-sort-select,
+#doclib-panel-research .memory-sort-select,
+[data-doclib-panel="documents"] .memory-sort-select {
+  height: 24px;
+  font-size: 11px;
+  width: 86px;
+}
+
+#doclib-panel-chats .memory-toolbar-btn,
+#doclib-panel-archive .memory-toolbar-btn,
+#doclib-panel-research .memory-toolbar-btn,
+[data-doclib-panel="documents"] .memory-toolbar-btn {
+  height: 24px;
+  font-size: 11px;
+  position: relative;
+  top: -3px;
+}
+
+/* Research's Recent (sort) + Select sat 1px lower than the other tabs — nudge up. */
+#doclib-panel-research .memory-sort-select { position: relative; top: 1.5px; }
+
+#doclib-panel-research .memory-toolbar-btn { top: -4.5px; }
+
+#doclib-research-search { position: relative; top: -1.5px; }
+
+#doclib-panel-chats, #doclib-panel-archive { padding-top: 14px !important; }
+
+#doclib-panel-chats .memory-desc, #doclib-panel-archive .memory-desc, #doclib-panel-research .memory-desc { margin-top: 7px; }
+
+#doclib-panel-chats .memory-search-input,
+#doclib-panel-archive .memory-search-input {
+  height: 30px !important;
+  min-height: 30px !important;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+/* Unified search bar across Library tabs + Memory modal — same height,
+   same magnifying-glass icon at the start, consistent padding. */
+#doclib-panel-chats .memory-search-input,
+#doclib-panel-archive .memory-search-input,
+#doclib-panel-research .memory-search-input,
+[data-doclib-panel="documents"] .memory-search-input,
+#memory-modal .memory-search-input,
+#tasks-modal .memory-search-input {
+  height: 30px;
+  min-height: 30px;
+  font-size: 11px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e06c75' stroke-opacity='0.85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 9px center;
+  padding-left: 28px;
+}
+
+#doclib-panel-chats .doclib-chip {
+  height: 28px;
+}
+
+#doclib-panel-archive .doclib-chip {
+  height: 28px;
+}
+
+#doclib-panel-chats .doclib-chip,
+#doclib-panel-archive .doclib-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  padding: 0 8px;
+  border-radius: 10px;
+}
+
+.doclib-grid:has(.doclib-card-expanded) > .doclib-card:not(.doclib-card-expanded) {
+  display: none;
+}
+
+.doclib-card {
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s, opacity 0.3s, max-height 0.3s ease;
+  position: relative;
+}
+
+.doclib-card.doclib-card-deleting {
+  opacity: 0;
+  max-height: 0 !important;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border-color: transparent;
+}
+
+.doclib-card:hover {
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 16%, transparent);
+}
+
+.doclib-card.selected,
+/* Universal selection highlight: any card-shaped row (documents, chats,
+   archive, research, skills, memories, tasks) gets the same accent outline
+   when its checkbox is checked. Done via :has() so the highlight follows
+   selection without per-renderer JS changes. The canonical checkbox class
+   is .memory-select-cb across every list. */
+.memory-item:has(.memory-select-cb:checked),
+.doclib-card:has(.memory-select-cb:checked),
+.doclib-chat-row:has(.memory-select-cb:checked) {
+  border-color: color-mix(in srgb, var(--red) 40%, transparent);
+  background: color-mix(in srgb, var(--red) 4%, transparent);
+  /* 2px accent outline overlaid on the 1px border — reads as a thicker
+     selected border without shifting layout (every card would otherwise
+     need a 2px transparent border to keep the same width). */
+  outline: 2px solid var(--accent-primary, var(--red));
+  outline-offset: -1px;
+}
+
+.doclib-card-header {
+  display: flex;
+  align-items: center;
+  padding: 7px 8px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.doclib-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+.doclib-card-ver {
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent, var(--red)) 15%, transparent);
+  color: var(--accent, var(--red));
+  font-size: 9px;
+  flex-shrink: 0;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  min-width: 24px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.doclib-card-ver-muted {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  color: color-mix(in srgb, var(--fg) 35%, transparent);
+}
+
+.doclib-card-lang {
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-size: 9px;
+  text-align: left;
+  flex-shrink: 0;
+  min-width: 52px;
+  box-sizing: border-box;
+}
+
+.doclib-card-session {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 60px;
+  width: 100px;
+  max-width: 100px;
+  font-size: 9px;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.doclib-card-time {
+  flex-shrink: 0;
+  opacity: 0.5;
+  font-size: 9px;
+  color: var(--fg-muted);
+  min-width: 50px;
+  text-align: left;
+}
+
+/* Footer — used by archive cards */
+.doclib-card-footer {
+  display: contents;
+}
+
+/* Preview — hidden by default, shown on expand */
+.doclib-card-preview {
+  display: none;
+  position: relative;
+  padding: 8px 12px;
+  font-family: 'Berkeley Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--code-fg, var(--hl-fg, var(--fg)));
+  border-top: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  margin: 0;
+}
+
+.doclib-card-preview pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.doclib-card-expanded .doclib-card-preview pre {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.doclib-card-preview code.hljs {
+  background: none;
+  padding: 0;
+}
+
+/* Expanded-only action bar — inside preview. Buttons shifted up 4px by
+   trimming the row's top margin so they sit closer to the preview text. */
+.doclib-card-expanded-actions {
+  display: none;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 0 2px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  margin-top: 4px;
+}
+
+.doclib-card-expanded-actions > .doclib-card-action-btn,
+.doclib-card-expanded-actions .doclib-action-btn-row > .doclib-card-action-btn {
+  position: relative;
+  top: -4px;
+}
+
+.doclib-action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.doclib-action-btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+.doclib-action-hint-row {
+  display: flex;
+  gap: 6px;
+}
+
+/* Match the chat/research footer buttons exactly: flat, bordered,
+   app font, accent on hover. */
+.doclib-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  cursor: pointer;
+  /* These buttons live inside .doclib-card-preview, which forces a
+     monospace font. The chat/research footer buttons instead inherit the
+     modal font, which is the app font (Fira Code) on mobile and Inter on
+     desktop (.modal-content's Inter rule is inside @media min-width:769px).
+     Mirror that here so all three footers match in both contexts. */
+  font-family: var(--font-family, 'Fira Code', monospace);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.doclib-card-action-btn:hover {
+  border-color: var(--accent, var(--red));
+  color: var(--accent, var(--red));
+}
+
+.doclib-card-text-btn-danger {
+  color: var(--color-danger, #e06c75);
+  border-color: var(--color-danger, #e06c75);
+}
+
+.doclib-card-text-btn-danger:hover {
+  color: #ff4d4d;
+  border-color: #ff4d4d;
+}
+
+.doclib-card-expanded-actions > .doclib-card-action-btn {
+  font-size: 10px;
+  padding: 3px 8px;
+}
+
+/* Push the Open/Clone group to the right edge of the action bar — Delete
+   anchors the left, primary actions sit opposite. */
+.doclib-card-expanded-actions > .doclib-action-group {
+  margin-left: auto;
+}
+
+.doclib-btn-hint {
+  font-weight: normal;
+  opacity: 0.35;
+  font-size: 8px;
+  min-width: 58px;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+/* Chat row expand preview — matches the documents-tab expand style. */
+.doclib-chat-row { flex-direction: column; align-items: stretch; }
+
+.doclib-chat-row .doclib-card-chevron {
+  opacity: 0.3;
+  transition: transform 0.2s ease, opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.doclib-chat-row.doclib-card-expanded .doclib-card-chevron {
+  opacity: 0.6;
+}
+
+/* Release .memory-item's base max-height: 200px when a chat row is
+   expanded. Without this, the row clips at 200px on desktop and the
+   preview's messages/actions visually spill past the row's box —
+   "colliding" with the next chat in the column. The mobile takeover
+   below already handles this via the same override; this rule is the
+   desktop-or-any-viewport equivalent. */
+.doclib-chat-row.doclib-card-expanded {
+  max-height: none;
+  overflow: visible;
+}
+
+.doclib-chat-preview {
+  font-size: 11px;
+  padding: 0 4px 6px;
+}
+
+.doclib-chat-preview .doclib-chat-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.doclib-chat-preview .doclib-chat-open-btn:hover {
+  border-color: var(--accent, var(--red));
+  color: var(--accent, var(--red));
+}
+
+.doclib-chat-preview-messages {
+  margin-top: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+.doclib-chat-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 2px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  margin-top: 2px;
+  flex-shrink: 0;
+  /* Whole action footer nudged down 5px. */
+  position: relative;
+  top: 5px;
+}
+
+.doclib-chat-delete-btn,
+.doclib-chat-archive-btn,
+.doclib-chat-restore-btn,
+.doclib-chat-discuss-btn,
+.doclib-chat-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.doclib-chat-archive-btn,
+.doclib-chat-restore-btn,
+.doclib-chat-discuss-btn,
+.doclib-chat-copy-btn {
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+}
+
+/* Restore sits on the right of the Delete in archive previews. */
+.doclib-chat-restore-btn { margin-left: auto; }
+
+.doclib-chat-restore-btn:hover {
+  color: var(--accent, var(--red));
+  border-color: var(--accent, var(--red));
+}
+
+/* Delete + Archive pin to the left of the actions row; the
+   `margin-right: auto` on the last left-side button (Archive) pushes
+   Copy + Open to the right. Delete sits furthest left. */
+.doclib-chat-archive-btn { margin-right: auto; }
+
+.doclib-chat-archive-btn:hover,
+.doclib-chat-discuss-btn:hover,
+.doclib-chat-copy-btn:hover {
+  color: var(--accent, var(--red));
+  border-color: var(--accent, var(--red));
+}
+
+.doclib-chat-delete-btn {
+  color: var(--color-danger, #e06c75);
+  border: 1px solid var(--color-danger, #e06c75);
+}
+
+.doclib-chat-delete-btn:hover {
+  color: #ff4d4d;
+  border-color: #ff4d4d;
+}
+
+/* When a chat is archived there's no Archive button, so Delete becomes
+   the only left-side action and needs the auto margin to push Open right. */
+.doclib-chat-preview-actions:not(:has(.doclib-chat-archive-btn)) > .doclib-chat-delete-btn {
+  margin-right: auto;
+}
+
+/* Hide the "..." menu while the chat card is expanded — archive +
+   delete live in the preview footer instead. */
+.doclib-chat-row.doclib-card-expanded ._chat-menu { display: none; }
+
+.doclib-chat-preview-actions.doclib-chat-preview-actions-top {
+  border-top: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  margin-top: 4px;
+  margin-bottom: 6px;
+  padding: 0 0 6px;
+  justify-content: flex-start;
+}
+
+.doclib-chat-preview-messages .doclib-chat-msg {
+  margin: 4px 0 10px;
+  padding-left: 8px;
+  border-left: 2px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.doclib-chat-preview-messages .doclib-chat-msg.user {
+  border-left-color: color-mix(in srgb, var(--accent, var(--red)) 60%, transparent);
+}
+
+.doclib-chat-preview-messages .doclib-chat-msg-role {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 2px;
+}
+
+.doclib-chat-preview-messages .doclib-chat-msg.user .doclib-chat-msg-role {
+  color: var(--accent, var(--red));
+  opacity: 0.85;
+}
+
+.doclib-chat-preview-messages .doclib-chat-msg-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0.85;
+  line-height: 1.45;
+}
+
+/* Chat-bubble preview — mirrors the real chat layout. User bubbles hug
+   right with an accent tint; assistant bubbles hug left with a neutral
+   panel tint and a small model tag at the top. */
+.doclib-chat-bubble-row {
+  display: flex;
+  margin: 6px 0;
+}
+
+.doclib-chat-bubble-row.user { justify-content: flex-end; }
+
+.doclib-chat-bubble-row.assistant { justify-content: flex-start; }
+
+.doclib-chat-bubble {
+  max-width: 85%;
+  padding: 6px 10px 8px;
+  border-radius: 14px;
+  font-size: 11px;
+  line-height: 1.45;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.doclib-chat-bubble-row.user .doclib-chat-bubble {
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 30%, transparent);
+  border-bottom-right-radius: 4px;
+}
+
+.doclib-chat-bubble-row.assistant .doclib-chat-bubble {
+  border-bottom-left-radius: 4px;
+}
+
+.doclib-chat-msg-model {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 3px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  color: var(--fg-muted, var(--fg));
+}
+
+.doclib-chat-bubble-body { word-break: break-word; }
+
+.doclib-chat-bubble-body p { margin: 4px 0; }
+
+.doclib-chat-bubble-body p:first-child { margin-top: 0; }
+
+.doclib-chat-bubble-body p:last-child { margin-bottom: 0; }
+
+.doclib-chat-bubble-body pre {
+  font-size: 10px;
+  margin: 4px 0;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.doclib-chat-bubble-body code {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.doclib-chat-bubble-body pre code { background: none; padding: 0; }
+
+.doclib-chat-bubble-body ul,
+.doclib-chat-bubble-body ol {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+.doclib-card-collapse-chevron {
+  display: none;
+  align-items: center;
+  opacity: 0.3;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+  transition: opacity 0.15s;
+}
+
+.doclib-card-collapse-chevron:hover {
+  opacity: 0.7;
+}
+
+.doclib-card-expanded .doclib-card-collapse-chevron {
+  display: inline-flex;
+}
+
+/* Expanded card — fills the whole grid */
+.doclib-card.doclib-card-expanded {
+  flex: 1;
+  min-height: 0;
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: doclib-expand 0.2s ease-out;
+}
+
+.doclib-card.doclib-card-expanded {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  max-height: none !important;
+  gap: 4px !important;
+}
+
+.doclib-card.doclib-card-expanded > .memory-item-actions { display: none; }
+
+/* Non-preview children of an expanded doc card carry an inline flex:1 from
+   the row layout. With the card now flex-column those children would steal
+   half the height and shrink the preview — pin them at auto height. */
+.doclib-card.doclib-card-expanded > div:not(.doclib-card-preview):not(.doclib-card-header):not(.memory-item-actions):not(.email-card-reader) {
+  flex: 0 0 auto !important;
+}
+
+/* The email reader IS the scroll container — keep its flex:1 so its
+   internal body can claim the rest of the card's height and scroll. */
+.doclib-card.doclib-card-expanded > .email-card-reader {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+.doclib-card.doclib-card-expanded .doclib-card-preview {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto !important;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.doclib-card.doclib-card-expanded .doclib-card-expanded-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Hide the section headers while a card is expanded (full-screen reader). */
+.doclib-grid:has(.doclib-card-expanded) > .skills-section-header { display: none; }
+
+.doclib-empty {
+  text-align: center;
+  color: color-mix(in srgb, var(--fg) 35%, transparent);
+  padding: 32px 16px;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.doclib-load-more {
+  display: block;
+  margin: 10px auto 0;
+  padding: 6px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+  position: relative;
+  top: 8px;
+}
+
+/* Soft dark gradient above the button — blends the list content into the
+   load-more strip instead of a hard cutoff. Spans the modal width and
+   sits behind/above the button. */
+.doclib-load-more::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 100%;
+  margin-bottom: 4px;
+  width: min(600px, 92vw);
+  height: 34px;
+  pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, #000 24%, transparent), transparent);
+}
+
+.doclib-load-more:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Document library toolbar buttons */
+.doclib-toolbar-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.doclib-toolbar-btn:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+.doclib-toolbar-btn.active {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border-color: color-mix(in srgb, var(--red) 40%, transparent);
+  color: var(--red);
+}
+
+.doclib-toolbar-btn.danger {
+  color: var(--color-error, #e55);
+}
+
+.doclib-toolbar-btn.danger:hover:not(:disabled) {
+  border-color: var(--color-error, #e55);
+}
+
+.doclib-toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Bulk action bar */
+.doclib-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--red) 5%, transparent);
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.doclib-bulk-bar.hidden {
+  display: none;
+}
+
+.doclib-bulk-check-all {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  font-size: 10px;
+}
+
+#doclib-selected-count {
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  font-size: 10px;
+}
+
+#doclib-bulk-bar .memory-toolbar-btn {
+  position: relative;
+  top: -3px;
+}
+
+/* Custom checkboxes */
+.doclib-select-cb,
+.doclib-bulk-check-all input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.doclib-select-cb:hover,
+.doclib-bulk-check-all input:hover {
+  border-color: var(--red);
+}
+
+.doclib-select-cb:checked,
+.doclib-bulk-check-all input:checked {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.doclib-select-cb:checked::after,
+.doclib-bulk-check-all input:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--bg);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.doclib-card.email-card-removing {
+  pointer-events: none !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-color: transparent !important;
+  opacity: 0;
+  transform: translateX(-10px) scale(0.985);
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s ease,
+    max-height 0.23s ease,
+    padding 0.23s ease,
+    margin 0.23s ease,
+    border-color 0.18s ease;
+}
+
+/* Expanded email preview in library — override .memory-item row layout */
+.doclib-card.email-card-expanded.memory-item {
+  cursor: default !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  /* Fill the available grid height instead of the old hardcoded 70vh —
+     the modal already caps height (90dvh on mobile, auto on desktop), so
+     the card just needs to flex into whatever remains. */
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  gap: 0 !important;
+}
+
+.doclib-card.email-card-expanded.memory-item > div:first-child {
+  /* The summary content (subject, date) - acts as the title bar. Left padding
+     trimmed 14→6px to shift the title 8px left total. */
+  padding: 2px 4px 10px !important;  /* top trimmed to lift the header text up */
+  margin-top: -14px !important;      /* pull the whole bar up into the freed space */
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto !important;
+  width: 100%;
+}
+
+/* Keep the per-card '...' actions menu visible while the email card is
+   expanded — we used to hide it and surface a duplicate menu button in
+   the expanded header, but that was redundant. The bottom menu now
+   carries the actions in both states. */
+/* When expanded inline, show the subject a touch larger than the 12px card
+   title (close to the new-tab window header) without being oversized. */
+.doclib-card.email-card-expanded .memory-item-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* The sender name is redundant once expanded (the From: row shows it just
+   below), so drop it and keep only the date — which then sits left-aligned
+   directly under the subject. Nudge the date 1px right to line up exactly with
+   the subject text, and up closer to it. */
+.doclib-card.email-card-expanded .email-meta-sender,
+.doclib-card.email-card-expanded .email-meta-sep {
+  display: none;
+}
+
+.doclib-card.email-card-expanded .memory-item-meta {
+  margin-top: -9px !important;
+}
+
+.doclib-card.email-card-expanded .email-meta-date {
+  margin-left: 3px;
+}
+
+.doclib-card-expanded .email-card-tags { top: -4px; }
+
+.doclib-card.email-card-expanded .email-card-nav-arrows {
+  display: inline-flex;
+}
+
+.doclib-card.email-card-expanded .email-card-header-menu {
+  display: inline-flex;
+}

@@ -1,4 +1,4 @@
-"""Pin computeSnap (static/js/editor/snap.js) against a non-array otherLayers.
+"""Pin computeSnap (web/lib/legacy/editor/snap.js) against a non-array otherLayers.
 Driven through `node --input-type=module`; skips without node.
 """
 import json
@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "editor" / "snap.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "editor" / "snap.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

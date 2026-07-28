@@ -19,7 +19,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER = ROOT / "static" / "js" / "toolWindowZOrder.js"
+HELPER = ROOT / "web" / "lib" / "legacy" / "toolWindowZOrder.js"
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="node binary not on PATH")
 
 
@@ -93,14 +93,14 @@ def test_portal_z_uses_chip_floor_when_the_open_modal_sits_below_it():
 # tasks.js and skills.js were not in #4724's batch; #4767 routes their portaled
 # dropdowns through the same helper. Pin that they use topPortalZ() and carry no
 # hardcoded portal z-index, so they cannot regress to the #4720 bug.
-@pytest.mark.parametrize("rel", ["static/js/tasks.js", "static/js/skills.js"])
+@pytest.mark.parametrize("rel", ["web/lib/legacy/tasks.js", "web/lib/legacy/skills.js"])
 def test_late_routed_dropdowns_use_top_portal_z(rel):
     src = (ROOT / rel).read_text()
     assert "topPortalZ" in src, f"{rel} must import/use topPortalZ()"
     assert "topPortalZ()" in src, f"{rel} must call topPortalZ() for its dropdown z"
 
 
-@pytest.mark.parametrize("rel", ["static/js/tasks.js", "static/js/skills.js", "static/style.css"])
+@pytest.mark.parametrize("rel", ["web/lib/legacy/tasks.js", "web/lib/legacy/skills.js", "static/style.css"])
 def test_no_hardcoded_portal_z_literals_remain(rel):
     src = (ROOT / rel).read_text()
     # Match the exact 100000/100002 these dropdowns used; the trailing-digit

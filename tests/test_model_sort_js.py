@@ -24,7 +24,7 @@ def _node_eval(source: str):
 def test_model_sort_helpers_ignore_non_arrays():
     values = _node_eval(
         """
-        import { sortModelIds, sortModelObjects } from './static/js/modelSort.js';
+        import { sortModelIds, sortModelObjects } from './web/lib/legacy/modelSort.js';
         console.log(JSON.stringify({
           idsObject: sortModelIds({bad: true}),
           idsString: sortModelIds('llama'),
@@ -45,7 +45,7 @@ def test_model_sort_helpers_ignore_non_arrays():
 def test_model_sort_helpers_keep_valid_arrays():
     values = _node_eval(
         """
-        import { sortModelIds, sortModelObjects } from './static/js/modelSort.js';
+        import { sortModelIds, sortModelObjects } from './web/lib/legacy/modelSort.js';
         console.log(JSON.stringify({
           ids: sortModelIds(['zeta/10', 'alpha/2', 'alpha/11']),
           objects: sortModelObjects([{id: 'zeta/10'}, {id: 'alpha/2'}]).map(m => m.id)

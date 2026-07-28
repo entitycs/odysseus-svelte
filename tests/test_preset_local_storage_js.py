@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_MODULE = _REPO / "static" / "js" / "presets.js"
+_MODULE = _REPO / "web" / "lib" / "legacy" / "presets.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

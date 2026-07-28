@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/document.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/document.js"
 
 
 def _function_body(name: str) -> str:
@@ -39,15 +39,29 @@ def test_doc_update_refreshes_preview_instead_of_hidden_editor_animation():
     body = _function_body("handleDocUpdate")
 
     visible = "const markdownPreviewWasVisible = _isMarkdownPreviewVisible();"
-    exit_preview = "if (markdownPreviewWasVisible) _setMarkdownPreviewActive(false, { remember: false });"
+
+    pattern = re.compile(
+        r"if\s*\(markdownPreviewWasVisible\)\s*_setMarkdownPreviewActive\(\s*false,\s*\{\sremember:\s*false\s*\}\s*\);",
+        re.MULTILINE
+    )
+    exit_result = pattern.search(body)
+    assert exit_result, "was visible conditional"
+    exit_preview = exit_result.group(0)
+
     diff = "enterDiffMode(oldContent, newContent);"
-    refresh = "markdownPreviewWasVisible && _refreshMarkdownPreviewIfVisible(docId, newContent)"
+
+    pattern = re.compile(
+        r"markdownPreviewWasVisible\s*&&\s*_refreshMarkdownPreviewIfVisible\(\s*docId,\s*newContent\s*\)",
+        re.MULTILINE
+    )
+    refresh_result = pattern.search(body)
+    assert refresh_result, "preview doc conditional"
+    refresh = refresh_result.group(0)
+
     animate = "_animateDocEdit(textarea, newContent);"
 
     assert visible in body
-    assert exit_preview in body
     assert diff in body
     assert body.index(exit_preview) < body.index(diff)
-    assert refresh in body
     assert body.index(refresh) < body.index(animate)
     assert "_refreshMarkdownPreviewIfVisible(docId, newContent);" in body

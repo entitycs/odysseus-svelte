@@ -88,8 +88,8 @@ def test_ask_user_is_emitted_last_and_persisted(monkeypatch):
 
 
 def test_frontend_uses_one_renderer_for_live_and_restored_cards():
-    chat = (ROOT / "static" / "js" / "chat.js").read_text(encoding="utf-8")
-    renderer = (ROOT / "static" / "js" / "chatRenderer.js").read_text(encoding="utf-8")
+    chat = (ROOT / "web" / "lib" / "legacy" / "chat.js").read_text(encoding="utf-8")
+    renderer = (ROOT / "web" / "lib" / "legacy" / "chatRenderer.js").read_text(encoding="utf-8")
 
     assert "chatRenderer.renderAskUserCard(json.data || {})" in chat
     assert "export function renderAskUserCard" in renderer

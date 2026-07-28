@@ -3,7 +3,7 @@
 The backend strips every fenced tool block (``src/tool_parsing.py`` builds its
 regex from the full ``TOOL_TAGS`` set), so a reloaded session renders cleanly.
 The live frontend path uses its own regex, ``EXEC_FENCE_RE`` in
-``static/js/chatRenderer.js``.
+``web/lib/legacy/chatRenderer.js``.
 
 Originally that regex came from a hand-maintained subset, so any executable tool
 not in it — and every *future* tool added to ``TOOL_TAGS`` — left its executed
@@ -24,7 +24,7 @@ import json
 import re
 from pathlib import Path
 
-_SRC = Path("static/js/chatRenderer.js")
+_SRC = Path("web/lib/legacy/chatRenderer.js")
 _ROUTES_SRC = Path("routes/model_routes.py")
 
 # Deliberately NOT stripped: legitimate code-example languages, not tool

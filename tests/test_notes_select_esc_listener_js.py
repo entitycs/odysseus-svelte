@@ -9,7 +9,7 @@ tracked-handler pattern in source.
 """
 from pathlib import Path
 
-SRC = Path("static/js/notes.js").read_text(encoding="utf-8")
+SRC = Path("web/lib/legacy/notes.js").read_text(encoding="utf-8")
 
 
 def test_select_esc_listener_is_tracked_not_anonymous():

@@ -13,7 +13,7 @@ this guards the fix at the source level so it can't be silently dropped.
 import re
 from pathlib import Path
 
-SRC = (Path(__file__).resolve().parent.parent / "static/js/compare").parent / "chatRenderer.js"
+SRC = (Path(__file__).resolve().parent.parent / "web/lib/legacy/compare").parent / "chatRenderer.js"
 
 
 def _show_welcome_body() -> str:

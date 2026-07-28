@@ -10,7 +10,7 @@ def _source(path):
 
 
 def test_html_code_runner_detaches_opener_before_document_write():
-    src = _source("static/js/codeRunner.js")
+    src = _source("web/lib/legacy/codeRunner.js")
     match = re.search(
         r"export function runHTML\(code, panel\) \{(?P<body>.*?)showOutput\(panel, 'Opened in new window'",
         src,
@@ -24,7 +24,7 @@ def test_html_code_runner_detaches_opener_before_document_write():
 
 
 def test_compare_print_popup_detaches_opener_before_document_write():
-    src = _source("static/js/compare/index.js")
+    src = _source("web/lib/legacy/compare/index.js")
     match = re.search(
         r"function _exportPrint\(\) \{(?P<body>.*?)w\.document\.close\(\);",
         src,

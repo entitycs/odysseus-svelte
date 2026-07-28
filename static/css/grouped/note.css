@@ -1,0 +1,2761 @@
+/* Individual card — subtle accent border tint when a reminder has fired */
+    .note-card.note-card-reminder-due .note-card-reminder {
+      background: color-mix(in srgb, var(--red) 22%, transparent);
+      color: var(--red);
+      font-weight: 600;
+    }
+
+/* Placeholder — same footprint as the lifted card, dotted outline so
+   the drop target is visible while the card follows the finger. */
+.note-card-placeholder {
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--fg) 25%, transparent);
+  border-radius: 8px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: width 0.18s ease, height 0.18s ease;
+}
+
+/* ── Fullscreen single-note edit overlay ──────────────── */
+.note-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  /* Bigger zoom range so the transition reads as a real "tile expands
+     into a page" motion. transform-origin is set per-tile by JS. */
+  transform: scale(0.45);
+  transform-origin: center center;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.18, 0.74, 0.24, 1.06);
+  will-change: transform, opacity;
+}
+
+.note-fullscreen-overlay.open {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.note-fullscreen-overlay.closing {
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.note-fullscreen-header {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.note-fullscreen-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Compact the relocated Archive/Delete buttons so two of them fit
+   alongside the back chevron without crowding. */
+.note-fullscreen-actions .note-form-text-btn {
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.note-fullscreen-actions .note-form-text-btn svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+}
+
+.note-fullscreen-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  background: none;
+  border: none;
+  color: var(--fg);
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.note-fullscreen-back:active {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.note-fullscreen-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 14px 24px;
+}
+
+/* The reused .note-form inside the fullscreen overlay should breathe —
+   it was originally sized to slot into a grid cell. */
+.note-fullscreen-body .note-form {
+  max-width: 720px;
+  margin: 0 auto;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Bigger touch targets inside the fullscreen overlay. The default form
+   is tuned for the grid-card context (tiny icons fit a 200px wide
+   tile); on a phone-sized full-bleed page we want chunky thumb-sized
+   controls. */
+.note-fullscreen-back svg {
+  width: 28px;
+  height: 28px;
+}
+
+.note-fullscreen-overlay .note-form-type-pill {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.note-fullscreen-overlay .note-form-type-pill svg {
+  width: 16px;
+  height: 16px;
+}
+
+.note-fullscreen-overlay .note-cl-row {
+  padding: 8px 0;
+  gap: 8px;
+  align-items: center;
+}
+
+.note-fullscreen-overlay .note-cl-grip {
+  font-size: 22px;
+  line-height: 1;
+  padding: 6px 8px;
+  opacity: 0.5;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  /* Pull 4px toward the left edge of the row. */
+  margin-left: -4px;
+}
+
+.note-fullscreen-overlay .note-cl-grip:active { cursor: grabbing; opacity: 0.9; }
+
+.note-fullscreen-overlay .note-cl-dot {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  /* Generous invisible tap target around the visible dot */
+}
+
+.note-fullscreen-overlay .note-cl-dot::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+/* Filled checkmark glyph when the row is marked done — gives a clear
+   visual cue beyond the colored fill. Nudged up 2px so it sits
+   centered in the smaller dot. */
+.note-fullscreen-overlay .note-cl-row.done .note-cl-dot::after {
+  content: '';
+  position: absolute;
+  left: 2px; top: 1px;
+  width: 8px; height: 4px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+}
+
+.note-fullscreen-overlay .note-cl-text {
+  font-size: 14px;
+  padding: 7px 6px;
+  min-height: 32px;
+}
+
+.note-fullscreen-overlay .note-cl-rm {
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  /* Nudge 4px further toward the right edge of the row. */
+  margin-right: -4px;
+}
+
+.note-fullscreen-overlay .note-cl-rm:active { opacity: 1; }
+
+/* Lifted row + placeholder while dragging a checklist item. Mirrors
+   the card-drag look so the two interactions feel consistent. */
+.note-cl-row-dragging {
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+  background: var(--bg);
+  border-radius: 8px;
+  opacity: 0.98;
+}
+
+.note-cl-row-placeholder {
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--fg) 22%, transparent);
+  border-radius: 6px;
+  margin: 4px 0;
+  box-sizing: border-box;
+  transition: height 0.16s ease;
+}
+
+.note-fullscreen-overlay .note-form-text-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.note-fullscreen-overlay .note-form-text-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* + Add (new checklist item) was tiny — bump for thumbs */
+.note-fullscreen-overlay .note-cl-add {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: -0.01em;
+  opacity: 0.85;
+}
+
+.note-fullscreen-overlay .note-cl-add:active { opacity: 1; }
+
+/* + Add and the camera/photo button share a row inside checklists, so
+   they're both within thumb reach when editing items. The whole row
+   reads as a single dashed "tap to add" surface — tapping ANYWHERE
+   on it triggers + Add (the photo button stays its own target). */
+.note-fullscreen-overlay .note-cl-add-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.note-fullscreen-overlay .note-cl-add-row:active {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 36%, transparent);
+}
+
+.note-fullscreen-overlay .note-cl-add-row .note-cl-add {
+  flex: 1;
+  justify-content: flex-start;
+  background: transparent;
+  border: none;
+}
+
+.note-fullscreen-overlay .note-cl-add-row .note-cl-add { margin: 0; }
+
+.note-fullscreen-overlay .note-cl-add-row .note-form-photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: 36px;
+  padding: 0 12px 0 10px;
+  border-radius: 8px;
+  /* No border / no background — the surrounding +Add row provides the
+     bordered container, the camera is just an icon inside it. */
+  border: none;
+  background: transparent;
+}
+
+.note-fullscreen-overlay .note-cl-add-row .note-form-photo-btn::before {
+  content: '+';
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.note-fullscreen-overlay .note-cl-add-row .note-form-photo-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Read-mode overlay shown over the textarea for plain notes. Renders
+   linkified content so URLs are tappable. Click anywhere off a link
+   to flip to edit mode (focuses the underlying textarea). */
+.note-form-content-reader {
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 10px 6px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--fg);
+  cursor: text;
+  min-height: 40px;
+}
+
+.note-form-content-reader a {
+  color: var(--accent, var(--red));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.note-form-content-reader a:active { opacity: 0.7; }
+
+/* Per-row read mode for todo items — replaces the bare <input> with a
+   clickable linkified span when the value contains a URL. */
+.note-fullscreen-overlay .note-cl-text-reader {
+  flex: 1;
+  padding: 7px 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  word-break: break-word;
+  color: var(--fg);
+  cursor: text;
+}
+
+.note-fullscreen-overlay .note-cl-text-reader a {
+  color: var(--accent, var(--red));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.note-fullscreen-overlay .note-cl-text-reader a:active { opacity: 0.7; }
+
+.note-fullscreen-overlay .note-cl-row.done .note-cl-text-reader {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+/* Reminder bell + other header icon-buttons. Tightened down 2px so
+   the bell sits more proportionally next to the title field. */
+.note-fullscreen-overlay .note-form-icon-btn {
+  width: 36px;
+  height: 36px;
+}
+
+.note-fullscreen-overlay .note-form-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The plain-note textarea was rows="4" — fine for an in-grid card but
+   cramped in fullscreen. Let it grow to fill the available height so
+   writing feels like a real notepad, not a tweet box. The read-mode
+   reader inherits the same minimum so the layout doesn't jump when
+   the user taps to edit. */
+.note-fullscreen-overlay .note-form-content,
+.note-fullscreen-overlay .note-form-content-reader {
+  min-height: 55vh;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* Tags input is JS-relocated into the bottom actions row, pinned
+   left of Cancel/Update. Style it as a dashed pill so it reads as
+   metadata rather than another control. */
+.note-fullscreen-overlay .note-form-actions-group .note-form-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  padding: 8px 10px;
+  margin: 0 auto 0 0;
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--fg) 16%, transparent);
+  border-radius: 6px;
+  text-align: left;
+}
+
+/* Reorganized meta-row layout for fullscreen: color picker pinned to
+   the LEFT, type-toggle (Note/Todo/Draw) shoved to the RIGHT, with
+   the photo button next to the color picker. Tags are moved up into
+   the form header (next to the reminder bell) via JS. */
+.note-fullscreen-overlay .note-form-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.note-fullscreen-overlay .note-color-picker { order: 1; }
+
+.note-fullscreen-overlay .note-form-photo-btn { order: 2; }
+
+.note-fullscreen-overlay .note-form-type-seg {
+  order: 3;
+  margin-left: auto;  /* shove right */
+  /* The overlay enlarges the pills (padding 10px), but the base seg is only
+     28px tall with overflow:hidden — which clipped them. Grow the track so
+     the bigger touch targets fit. */
+  height: 40px;
+  border-radius: 12px;
+}
+
+.note-fullscreen-overlay .note-form-actions-group {
+  order: 4;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.note-fullscreen-overlay .note-form-actions-group .note-form-cancel,
+.note-fullscreen-overlay .note-form-actions-group .note-form-save {
+  flex: 0 0 auto;
+}
+
+.note-card.note-card-sliding-out {
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.32s ease-in, opacity 0.32s ease-in;
+  pointer-events: none;
+}
+
+/* ⋯ corner menu button (replaced the copy corner button) */
+.note-card-corner-menu {
+  background: none;
+  border: none;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+  display: inline-flex;
+}
+
+.note-card-corner-menu:hover { opacity: 0.9; }
+
+/* Dropdown spawned by the ⋯ menu */
+.note-corner-menu-dropdown {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  padding: 4px;
+  min-width: 168px;
+  font-size: 12px;
+  animation: ncm-pop 0.12s ease-out both;
+}
+
+.note-corner-menu-dropdown .ncm-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.note-corner-menu-dropdown .ncm-item:hover {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.note-checkbox-agent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  margin: 0 1px;
+  border: 0;
+  background: transparent;
+  color: var(--accent, var(--red));
+  box-shadow: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s;
+}
+
+.note-checkbox:hover .note-checkbox-agent { opacity: 0.55; }
+
+.note-checkbox-agent:hover {
+  background: transparent;
+  opacity: 1 !important;
+}
+
+.note-checkbox-agent.is-agent-stream-complete {
+  color: #50fa7b;
+  opacity: 0.9;
+}
+
+.note-checkbox-agent svg {
+  display: block;
+}
+
+.note-card {
+  /* Same tint that .doclib-card uses so a default (uncolored) note
+     visually separates from the panel background it sits on. */
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  /* Extra right padding so the corner buttons (pin / edit / copy / done)
+     never collide with the title, and a min-height so an empty/short
+     note is still tall enough to fit that row of corner controls. */
+  padding: 10px 14px;
+  padding-right: 30px;
+  min-height: 64px;
+  cursor: default;
+  transition: background 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Keep drawings/images clipped to the card so they can't spill outside it —
+     but allow a small overhang (the pin bubble sits at right:-8px and would
+     otherwise be cropped). overflow-clip-margin extends the clip-box without
+     letting full images bleed past. */
+  overflow: clip;
+  overflow-clip-margin: 14px;
+  /* Don't shrink inside the flex-column list pane — otherwise cards squish to
+     fit (clipped/too short) and the container never overflows, so it won't
+     scroll. Keeping natural height makes the list overflow → scrollable. */
+  flex-shrink: 0;
+}
+
+.note-card:hover:not([class*="note-color-"]) {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.note-card { position: relative; }
+
+.note-card-image { max-width: 100%; }
+
+.note-card-pinned {
+  border-top: 2px solid color-mix(in srgb, var(--fg) 30%, transparent);
+}
+
+.note-card.note-card-reminder-fired {
+  animation: note-reminder-pulse 1.2s ease-in-out 2;
+}
+
+/* Sticky outside glow — applied to the exact note whose reminder fired.
+   It stays until the user interacts with that card. */
+.note-card.note-card-reminder-fired-sticky {
+  position: relative;
+  outline: 1px solid color-mix(in srgb, var(--accent, var(--red)) 36%, transparent);
+  outline-offset: 2px;
+  animation: note-reminder-glow 1.6s ease-in-out infinite;
+}
+
+.note-card-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Hover-only buttons (Google Keep style) */
+.note-card-select,
+.note-card-pin {
+  position: absolute;
+  top: -8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  opacity: 0.7;
+  z-index: 2;
+  transition: opacity 0.15s, transform 0.15s, background 0.15s;
+}
+
+.note-card-select { left: -8px; }
+
+.note-card-pin    { right: -8px; }
+
+/* Pencil + checkmark glyphs both have empty space along the top of their
+   24×24 viewBox, so flex-centering leaves them sitting visually high.
+   Nudge the inner SVG down a touch to compensate. */
+.note-card-edit-corner svg,
+.note-card-done svg {
+  position: relative;
+  top: 0.5px;
+}
+
+.note-card-edit-corner {
+  position: absolute;
+  /* Both Edit + Done at top-right: Edit on the left (right:40px),
+     Done on the right (right:6px). */
+  top: 6px; right: 40px;
+  width: 28px; height: 28px;
+  /* Fully invisible at rest. Materializes (with a solid panel fill blocking
+     any text underneath) only when the card is hovered or the button is
+     focused. Same rule on touch — opacity stays 0 until the card is tapped
+     to expose actions. */
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer; padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg); opacity: 0;
+  touch-action: manipulation;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  z-index: 2;
+}
+
+.note-card:hover .note-card-edit-corner {
+  opacity: 0.85;
+  background: var(--panel);
+  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+}
+
+.note-card-edit-corner:hover,
+.note-card-edit-corner:focus-visible {
+  opacity: 1 !important;
+  background: color-mix(in srgb, var(--accent) 18%, var(--panel)) !important;
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border)) !important;
+}
+
+/* Copy corner — bottom-right counterpart to the edit/done corner buttons.
+   Round, subtle, hover-reveal on desktop and always faintly visible on
+   touch so mobile users can tap it without needing hover. */
+.note-card-copy-corner {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  top: auto;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  opacity: 0;
+  touch-action: manipulation;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  z-index: 2;
+}
+
+.note-card:hover .note-card-copy-corner {
+  opacity: 0.7;
+  background: var(--panel);
+  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+}
+
+.note-card-copy-corner:hover,
+.note-card-copy-corner:focus-visible {
+  opacity: 1 !important;
+  background: color-mix(in srgb, var(--accent, var(--red)) 18%, var(--panel)) !important;
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 50%, var(--border)) !important;
+}
+
+/* Unarchive corner reuses the pencil's spot in archive view. */
+.note-card-unarchive-corner:hover,
+.note-card-unarchive-corner:focus-visible {
+  background: color-mix(in srgb, var(--accent) 22%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border)) !important;
+  color: var(--accent);
+}
+
+/* "Done" pill in the bottom-right of every active note card. Visible-only on
+   hover (and always on touch) so it's clearly readable but doesn't clutter
+   the grid at rest. Distinct from the edit pencil so it's obvious what it
+   does — green checkmark + label, not just an icon. */
+/* Matches .note-card-edit-corner footprint (22×22 circle), just anchored
+   to the bottom-right corner instead of top-right. */
+.note-card-done {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green, #98c379);
+  opacity: 0;
+  touch-action: manipulation;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  z-index: 2;
+}
+
+.note-card:hover .note-card-done {
+  opacity: 0.85;
+  background: var(--panel);
+  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+}
+
+.note-card-done:hover,
+.note-card-done:focus-visible {
+  opacity: 1 !important;
+  background: color-mix(in srgb, var(--green, #98c379) 22%, var(--panel)) !important;
+  border-color: color-mix(in srgb, var(--green, #98c379) 50%, var(--border)) !important;
+}
+
+/* Edit + Done are now side-by-side at top-right by default — title-only
+   fallback no longer needed. */
+.note-card-selectmode .note-card-done { display: none !important; }
+
+/* Copy corner — bottom-right of the card. Same opaque-fill pattern as
+   trash/unarchive so the underlying text/image never bleeds through. */
+.note-card-corner-copy {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  visibility: hidden;
+  touch-action: manipulation;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  z-index: 2;
+}
+
+.note-card-corner-copy svg { position: relative; top: 1px; opacity: 0.85; transition: opacity 0.15s; }
+
+.note-card:hover .note-card-corner-copy { visibility: visible; }
+
+.note-card-corner-copy:hover,
+.note-card-corner-copy:focus-visible {
+  background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--accent);
+}
+
+.note-card-corner-copy:hover svg { opacity: 1; }
+
+/* Copy stays on every active card regardless of body shape — Edit + Done
+   live at the top-right pair, so the bottom-right copy slot is always
+   free. Hidden only in select mode. */
+.note-card-selectmode .note-card-corner-copy { display: none !important; }
+
+/* ── Archive view corners — trash (top-left) + unarchive (top-right) ── */
+/* Background fill stays fully opaque (var(--panel)) so the note text or
+   image behind doesn't bleed through. Visibility is gated by `visibility`
+   + a faded ICON instead of `opacity` on the whole button. */
+.note-card-corner-trash,
+.note-card-corner-unarchive {
+  position: absolute;
+  top: 6px;
+  width: 28px;
+  height: 28px;
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  visibility: hidden;
+  touch-action: manipulation;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  z-index: 2;
+}
+
+.note-card-corner-trash svg,
+.note-card-corner-unarchive svg { opacity: 0.85; transition: opacity 0.15s; }
+
+.note-card-corner-trash { left: 6px; }
+
+.note-card-corner-unarchive { right: 6px; }
+
+.note-card:hover .note-card-corner-trash,
+.note-card:hover .note-card-corner-unarchive { visibility: visible; }
+
+.note-card-corner-trash:hover,
+.note-card-corner-trash:focus-visible {
+  background: color-mix(in srgb, var(--red) 18%, var(--panel));
+  border-color: color-mix(in srgb, var(--red) 50%, var(--border));
+  color: var(--red);
+}
+
+.note-card-corner-trash:hover svg,
+.note-card-corner-unarchive:hover svg { opacity: 1; }
+
+.note-card-corner-unarchive:hover,
+.note-card-corner-unarchive:focus-visible {
+  background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--accent);
+}
+
+/* ─── Auto-AI ✨ chip on note cards ─────────────────────────────────── */
+.note-card-ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 35%, transparent);
+  color: var(--accent, var(--red));
+  cursor: pointer;
+  transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
+  vertical-align: middle;
+}
+
+.note-card-ai-chip:hover {
+  background: color-mix(in srgb, var(--accent, var(--red)) 22%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent, var(--red)) 30%, transparent);
+}
+
+.note-card-ai-chip svg {
+  flex-shrink: 0;
+  animation: note-ai-shine 2.4s ease-in-out infinite;
+}
+
+.note-card-ai-solving {
+  cursor: default;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+}
+
+.note-card-ai-solving svg { animation: spin 0.9s linear infinite; filter: none; }
+
+.note-card-ai-done { background: color-mix(in srgb, var(--accent, var(--red)) 8%, transparent); }
+
+.note-card-ai-done svg { animation: none; }
+
+/* ─── AI improve button (note form header) ───────────────────────────── */
+.note-form-improve-btn {
+  width: 38px !important;
+  height: 38px !important;
+  color: var(--accent, var(--red));
+}
+
+.note-form-improve-btn svg {
+  width: 22px !important;
+  height: 22px !important;
+  animation: note-ai-shine 2.4s ease-in-out infinite;
+}
+
+.note-form-improve-btn:disabled,
+.note-form-improve-btn.busy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.note-form-improve-btn.busy svg {
+  animation: spin 0.9s linear infinite;
+  filter: none;
+}
+
+.note-card:hover .note-card-select,
+.note-card:hover .note-card-pin,
+.note-card-selected .note-card-select,
+.note-card-pinned .note-card-pin {
+  display: flex;
+}
+
+.note-card-select:hover, .note-card-pin:hover {
+  opacity: 1;
+  transform: scale(1.15);
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+}
+
+.note-card-pin.active {
+  display: flex;
+  background: color-mix(in srgb, var(--accent, var(--red)) 12%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 45%, var(--border));
+  color: var(--accent, var(--red));
+  opacity: 1;
+}
+
+.note-card-selected .note-card-select {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  opacity: 1;
+}
+
+/* Select-mode checkbox on cards (mirrors docs library) */
+.note-card-cb {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  margin: 0;
+}
+
+.note-card-selectmode {
+  padding-left: 28px;
+  cursor: pointer;
+}
+
+/* In select mode the whole card is a checkbox — kill every hover affordance
+   that would otherwise suggest "preview" or "open" so users know exactly
+   what their tap will do (toggle selection). */
+.note-card-selectmode .note-card-pin,
+.note-card-selectmode .note-card-actions { pointer-events: none; opacity: 0.4; }
+
+.note-card-selectmode .note-card-edit-corner,
+.note-card-selectmode .note-card-pin {
+  display: none !important;
+}
+
+.note-card-selectmode:hover { background: color-mix(in srgb, var(--fg) 3%, transparent) !important; }
+
+.note-card-selectmode .note-card-title:hover { opacity: 1 !important; }
+
+.note-card-selectmode .note-card-edit-corner,
+.note-card-selectmode:hover .note-card-edit-corner { opacity: 0 !important; }
+
+/* Bottom action row — hidden everywhere. The archive/delete actions and the
+   color picker now live inside the edit form (click the pencil corner). */
+.note-card-actions { display: none; }
+
+.note-agent-menu {
+  background: var(--panel, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  padding: 4px 0;
+  min-width: 140px;
+  font-size: 12px;
+}
+
+.note-card-colors {
+  display: flex;
+  gap: 3px;
+}
+
+.note-card-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, var(--fg) 20%, transparent);
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.note-card-color-dot:hover {
+  transform: scale(1.25);
+  border-color: var(--fg);
+}
+
+.note-card-color-dot.active {
+  border-color: var(--fg);
+  border-width: 2px;
+}
+
+.note-card-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  color: var(--fg);
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  border-radius: 3px;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.note-card-action svg { transform: translateY(2px); }
+
+/* Note image */
+.note-card-image {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin: 4px 0;
+  display: block;
+}
+
+.note-form-image-wrap {
+  position: relative;
+  margin: 4px 0;
+}
+
+.note-form-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  /* Images are draggable=true by default; that catches the mousedown
+     and beats the X button to the click. Disabling drag at the CSS
+     level (the -webkit-user-drag prop) keeps the X button reliably
+     clickable even if the JS forgets to set draggable="false" on the
+     element. Unprefixed user-drag was never standardized — Firefox
+     drops it with a warning. */
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.note-form-image-rm {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+  background: rgba(0,0,0,0.65);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note-form-photo-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 4px;
+  width: auto;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  opacity: 1;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.note-form-photo-btn:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+/* Type toggle (note vs todo) */
+.note-form-type-row {
+  display: flex;
+  gap: 4px;
+  margin-top: -2px;
+}
+
+.note-form-remind-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 1;
+  position: relative;
+  top: -2px;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.note-form-remind-btn:hover { opacity: 1; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.note-form-remind-btn.has-date { color: var(--accent); border-color: var(--accent); }
+
+/* Reminder tag inside form */
+.note-form-reminder-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.note-form-reminder-tags:empty { display: none; }
+
+.note-reminder-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border: none;
+  border-radius: 12px;
+  padding: 4px 4px 4px 9px;
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.note-reminder-tag:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+.note-reminder-tag-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  font-size: 12px;
+  line-height: 1;
+  position: relative;
+  top: -2px;
+}
+
+.note-reminder-tag-x:hover { background: var(--red); color: #fff; }
+
+/* Reminder tag on card */
+.note-card-reminder {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 10px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.note-card-reminder.overdue {
+  background: color-mix(in srgb, var(--red) 18%, transparent);
+  color: var(--red);
+}
+
+/* Reminder dropdown menu */
+.note-reminder-menu {
+  position: fixed;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  /* Above the fullscreen note overlay (z-index: 10500) — otherwise the
+     reminder picker opens hidden behind it on mobile and reads as
+     "broken". */
+  z-index: 12000;
+  min-width: 220px;
+  padding: 6px 0;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.note-reminder-menu-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.5;
+  padding: 6px 14px 4px;
+  letter-spacing: 0.5px;
+}
+
+.note-reminder-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.note-reminder-menu-item:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+
+.note-reminder-menu-item.active { color: var(--accent); }
+
+.note-reminder-menu-sub {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: 12px;
+}
+
+.note-reminder-menu-check { color: var(--accent); font-size: 12px; }
+
+.note-reminder-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.note-reminder-menu-picker {
+  padding: 6px 14px 8px;
+}
+
+.note-reminder-date-input {
+  width: 100%;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 8px;
+  outline: none;
+  color-scheme: dark light;
+  box-sizing: border-box;
+}
+
+.note-reminder-date-input:focus { border-color: var(--accent); }
+
+.note-reminder-menu-confirm {
+  font-weight: 600;
+  color: var(--accent);
+  justify-content: center;
+}
+
+.note-reminder-menu-confirm.disabled,
+.note-reminder-menu-confirm[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: var(--fg);
+}
+
+.note-reminder-menu-arrow {
+  opacity: 0.5;
+  margin-left: 8px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.note-reminder-menu-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 11px;
+  opacity: 0.7;
+  padding: 6px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.1s, background 0.1s;
+}
+
+.note-reminder-menu-back:hover { opacity: 1; background: color-mix(in srgb, var(--fg) 6%, transparent); }
+
+.note-reminder-menu-arrow-back {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.note-reminder-menu-sublabel {
+  font-size: 10px;
+  opacity: 0.5;
+  padding: 6px 14px 2px;
+  letter-spacing: 0.3px;
+}
+
+.note-reminder-weekday-row {
+  display: flex;
+  gap: 4px;
+  padding: 4px 12px 8px;
+  flex-wrap: wrap;
+}
+
+.note-reminder-day-chip {
+  flex: 1 1 0;
+  min-width: 24px;
+  height: 28px;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  padding: 0;
+}
+
+.note-reminder-day-chip.wide { padding: 0 6px; }
+
+.note-reminder-day-chip:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.note-reminder-day-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.note-form-type-btn,
+.note-form-type-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.note-form-type-toggle:hover { opacity: 1; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.note-form-type-toggle[data-type="todo"] { color: var(--accent); }
+
+/* Note | Todo | Draw segmented toggle — mirrors .mode-toggle (agent/chat) */
+.note-form-type-seg {
+  display: inline-flex;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.note-form-type-seg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* 3 pills now (note / todo / draw) — Goal was removed. Slider takes
+     1/3 of the track and translates by full multiples of itself. */
+  width: 33.3333%;
+  height: 100%;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  border-radius: 9px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 0;
+}
+
+.note-form-type-seg.is-todo::before { transform: translateX(100%); }
+
+.note-form-type-seg.is-draw::before { transform: translateX(200%); }
+
+.note-form-type-pill {
+  background: none;
+  border: none;
+  color: color-mix(in srgb, var(--fg) 40%, transparent);
+  cursor: pointer;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: color 0.2s;
+  white-space: nowrap;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.note-form-type-pill:not(.active):hover { color: color-mix(in srgb, var(--fg) 60%, transparent); }
+
+.note-form-type-pill.active,
+.note-form-type-pill.active:hover,
+.note-form-type-pill.active:focus {
+  color: var(--fg);
+  cursor: default;
+}
+
+.note-card-action:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+}
+
+.note-card-delete:hover { color: var(--red); }
+
+/* Tag/label */
+.note-card-label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.note-card-label-chip {
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 2px 6px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.note-card-label-chip:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+
+/* ── Goal cards ──────────────────────────────────────────────────────── */
+/* A goal note is structurally a checklist (note_type='goal') but visually
+   marked with a small Goal pill in the corner + a slightly warmer accent
+   so users can spot it at a glance among regular todos. */
+.note-card-goal {
+  border-left: 3px solid color-mix(in srgb, var(--accent-warm) 80%, transparent);
+}
+
+.note-goal-pill {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px 2px 5px;
+  background: color-mix(in srgb, var(--accent-warm) 18%, transparent);
+  color: var(--accent-warm);
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  z-index: 2;
+}
+
+.note-card-goal .note-card-header {
+  /* Goal cards reserve space for the pill so the title doesn't collide. */
+  padding-left: 56px;
+}
+
+/* In select mode the left-side checkbox takes the pill's spot — drop it
+   so the row stays legible. */
+.note-card-selectmode.note-card-goal .note-goal-pill { display: none; }
+
+.note-card-selectmode.note-card-goal .note-card-header { padding-left: 0; }
+
+/* Description blurb above the checklist on goal cards */
+.note-goal-desc {
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 4px 0 6px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+/* ── Goal form (Break-down editor) ───────────────────────────────────── */
+.note-form-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.note-form-goal-desc {
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.note-form-goal-desc:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent-warm) 60%, var(--border));
+}
+
+.note-form-goal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-form-goal-ai {
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--accent-warm) 16%, transparent);
+  color: var(--accent-warm);
+  border: 1px solid color-mix(in srgb, var(--accent-warm) 45%, transparent);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.note-form-goal-ai:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-warm) 26%, transparent);
+  border-color: color-mix(in srgb, var(--accent-warm) 65%, transparent);
+}
+
+.note-form-goal-ai:disabled,
+.note-form-goal-ai.busy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.note-form-goal-hint {
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+/* Fresh goal form: hide the title input + tag input + reminder button so the
+   user only sees the single "what do you want to achieve?" textarea. */
+.note-form-goal-fresh ~ .note-form-actions-group { display: none; }
+
+.note-form:has(.note-form-goal-fresh) .note-form-title,
+.note-form:has(.note-form-goal-fresh) .note-form-label,
+.note-form:has(.note-form-goal-fresh) .note-form-remind-btn,
+.note-form-bespoke:has(.note-form-goal-fresh) .note-form-title,
+.note-form-bespoke:has(.note-form-goal-fresh) .note-form-label,
+.note-form-bespoke:has(.note-form-goal-fresh) .note-form-remind-btn {
+  display: none !important;
+}
+
+.note-form-goal-fresh .note-form-goal-desc {
+  font-size: 15px;
+  min-height: 90px;
+  padding: 12px 14px;
+}
+
+.note-form-goal-fresh.building .note-form-goal-desc {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.note-form-goal-fresh.building::after {
+  content: 'AI is planning your goal…';
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 6px;
+  animation: note-goal-pulse 1.4s ease-in-out infinite;
+}
+
+/* Form label input */
+.note-form-label {
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--fg);
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  outline: none;
+  width: 80px;
+  font-family: inherit;
+  opacity: 0.6;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.note-form-label:hover, .note-form-label:focus { opacity: 1; border-color: var(--border); }
+
+.note-form-label.flash-once {
+  animation: noteLabelFlash 0.6s ease-out;
+}
+
+.note-form-label:not([value=""]) { opacity: 0.9; border-style: solid; }
+
+.note-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.note-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-card-title:hover { opacity: 0.7; }
+
+.note-card-title.empty::before {
+  content: 'No title';
+  font-weight: 500;
+  opacity: 0.3;
+  font-style: italic;
+}
+
+.note-content-preview {
+  font-size: 12px;
+  opacity: 0.6;
+  line-height: 1.4;
+  /* Roomy preview: up to ~14 lines. Content is also sliced to 600 chars
+     client-side, so cards still stay reasonable in the list. */
+  max-height: 240px;
+  overflow: hidden;
+  cursor: pointer;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.note-pin-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.note-pin-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--fg) 25%, transparent);
+  transition: all 0.15s;
+}
+
+.note-pin-btn:hover .note-pin-dot { border-color: var(--fg); }
+
+.note-pin-btn.active .note-pin-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.note-x-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  flex-shrink: 0;
+  color: var(--fg);
+  opacity: 0.25;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.note-x-btn:hover {
+  opacity: 0.9;
+  color: var(--red);
+}
+
+/* Inline due date next to title */
+.note-due-inline {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  opacity: 0.7;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.note-due-inline.note-due-overdue {
+  background: color-mix(in srgb, var(--red) 18%, transparent);
+  color: var(--red);
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Note card drag */
+.note-card { cursor: grab; }
+
+.note-card:active { cursor: grabbing; }
+
+/* Dragged card = "drop preview" — it already sits at the swap-target slot,
+   so making it the most visible card on screen tells the user exactly where
+   the note will land on release. */
+.note-card.dragging {
+  opacity: 0.92;
+  cursor: grabbing;
+  transform: scale(1.03) rotate(-0.6deg);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.4), 0 0 0 2px var(--accent, var(--red));
+  border-color: var(--accent, var(--red)) !important;
+  background: color-mix(in srgb, var(--accent, var(--red)) 6%, var(--panel)) !important;
+  z-index: 10;
+  position: relative;
+  /* Let elementFromPoint see THROUGH the dragged card so the swap detector
+     can find the sibling underneath the finger. Without this, in single-row
+     (list view) the dragged card follows the finger and forever occludes
+     anything else, so no swap ever fires. The body-level touchmove listener
+     still receives events regardless. */
+  pointer-events: none;
+}
+
+/* Checklist drag grip */
+.note-cl-grip {
+  cursor: grab;
+  opacity: 0.2;
+  font-size: 9px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+
+.note-cl-row:hover .note-cl-grip { opacity: 0.6; }
+
+.note-cl-row.dragging {
+  opacity: 0.4;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-radius: 4px;
+}
+
+.note-cl-row.drop-before {
+  box-shadow: 0 -2px 0 0 var(--accent);
+}
+
+.note-cl-row.drop-after {
+  box-shadow: 0 2px 0 0 var(--accent);
+}
+
+.note-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.note-delete-btn {
+  background: none;
+  border: none;
+  color: var(--fg);
+  opacity: 0.2;
+  cursor: pointer;
+  padding: 2px;
+  transition: opacity 0.15s;
+}
+
+.note-delete-btn:hover { opacity: 0.8; color: var(--red); }
+
+.note-archive-btn {
+  background: none; border: none; color: var(--fg); opacity: 0.2; cursor: pointer; padding: 2px; transition: opacity 0.15s;
+}
+
+.note-archive-btn:hover { opacity: 0.7; }
+
+/* Checklist preview — cap height so cards with 30 items don't push the
+   grid layout into oblivion; the inner list scrolls inside the card. */
+.note-checklist-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 18px;
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Card has padding-right:30px reserved for the top-corner edit/done/pin
+     buttons — but those sit above the checklist, not next to it. Pull the
+     checklist back into that reserved gutter so todo text can extend
+     further right. The copy button (bottom-right, 28×28) only appears on
+     hover; leave just enough room (last row) so it doesn't hide the final
+     item's tail. */
+  margin-right: -22px;
+  padding-right: 4px;
+}
+
+.note-checklist-preview > .note-checkbox:last-child .note-check-text {
+  /* Reserve room on the LAST row only for the bottom-right copy button so it
+     doesn't cover the final item's tail. Applied to the text — not to the
+     row — so the X delete button still reaches the same edge it does on
+     every other row. */
+  padding-right: 30px;
+}
+
+.note-card.doclib-card-expanded .note-checklist-preview {
+  /* When the card is the expanded one in the grid, let the list use the
+     whole available height instead of the compact cap. */
+  max-height: none;
+}
+
+.note-checklist-preview:empty::before {
+  content: 'No todos';
+  font-size: 10px;
+  opacity: 0.3;
+  font-style: italic;
+}
+
+.note-cl-quickadd {
+  /* In flow now (was position:absolute), rendered AFTER the reminder badge
+     so the "+ Add item" input sits underneath the reminder instead of
+     overlapping it. Slight right inset keeps clear of the bottom-right
+     copy button on hover. */
+  display: block;
+  padding-top: 2px;
+  padding-right: 32px;
+  margin-top: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.note-card:hover .note-cl-quickadd,
+.note-cl-quickadd:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.note-cl-quickadd-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--fg);
+  font-size: 11px;
+  font-family: inherit;
+  padding: 4px 2px 2px;
+  outline: none;
+  opacity: 0.6;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.note-cl-quickadd-input::placeholder { color: var(--fg); opacity: 0.5; }
+
+.note-cl-quickadd-input:focus { opacity: 1; border-top-color: var(--border); }
+
+.note-card-selectmode .note-cl-quickadd { display: none !important; }
+
+.note-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  /* Vertical padding stays 0 so short single-line rows pack tightly.
+     Left padding bumped so the dot's hover-scale (1.15x) doesn't clip
+     against the card edge. */
+  padding: 0 4px 0 8px;
+  line-height: 1.25;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.note-checkbox:hover {
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+.note-check-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.note-link {
+  color: var(--accent-primary, var(--red));
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.note-link:hover { opacity: 0.8; }
+
+.note-checkbox-edit, .note-checkbox-rm {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  opacity: 0;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+
+.note-checkbox-rm { margin-left: auto; }
+
+.note-checkbox-edit { margin-left: auto; }
+
+.note-checkbox:hover .note-checkbox-edit,
+.note-checkbox:hover .note-checkbox-rm { opacity: 0.55; }
+
+.note-checkbox-rm:hover { opacity: 1 !important; color: var(--red); background: color-mix(in srgb, var(--red) 12%, transparent); }
+
+.note-checkbox-edit:hover { opacity: 1 !important; color: var(--accent, var(--blue)); background: color-mix(in srgb, var(--accent, var(--blue)) 12%, transparent); }
+
+.note-card-selectmode .note-checkbox-edit,
+.note-card-selectmode .note-checkbox-rm { display: none; }
+
+.note-check-text[contenteditable="true"] {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  outline: 1px solid var(--accent, var(--blue));
+  border-radius: 2px;
+  cursor: text;
+  padding: 0 2px;
+  margin: 0 -2px;
+}
+
+.note-check-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.75px solid color-mix(in srgb, var(--fg) 35%, transparent);
+  /* Solid panel fill so the dot reads as a tappable target even when an
+     image or colored card background sits behind it. */
+  background: var(--panel);
+  flex-shrink: 0;
+  position: relative;
+  /* Anchor the hover/active scale to the LEFT edge so the dot grows
+     rightward only. Default center origin pushed the scaled dot off the
+     left of the card (the parent .note-checklist-preview has overflow:auto
+     and clips horizontally as a side-effect of overflow-y:auto). */
+  transform-origin: left center;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.note-check-dot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 7px;
+  height: 3.5px;
+  border-left: 1.75px solid #fff;
+  border-bottom: 1.75px solid #fff;
+  transform: translate(-50%, -50%) rotate(-45deg) scale(0);
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.note-checkbox:hover .note-check-dot {
+  border-color: var(--accent);
+  transform: scale(1.15);
+}
+
+.note-checkbox:active .note-check-dot {
+  transform: scale(0.9);
+}
+
+.note-checkbox.done .note-check-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: note-check-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.note-checkbox.done .note-check-dot::after {
+  transform: translate(-50%, -50%) rotate(-45deg) scale(1);
+}
+
+.note-check-text {
+  transition: opacity 0.25s;
+  line-height: 1.3;
+  padding-right: 4px;
+  word-break: break-word;
+}
+
+.note-checkbox.done .note-check-text {
+  position: relative;
+  opacity: 0.4;
+}
+
+.note-checkbox.done .note-check-text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 1px);
+  height: 1px;
+  background: currentColor;
+  animation: note-strike 0.3s ease-out forwards;
+  transform-origin: left center;
+}
+
+/* Due date badge */
+.note-due-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  color: var(--fg);
+  opacity: 0.6;
+}
+
+.note-due-overdue {
+  background: color-mix(in srgb, var(--red) 20%, transparent);
+  color: var(--red);
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Color classes — theme-aware via color-mix with --panel */
+.note-color-red    { background: color-mix(in srgb, var(--red) 18%, var(--panel)); border-color: color-mix(in srgb, var(--red) 30%, var(--border)); }
+
+.note-color-orange { background: color-mix(in srgb, #d19a66 18%, var(--panel)); border-color: color-mix(in srgb, #d19a66 30%, var(--border)); }
+
+.note-color-yellow { background: color-mix(in srgb, var(--hl-string) 18%, var(--panel)); border-color: color-mix(in srgb, var(--hl-string) 30%, var(--border)); }
+
+.note-color-green  { background: color-mix(in srgb, #98c379 18%, var(--panel)); border-color: color-mix(in srgb, #98c379 30%, var(--border)); }
+
+.note-color-blue   { background: color-mix(in srgb, var(--hl-function) 18%, var(--panel)); border-color: color-mix(in srgb, var(--hl-function) 30%, var(--border)); }
+
+.note-color-purple { background: color-mix(in srgb, var(--hl-keyword) 18%, var(--panel)); border-color: color-mix(in srgb, var(--hl-keyword) 30%, var(--border)); }
+
+/* 3D top-edge highlight — an inset 2px stripe inside every note card that
+   reads as a lifted "glassy" lip. Each colored note gets a stronger stripe
+   in its own hue so the colour reads even before you focus on the card. */
+.note-card { box-shadow: inset 0 2px 0 0 color-mix(in srgb, var(--fg) 14%, transparent); }
+
+.note-color-red    { box-shadow: inset 0 2px 0 0 color-mix(in srgb, var(--red) 55%, transparent); }
+
+.note-color-orange { box-shadow: inset 0 2px 0 0 color-mix(in srgb, #d19a66 60%, transparent); }
+
+.note-color-yellow { box-shadow: inset 0 2px 0 0 color-mix(in srgb, var(--hl-string) 60%, transparent); }
+
+.note-color-green  { box-shadow: inset 0 2px 0 0 color-mix(in srgb, #98c379 60%, transparent); }
+
+.note-color-blue   { box-shadow: inset 0 2px 0 0 color-mix(in srgb, var(--hl-function) 60%, transparent); }
+
+.note-color-purple { box-shadow: inset 0 2px 0 0 color-mix(in srgb, var(--hl-keyword) 60%, transparent); }
+
+/* Color picker dots */
+.note-color-picker {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.note-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.note-color-dot:hover { transform: scale(1.15); }
+
+.note-color-dot.active {
+  border-color: var(--fg);
+}
+
+/* Note form */
+.note-form {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  transition: background 0.2s, border-color 0.2s;
+  /* Container so the action buttons can collapse to icons when the note
+     card is narrow (see .note-form-collapsible). */
+  container-type: inline-size;
+  container-name: noteform;
+}
+
+/* Label sits after the icon in each action button */
+.note-form-text-btn .nft-label { margin-left: 5px; }
+
+/* Never let the action buttons spill outside the card */
+.note-form-actions-group { flex-wrap: wrap; row-gap: 6px; }
+
+.note-form.note-color-red    { background: color-mix(in srgb, var(--red) 18%, var(--panel)) !important; border-color: color-mix(in srgb, var(--red) 30%, var(--border)) !important; }
+
+.note-form.note-color-orange { background: color-mix(in srgb, #d19a66 18%, var(--panel)) !important; border-color: color-mix(in srgb, #d19a66 30%, var(--border)) !important; }
+
+.note-form.note-color-yellow { background: color-mix(in srgb, var(--hl-string) 18%, var(--panel)) !important; border-color: color-mix(in srgb, var(--hl-string) 30%, var(--border)) !important; }
+
+.note-form.note-color-green  { background: color-mix(in srgb, #98c379 18%, var(--panel)) !important; border-color: color-mix(in srgb, #98c379 30%, var(--border)) !important; }
+
+.note-form.note-color-blue   { background: color-mix(in srgb, var(--hl-function) 18%, var(--panel)) !important; border-color: color-mix(in srgb, var(--hl-function) 30%, var(--border)) !important; }
+
+.note-form.note-color-purple { background: color-mix(in srgb, var(--hl-keyword) 18%, var(--panel)) !important; border-color: color-mix(in srgb, var(--hl-keyword) 30%, var(--border)) !important; }
+
+.note-form-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 0;
+}
+
+.note-form-header .note-form-remind-btn {
+  margin-right: -7px; /* align bell center with X-button column on todo rows */
+  position: relative;
+  top: -2px;
+}
+
+.note-form-title {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 0;
+  outline: none;
+}
+
+.note-form-title:focus { border-color: var(--fg); }
+
+.note-form-header { position: relative; }
+
+.note-form-header .note-form-due {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.note-form-due-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.note-form-due-btn:hover { opacity: 1; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.note-form-due-btn.has-date {
+  opacity: 1;
+  border-style: solid;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+.note-type-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.note-type-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.note-type-btn.active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+}
+
+.note-type-btn:hover { opacity: 0.8; }
+
+.note-form-content {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 4px;
+  resize: vertical;
+  /* Roomier default so editing a note isn't cramped; JS auto-grow takes
+     it further as you type. */
+  min-height: 120px;
+  line-height: 1.5;
+  font-family: inherit;
+  outline: none;
+}
+
+.note-form-content:focus { border-color: var(--fg); }
+
+.note-form-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.note-form-meta .note-form-label {
+  width: 112px;
+  flex: 0 1 140px;
+}
+
+.note-form-meta .note-color-picker { gap: 3px; }
+
+.note-form-actions-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  /* Take the full width of the meta row so Archive/Delete can sit on the
+     LEFT side and the spacer pushes Cancel + Update to the right edge. */
+  flex: 1 1 auto;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+.note-form-actions-spacer { flex: 1 1 auto; }
+
+/* Unified text+icon action button — used for Archive, Delete, Cancel, Update
+   so all 4 read as a matched set. Matches the existing .note-form-save
+   sizing/padding via the rules at ~25023. */
+.note-form-text-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.note-form-text-btn:hover {
+  background: color-mix(in srgb, var(--fg) 14%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 28%, var(--border));
+}
+
+.note-form-text-btn.note-form-save {
+  background: color-mix(in srgb, var(--accent, var(--red)) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 45%, var(--border));
+  color: var(--accent, var(--red));
+  font-weight: 600;
+}
+
+.note-form-text-btn.note-form-save:hover {
+  background: color-mix(in srgb, var(--accent, var(--red)) 28%, transparent);
+}
+
+.note-form-text-btn.danger:hover {
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+  border-color: color-mix(in srgb, var(--red) 45%, var(--border));
+  color: var(--red);
+}
+
+.note-form-icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 4px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.65;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+/* Force the inner icons to render at the inline-attribute size — some other
+   stylesheets clamp `svg { width: ... }` globally and that shrinks them. */
+.note-form-icon-btn svg { width: 31px !important; height: 31px !important; }
+
+.note-form-icon-btn:hover { opacity: 1; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.note-form-delete-btn:hover { color: var(--red); border-color: color-mix(in srgb, var(--red) 50%, var(--border)); background: color-mix(in srgb, var(--red) 8%, transparent); }
+
+/* Draw mode — canvas + small toolbar */
+.note-form-draw-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+/* X overlay on the canvas — appears only when a photo is loaded as the
+   background (via _wireCanvas). Clicking it wipes the canvas back to white. */
+.note-form-draw-bg-rm {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note-form-draw-bg-rm:hover { background: rgba(0, 0, 0, 0.8); }
+
+/* Draw mode hides the note's background-color picker and the standalone
+   image preview — they don't make sense alongside a canvas. Uses :has() so
+   it kicks in whenever the type-seg flips to .is-draw, in addition to the
+   JS that sets display:none. */
+.note-form:has(.note-form-type-seg.is-draw) .note-color-picker,
+.note-form:has(.note-form-type-seg.is-draw) .note-form-image-wrap {
+  display: none !important;
+}
+
+.note-form-canvas {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  touch-action: none;
+  max-width: 100%;
+  cursor: crosshair;
+}
+
+.note-form-draw-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.note-form-draw-tool {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+}
+
+/* Color picker rendered as a flat circular swatch — the native chrome around
+   <input type=color> would clash with the rest of the toolbar. */
+.note-form-draw-color {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  flex: 0 0 24px;
+}
+
+/* After attachColorPicker swaps the input to type=text + .cp-swatch-input,
+   re-pin the swatch to a 24px circle (otherwise it inherits text-input
+   sizing and becomes a giant rectangle). */
+.note-form-draw-color.cp-swatch-input {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  border-radius: 50%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.note-form-draw-color::-webkit-color-swatch-wrapper { padding: 0; border-radius: 50%; }
+
+.note-form-draw-color::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+.note-form-draw-color::-moz-color-swatch { border: none; border-radius: 50%; }
+
+.note-form-draw-size-wrap { width: 110px; display: inline-flex; align-items: center; }
+
+.note-form-photo-plus {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Mirrors .gallery-editor-container input[type=range] — slim pill track that
+   grows on interaction, red circular thumb. */
+.note-form-draw-size {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: color-mix(in srgb, var(--fg) 25%, transparent);
+  border-radius: 999px;
+  accent-color: var(--red);
+  cursor: pointer;
+  transition: height 0.15s ease;
+}
+
+.note-form-draw-size:hover,
+.note-form-draw-size:focus,
+.note-form-draw-size:active { height: 10px; }
+
+.note-form-draw-size::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: width 0.12s ease, height 0.12s ease;
+}
+
+.note-form-draw-size::-moz-range-thumb {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: width 0.12s ease, height 0.12s ease;
+}
+
+.note-form-draw-size:hover::-webkit-slider-thumb,
+.note-form-draw-size:focus::-webkit-slider-thumb,
+.note-form-draw-size:active::-webkit-slider-thumb { width: 18px; height: 18px; }
+
+.note-form-draw-size:hover::-moz-range-thumb,
+.note-form-draw-size:focus::-moz-range-thumb,
+.note-form-draw-size:active::-moz-range-thumb { width: 18px; height: 18px; }
+
+/* Brush | Eraser segmented toggle — sliding pill, same recipe as Note/Todo. */
+.note-form-draw-be {
+  display: inline-flex;
+  height: 32px;
+  /* Accent-colored box around the whole control so it's instantly readable
+     as "switch is on", and the sliding pill inside indicates which side. */
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+.note-form-draw-be::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 9px;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 0;
+}
+
+.note-form-draw-be.is-eraser::before { transform: translateX(100%); }
+
+.note-form-draw-be-btn {
+  background: none;
+  border: none;
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  cursor: pointer;
+  padding: 0 8px;
+  width: 34px;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  transition: color 0.18s;
+}
+
+.note-form-draw-be-btn:hover { color: var(--fg); }
+
+/* Active side picks up the theme accent so brush vs eraser is unmistakable. */
+.note-form-draw-be-btn.active { color: var(--accent-primary, var(--red)); }
+
+.note-form-draw-be-btn:focus { outline: none; }
+
+.note-form-draw-text,
+.note-form-draw-line,
+.note-form-draw-circle,
+.note-form-draw-undo {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 4px;
+  height: 32px;
+  width: 34px;
+  font-family: inherit;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  position: relative;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.note-form-draw-text { font-weight: 700; font-family: Georgia, serif; font-size: 16px; }
+
+/* Size badge in the bottom-right of T — empty until a size is chosen. */
+.note-form-draw-text-badge {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.3px;
+  /* Bare --accent is undefined here, was rendering invisible — use the
+     defined accent so the S/M/L size badge actually shows in theme colour. */
+  color: var(--accent-primary, var(--red));
+}
+
+.note-form-draw-text-badge:empty { display: none; }
+
+.note-form-draw-shape-badge {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.3px;
+  color: var(--accent-primary, var(--red));
+}
+
+.note-form-draw-shape-badge:empty { display: none; }
+
+.note-form-draw-text:hover,
+.note-form-draw-line:hover,
+.note-form-draw-circle:hover,
+.note-form-draw-undo:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.note-form-draw-text.active,
+.note-form-draw-line.active,
+.note-form-draw-circle.active {
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+/* Reflect the chosen size in the icon itself, so the user sees at a glance
+   which size (S/M/L) is active without needing the tiny badge. */
+.note-form-draw-line.size-s svg line,
+.note-form-draw-circle.size-s svg circle { stroke-width: 1.2; }
+
+.note-form-draw-line.size-m svg line,
+.note-form-draw-circle.size-m svg circle { stroke-width: 3; }
+
+.note-form-draw-line.size-l svg line,
+.note-form-draw-circle.size-l svg circle { stroke-width: 5; }
+
+.note-form-draw-text.size-s { font-size: 13px; }
+
+.note-form-draw-text.size-m { font-size: 18px; }
+
+.note-form-draw-text.size-l { font-size: 23px; line-height: 1; }
+
+.note-form-due {
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--fg);
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  outline: none;
+  opacity: 0.4;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.note-form-due:hover, .note-form-due:focus { opacity: 0.9; border-color: var(--border); }
+
+.note-form-due:not([value=""]) { opacity: 0.85; border-style: solid; }
+
+.note-form-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.note-form-save,
+.note-form-cancel,
+.note-form-archive {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.note-form-save { background: color-mix(in srgb, var(--fg) 12%, transparent); font-weight: 600; }
+
+.note-form-save:hover { background: color-mix(in srgb, var(--fg) 20%, transparent); }
+
+.note-form-cancel:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+
+.note-form-archive:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+
+/* Checklist inputs in form */
+.note-checklist-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.note-cl-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-cl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--fg) 30%, transparent);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.note-cl-dot:hover { border-color: var(--fg); transform: scale(1.2); }
+
+.note-cl-row.done .note-cl-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.note-cl-row.done .note-cl-text {
+  opacity: 0.4;
+  background: linear-gradient(currentColor, currentColor) no-repeat;
+  background-size: 0 1px;
+  background-position: 0 calc(50% - 1px);
+  animation: cl-strike 0.32s ease-out forwards;
+  transition: opacity 0.2s ease;
+}
+
+.note-cl-text {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 12px;
+  padding: 3px 0 3px 3px;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  outline: none;
+}
+
+.note-cl-text:focus { border-color: var(--fg); }
+
+.note-cl-rm {
+  background: none;
+  border: none;
+  color: var(--fg);
+  opacity: 0.3;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  width: 24px;
+  height: 14px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  line-height: 1;
+}
+
+.note-cl-rm:hover { opacity: 0.8; color: var(--red); }
+
+.note-cl-add {
+  background: none;
+  border: none;
+  color: var(--fg);
+  opacity: 0.4;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.note-cl-add:hover { opacity: 0.7; }
+
+/* Brief outline flash on a note card when it's the target of a
+   #note-<id> link click from chat — same pattern as the cookbook
+   task flash, just scoped to .note-card. */
+.note-card-flash {
+  animation: note-card-flash-anim 1.6s ease-out;
+}

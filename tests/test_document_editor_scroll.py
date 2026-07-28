@@ -9,10 +9,10 @@ document.js is browser-coupled and not importable in pytest.
 """
 
 from pathlib import Path
-
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
-DOC_JS = (ROOT / "static/js/document.js").read_text(encoding="utf-8")
+DOC_JS = (ROOT / "web/lib/legacy/document.js").read_text(encoding="utf-8")
 STYLE_CSS = (ROOT / "static/style.css").read_text(encoding="utf-8")
 
 
@@ -30,7 +30,11 @@ def test_document_textarea_scrollbar_is_visible():
 def test_line_number_gutter_translates_inner_content():
     assert "function _lineNumberContentEl(gutter)" in DOC_JS
     assert "inner.className = 'doc-line-number-content';" in DOC_JS
-    assert ".style.transform = `translateY(${-textarea.scrollTop}px)`;" in DOC_JS
+    pattern = re.compile(
+        r"\.style\.transform =\s*`translateY\(\s*\$\{-textarea\.scrollTop\}px\s*\)`;",
+        re.MULTILINE
+    )
+    assert pattern.search(DOC_JS)
     assert "gutter.scrollTop = textarea.scrollTop;" not in DOC_JS
     assert ".doc-line-number-content" in STYLE_CSS
 

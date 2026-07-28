@@ -8,7 +8,7 @@ cannot toggle thinking mode.
 """
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/cookbook.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/cookbook.js"
 
 
 def test_gemma4_thinking_template_uses_google_documented_thinking_placement():

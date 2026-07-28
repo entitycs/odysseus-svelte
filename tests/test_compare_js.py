@@ -54,7 +54,7 @@ def test_state_reset_preserves_config(node_available):
     any pending fetches and zero the metrics array — anything that
     survives reset would leak between compare sessions."""
     script = textwrap.dedent("""
-        const mod = await import('./static/js/compare/state.js');
+        const mod = await import('./web/lib/legacy/compare/state.js');
         const { default: state, reset } = mod;
         state.API_BASE = 'http://x';
         state._blindMode = true;
@@ -103,7 +103,7 @@ def test_state_reset_resets_probed_set(node_available):
     be cleared on reset so a stale endpoint can't silently use cached
     'ok' state from a previous session."""
     script = textwrap.dedent("""
-        const { default: state, reset } = await import('./static/js/compare/state.js');
+        const { default: state, reset } = await import('./web/lib/legacy/compare/state.js');
         state._probed = new Set(['gpt-4', 'sonnet']);
         reset();
         console.log(JSON.stringify({
@@ -123,7 +123,7 @@ def test_svg_icon_exports_are_valid_svg(node_available):
     a non-empty string starting with `<svg`. A `null`/`undefined`
     slipping in here only surfaces at runtime when the icon is rendered."""
     script = textwrap.dedent("""
-        const icons = await import('./static/js/compare/icons.js');
+        const icons = await import('./web/lib/legacy/compare/icons.js');
         const isIconName = (n) => (
           n.endsWith('_ICON') || n.startsWith('ICON_') || n.endsWith('_SVG') ||
           n.startsWith('EYE_') || n.startsWith('SAVE_') ||
@@ -150,7 +150,7 @@ def test_wave_frames_is_valid_animation_strip(node_available):
     Pin: array of equal-length non-empty strings — frames of different
     lengths would visibly jitter the layout."""
     script = textwrap.dedent("""
-        const { WAVE_FRAMES } = await import('./static/js/compare/icons.js');
+        const { WAVE_FRAMES } = await import('./web/lib/legacy/compare/icons.js');
         const lengths = new Set(WAVE_FRAMES.map(f => [...f].length));
         console.log(JSON.stringify({
           count: WAVE_FRAMES.length,
@@ -170,7 +170,7 @@ def test_storage_keys_are_namespaced(node_available):
     can't collide with other apps on the same origin or with a
     different feature of this app."""
     script = textwrap.dedent("""
-        const m = await import('./static/js/compare/icons.js');
+        const m = await import('./web/lib/legacy/compare/icons.js');
         console.log(JSON.stringify({
           votes: m.VOTES_STORAGE_KEY,
           pool: m.POOL_STORAGE_KEY,

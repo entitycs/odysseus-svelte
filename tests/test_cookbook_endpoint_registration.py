@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-COOKBOOK_RUNNING = ROOT / "static" / "js" / "cookbookRunning.js"
+COOKBOOK_RUNNING = ROOT / "web" / "lib" / "legacy" / "cookbookRunning.js"
 
 
 def _source() -> str:

@@ -22,8 +22,8 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_UTILS = (_REPO / "static" / "js" / "calendar" / "utils.js").as_posix()
-_CALENDAR_JS = _REPO / "static" / "js" / "calendar.js"
+_UTILS = (_REPO / "web" / "lib" / "legacy" / "calendar" / "utils.js").as_posix()
+_CALENDAR_JS = _REPO / "web" / "lib" / "legacy" / "calendar.js"
 _HAS_NODE = shutil.which("node") is not None
 
 pytestmark = pytest.mark.skipif(not _HAS_NODE, reason="node binary not on PATH")

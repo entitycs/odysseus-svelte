@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 _REPO = Path(__file__).resolve().parents[1]
-_EMAIL_LIBRARY = _REPO / "static" / "js" / "emailLibrary.js"
+_EMAIL_LIBRARY = _REPO / "web" / "lib" / "legacy" / "emailLibrary.js"
 
 
 def _bulk_action_source() -> str:

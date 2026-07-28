@@ -46,6 +46,7 @@ def serve_html_with_nonce(request: Request, file_path: str) -> HTMLResponse:
         raise HTTPException(500, "Internal server error")
     nonce = getattr(request.state, "csp_nonce", "")
     html = html.replace("{{CSP_NONCE}}", nonce)
+    html = html.replace("%sveltekit.nonce%", nonce)
     return HTMLResponse(html)
 
 

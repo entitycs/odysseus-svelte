@@ -17,6 +17,7 @@ from src.endpoint_resolver import resolve_endpoint
 from src.auth_helpers import _auth_disabled, get_current_user
 from core.auth import RESERVED_USERNAMES
 from src.constants import DEEP_RESEARCH_DIR
+from routes.research.research_helpers import ResearchPathNotFoundError, ResearchPathNotOwnedError
 
 _SESSION_ID_RE = re.compile(r"^[a-zA-Z0-9-]{1,128}$")
 
@@ -50,22 +51,25 @@ def _find_research_path(session_id: str) -> Path | None:
 
 
 def _require_research_path(session_id: str) -> Path:
-    path = _find_research_path(session_id)
-    if path is None:
+    try:
+        path = _find_research_path(session_id)
+        if path:
+            return path
+    except ResearchPathNotFoundError:
         raise HTTPException(404, "Research not found")
-    return path
+    raise HTTPException(404, "Research not found")
 
 
-def _find_owned_research_path(session_id: str, user: str) -> Path | None:
+def _find_owned_research_path(session_id: str, user: str) -> Path:
     path = _find_research_path(session_id)
     if path is None:
-        return None
+        raise ResearchPathNotFoundError(session_id)
     try:
         owner = json.loads(path.read_text(encoding="utf-8")).get("owner")
     except Exception:
-        return None
+        raise ResearchPathNotFoundError(session_id)
     if owner != user:
-        return None
+        raise ResearchPathNotOwnedError(session_id, owner, user)
     return path
 
 
@@ -224,16 +228,23 @@ def setup_research_routes(research_handler, session_manager=None) -> APIRouter:
     def _owns_in_memory(session_id: str, user: str) -> bool:
         """Ownership check for an in-flight (in-memory) research task.
         Falls back to the on-disk JSON if the task has already finished."""
+        logger.info("made it (temp)")
         entry = research_handler._active_tasks.get(session_id)
         if entry is not None:
+            logger.info("Checking Owner... (temp)")
             return entry.get("owner", "") == user
         # Task no longer in memory — check the persisted JSON.
         try:
-            return _find_owned_research_path(session_id, user) is not None
-        except HTTPException:
+            logger.info("checking find owned research path for session id + user (temp)")
+            _ = _find_owned_research_path(session_id, user)
+        except ResearchPathNotOwnedError:
+            logger.info("find owned path exception... (temp)")
             return False
+        except ResearchPathNotFoundError:
+            raise HTTPException(204, "No research found for this session")
+        return True
 
-    def _require_owned_or_active_research_path(session_id: str, user: str) -> Path | None:
+    def _require_owned_or_active_research_path(session_id: str, user: str) -> Path:
         """Validate ownership once and return the completed on-disk path.
 
         Active running research has no completed disk path yet. Completed
@@ -246,13 +257,17 @@ def setup_research_routes(research_handler, session_manager=None) -> APIRouter:
             if entry.get("owner", "") != user:
                 raise HTTPException(404, "No research found for this session")
             if entry.get("status") != "running":
-                path = _find_owned_research_path(session_id, user)
-                if path is not None:
-                    return path
-            return None
+                try:
+                    path = _find_owned_research_path(session_id, user)
+                except ResearchPathNotFoundError:
+                    raise HTTPException(204, "No research found for this session")
+                return path
 
-        path = _find_owned_research_path(session_id, user)
-        if path is None:
+        try:
+            path = _find_owned_research_path(session_id, user)
+        except ResearchPathNotFoundError:
+            raise HTTPException(204, "No research found for this session")
+        except ResearchPathNotOwnedError:
             raise HTTPException(404, "No research found for this session")
         return path
 
@@ -279,19 +294,25 @@ def setup_research_routes(research_handler, session_manager=None) -> APIRouter:
     async def research_status(session_id: str, request: Request):
         user = _require_user(request)
         _validate_session_id(session_id)
-        if not _owns_in_memory(session_id, user):
-            raise HTTPException(404, "No research found for this session")
+        try:
+            if not _owns_in_memory(session_id, user):
+                raise HTTPException(404, "No research found for this session")
+        except ResearchPathNotFoundError:
+            raise HTTPException(204, "No research found for this session")
         status = research_handler.get_status(session_id)
         if status is None:
-            raise HTTPException(404, "No research found for this session")
+            raise HTTPException(204, "No research found for this session")
         return status
 
     @router.post("/api/research/cancel/{session_id}")
     async def research_cancel(session_id: str, request: Request):
         user = _require_user(request)
         _validate_session_id(session_id)
-        if not _owns_in_memory(session_id, user):
-            raise HTTPException(404, "No research found for this session")
+        try:
+            if not _owns_in_memory(session_id, user):
+                raise HTTPException(404, "No research found for this session")
+        except ResearchPathNotFoundError:
+            raise HTTPException(204, "No research found for this session")
         cancelled = research_handler.cancel_research(session_id)
         return {"cancelled": cancelled}
 
@@ -299,8 +320,11 @@ def setup_research_routes(research_handler, session_manager=None) -> APIRouter:
     async def research_result(session_id: str, request: Request):
         user = _require_user(request)
         _validate_session_id(session_id)
-        if not _owns_in_memory(session_id, user):
-            raise HTTPException(404, "No research result available")
+        try:
+            if not _owns_in_memory(session_id, user):
+                raise HTTPException(404, "No research found for this session")
+        except ResearchPathNotFoundError:
+            raise HTTPException(204, "No research found for this session")
         result = research_handler.get_result(session_id)
         if result is None:
             raise HTTPException(404, "No research result available")
@@ -581,8 +605,11 @@ def setup_research_routes(research_handler, session_manager=None) -> APIRouter:
         """SSE stream of research progress events."""
         user = _require_user(request)
         _validate_session_id(session_id)
-        if not _owns_in_memory(session_id, user):
-            raise HTTPException(404, "No research found for this session")
+        try:
+            if not _owns_in_memory(session_id, user):
+                raise HTTPException(404, "No research found for this session")
+        except ResearchPathNotFoundError:
+            raise HTTPException(204, "No research found for this session")
         async def _generate():
             last_progress = None
             while True:

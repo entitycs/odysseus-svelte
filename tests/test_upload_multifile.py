@@ -141,7 +141,7 @@ async def test_genuine_recent_volume_still_throttled():
 # the composer allows MAX_FILES=10. ──────────────────────────────────────────
 
 def _max_files_from_frontend() -> int:
-    src = (_REPO / "static/js/fileHandler.js").read_text(encoding="utf-8")
+    src = (_REPO / "web/lib/legacy/fileHandler.js").read_text(encoding="utf-8")
     m = re.search(r"MAX_FILES\s*=\s*(\d+)", src)
     assert m, "MAX_FILES not found in fileHandler.js"
     return int(m.group(1))

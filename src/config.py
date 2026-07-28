@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, field_validator
 
 from src.constants import DATA_DIR as _DATA_DIR_CONST
+from src.constants import SEARXNG_INSTANCE as _SEARXNG_INSTANCE_CONST
 from src.runtime_paths import get_app_root
 
 # Cross-platform OS flag, exposed here so callers can `from src.config import
@@ -67,7 +68,7 @@ class SearchConfig(BaseSettings):
     
     # Web search
     searxng_instance: str = Field(
-        default="http://localhost:8080",
+        default=_SEARXNG_INSTANCE_CONST,
         description="SearXNG instance URL (self-hosted)"
     )
     web_search_count: int = Field(default=10, description="Number of search results to retrieve")

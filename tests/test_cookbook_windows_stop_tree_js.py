@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNNING_JS = ROOT / "static" / "js" / "cookbookRunning.js"
+RUNNING_JS = ROOT / "web" / "lib" / "legacy" / "cookbookRunning.js"
 
 
 def _between(source, start, end):

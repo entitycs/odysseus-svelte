@@ -11,8 +11,8 @@ These tests assert the source patterns exist so they can't be silently removed.
 """
 from pathlib import Path
 
-GROUP_JS = Path("static/js/group.js").read_text(encoding="utf-8")
-PRESETS_JS = Path("static/js/presets.js").read_text(encoding="utf-8")
+GROUP_JS = Path("web/lib/legacy/group.js").read_text(encoding="utf-8")
+PRESETS_JS = Path("web/lib/legacy/presets.js").read_text(encoding="utf-8")
 
 
 # --- group.js: in-memory template merge in _getCharacterList ---
@@ -20,7 +20,7 @@ PRESETS_JS = Path("static/js/presets.js").read_text(encoding="utf-8")
 def test_group_imports_getUserTemplates():
     """group.js must import getUserTemplates from presets.js."""
     assert "getUserTemplates" in GROUP_JS
-    assert "from './presets.js'" in GROUP_JS or 'from "./presets.js"' in GROUP_JS
+    assert "from '$lib/legacy/presets.js'" in GROUP_JS or 'from "$lib/legacy/presets.js"' in GROUP_JS
 
 
 def test_group_merges_in_memory_templates():

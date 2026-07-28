@@ -1,4 +1,4 @@
-"""Pin ArrowUp recall on the chat composer (static/js/composerArrowUpRecall.js).
+"""Pin ArrowUp recall on the chat composer (web/lib/legacy/composerArrowUpRecall.js).
 
 Driven through `node --input-type=module` so we exercise the real JS without a
 full Vitest/Jest setup (same approach as test_reply_recipients_js.py). Skips
@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "composerArrowUpRecall.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "composerArrowUpRecall.js"
 _HELPER_URL = _HELPER.as_uri()
 _HAS_NODE = shutil.which("node") is not None
 

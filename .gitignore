@@ -1,14 +1,22 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.python-version
+.venv/
+build/
+dist/
+ENV/
+env/
+venv/
+!static/js/editor/build/
+
+# Distribution / packaging
+*.egg
 *.egg-info/
 dist/
-build/
-!static/js/editor/build/
-venv/
-.venv/
-*.egg
+develop-eggs/
 
 # Environment
 .env
@@ -35,6 +43,8 @@ logs/
 *.sqlite3
 
 # Node
+.npm/
+package-lock.json
 node_modules/
 services/node_modules/
 services/data/
@@ -49,6 +59,7 @@ services/data/
 *~
 
 # Test capture artifacts (browser session dumps may contain personal content)
+test-results/
 .playwright-mcp/
 
 # OS
@@ -59,6 +70,24 @@ Thumbs.db
 *.cache
 cache/
 output.txt.txt
+
+# Vite timestamps
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# SvelteKit / Vite build output
+.svelte-kit/
+/build/
+/web-build
+
+# Svelte widget build output (compiled into static/svelte/)
+/static/svelte/
+
+# Platform-specific adapter output
+.output
+.vercel
+.netlify
+.wrangler
 
 # Media (uploaded/generated)
 *.jpg
@@ -102,3 +131,4 @@ compound.config.json
 *.error.log
 _scratch/
 /odysseus/
+

@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 _REPO = Path(__file__).resolve().parent.parent
-_AC = (_REPO / "static" / "js" / "slashAutocomplete.js").read_text(encoding="utf-8")
+_AC = (_REPO / "web" / "lib" / "legacy" / "slashAutocomplete.js").read_text(encoding="utf-8")
 
 
 def test_exact_parent_command_expands_subcommands_before_top_level_row_cap():

@@ -1,0 +1,1824 @@
+/* Sortable Cookbook column headers had no visual cue, so users couldn't tell
+       a header was clickable (the Newest sort on the Model column was invisible).
+       Show a pointer + hover highlight, and underline the active sort column. */
+    .hwfit-header .hwfit-sortable { cursor: pointer; transition: color .12s; }
+
+.hwfit-header .hwfit-sortable:hover { color: var(--fg); text-decoration: underline dotted; }
+
+.hwfit-header .hwfit-sort-active { color: var(--fg); font-weight: 600; }
+
+/* Cookbook's cached-model list: NO inner-scroll cap. Two nested scroll
+   surfaces (this + the outer .admin-card) trapped the wheel so an expanded
+   serve panel couldn't be reached on tall content. Let the outer
+   .admin-card (overflow-y:auto) be the single scroll surface. */
+.hwfit-cached-list {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+#hwfit-dl-server, #hwfit-usecase, #hwfit-server-select, #hwfit-cache-server, #serve-sort { height: 28px; width: 88px; }
+
+#hwfit-dl-server.cookbook-server-select-colored,
+#hwfit-server-select.cookbook-server-select-colored,
+#hwfit-cache-server.cookbook-server-select-colored,
+#hwfit-deps-server.cookbook-server-select-colored {
+  color: var(--cookbook-server-color, var(--fg));
+  border-color: color-mix(in srgb, var(--cookbook-server-color) 55%, var(--border));
+  background-color: color-mix(in srgb, var(--cookbook-server-color) 12%, var(--bg));
+}
+
+/* Serve tab — match Documents sizing, but leave room for the active "Cancel"
+   label and center it vertically so the descenders don't clip. */
+#hwfit-cache-select {
+  min-width: 58px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Downloaded/cached models */
+.hwfit-cached-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin: 2px 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  cursor: default;
+  font-size: 12px;
+}
+
+.hwfit-cached-item .hwfit-serve-panel {
+  flex-basis: 100%;
+  margin-top: 4px;
+}
+
+.hwfit-cached-item:hover {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.hwfit-cached-header {
+  font-size: 10px;
+  opacity: 0.4;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none !important;
+  background: none !important;
+  padding: 2px 8px;
+  cursor: default !important;
+}
+
+.hwfit-cached-header:hover { background: none !important; }
+
+.hwfit-cached-name {
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.hwfit-cached-repo {
+  flex: 1;
+  color: var(--fg-muted);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hwfit-cached-size,
+.hwfit-cached-files {
+  font-size: 10px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.hwfit-cached-serve,
+.hwfit-cached-delete {
+  flex-shrink: 0;
+}
+
+.hwfit-cached-delete {
+  opacity: 0.4;
+  font-size: 10px;
+}
+
+.hwfit-cached-delete:hover {
+  opacity: 1;
+  color: var(--color-error, var(--warn));
+}
+
+.hwfit-cached-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hwfit-cached-ready {
+  background: color-mix(in srgb, var(--color-success, #4caf50) 20%, transparent);
+  color: var(--color-success, #4caf50);
+}
+
+.hwfit-cached-dl {
+  background: color-mix(in srgb, var(--color-warning, #f0ad4e) 20%, transparent);
+  color: var(--color-warning, #f0ad4e);
+}
+
+#hwfit-cache-select.active {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}
+
+/* Serve config panel */
+.hwfit-serve-panel {
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* When the Save split sits inside Row 1 (next to GPUs), align it with the
+   input baseline (the row's grid cells stretch top-down; without this the
+   Save buttons sit above the GPU button group). */
+.hwfit-serve-row .cookbook-serve-slots {
+  align-self: end;
+  margin-bottom: 4px;
+}
+
+/* Center the "?" glyph inside the help chip. Without text-align it sits 0.5px
+   left of true center because of the character's natural baseline offset. */
+.hwfit-help-chip {
+  text-align: center;
+  padding-left: 0.5px;
+}
+
+.hwfit-serve-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+/* Tighter min on the core-knobs row only so Dtype / TP / GPU Mem / Max
+   Seqs fit on one line without crushing Row 1's GPU button strip or
+   the Backend picker. */
+.hwfit-serve-row-core {
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+}
+
+/* Save / saved-config split aligned to the right end of Row 1 and
+   nudged up 4px so it sits flush with the rest of the row. */
+.hwfit-serve-row .cookbook-serve-slots {
+  justify-self: end;
+  position: relative;
+  top: -4px;
+}
+
+/* The Settings label wraps the Save split — right-align its title text
+   so the word "Settings" sits above the right-aligned Save button
+   instead of floating off to the left of its grid cell. 8px right
+   padding now (16px → 8px) per follow-up tweak, brings the title back
+   over the actual Save button instead of overshooting it. */
+.hwfit-serve-row label:has(> .cookbook-serve-slots) {
+  grid-column: -2 / -1;
+  justify-self: end;
+  text-align: right;
+  padding-right: 0;
+}
+
+.hwfit-serve-row label:has(> .cookbook-serve-slots) > span {
+  display: inline-block;
+  position: relative;
+  left: -33px;
+}
+
+.hwfit-serve-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.hwfit-serve-topline .hwfit-serve-runtime-note {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hwfit-serve-topline .hwfit-serve-runtime-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hwfit-serve-preset-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  flex: 0 0 auto;
+  position: relative;
+  top: -6px;
+}
+
+/* Expanded serve panel — make sure it can be scrolled past when it
+   grows taller than the visible viewport. Caps panel height to viewport
+   minus chrome and gives it its own internal scroll, so the surrounding
+   cached-list scroll isn't the only escape route. */
+.hwfit-cached-item .hwfit-serve-panel {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.hwfit-serve-row label {
+  font-size: 10px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.hwfit-serve-row-core .hwfit-context-label {
+  grid-column: span 2;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  justify-self: start;
+}
+
+.hwfit-context-control {
+  display: block;
+  position: relative;
+  align-items: center;
+  margin-top: 2px;
+  width: 100px;
+}
+
+.hwfit-context-control .hwfit-sf[data-field="ctx"] {
+  min-width: 0;
+  width: 100%;
+  padding-right: 40px;
+}
+
+.hwfit-serve-row-core label:has(.hwfit-sf[data-field="max_seqs"]) {
+  position: relative;
+  left: -66px;
+}
+
+.hwfit-serve-row-core label:has(.hwfit-sf[data-field="gpu_mem"]) {
+  position: relative;
+  left: -64px;
+}
+
+.hwfit-serve-row-core .hwfit-gpus-label {
+  position: relative;
+  left: -70px;
+}
+
+.hwfit-context-calc-btn {
+  position: absolute;
+  right: 3px;
+  top: -4px;
+  width: 34px;
+  height: 28px;
+  min-width: 34px;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.hwfit-context-calc-btn .spinner-whirlpool {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 auto !important;
+}
+
+.hwfit-context-calc-btn .ai-spinner-whirlpool {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.hwfit-auto-ctx-note {
+  display: block;
+  margin-top: 3px;
+  font-size: 9px;
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hwfit-serve-row label select,
+.hwfit-serve-row label input {
+  display: block;
+  margin-top: 2px;
+}
+
+/* Ctx slider — ported from origin/main. Sits in the Scan/Download toolbar
+   next to the quant dropdown. Drives _ctxValue() in cookbook-hwfit.js. */
+.hwfit-ctx-control {
+  height: 28px;
+  min-width: 134px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  font-size: 11px;  /* slightly smaller than .cookbook-field-input so Context reads quieter next to Engine/Quant */
+}
+
+.hwfit-ctx-control span {
+  /* Match Quant/Engine select label style: no uppercase, no letter-spacing. */
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.9;
+}
+
+/* Editor-style slider (same look as the gallery editor sliders): thin pill
+   rail that fattens on interaction, circular red thumb that grows on hover. */
+.hwfit-ctx-control input[type="range"] {
+  width: 64px;
+  min-width: 64px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  /* Hard-coded grey so the rail is GUARANTEED visible regardless of theme —
+     every theme-derived color we tried (--fg-muted, --border, accent-bg mix)
+     kept blending into the panel background on at least one theme. */
+  background: rgba(150, 150, 150, 0.65);
+  border-radius: 999px;
+  accent-color: var(--red);
+  cursor: pointer;
+  transition: height 0.15s ease, background 0.15s ease;
+}
+
+.hwfit-ctx-control input[type="range"]:hover,
+.hwfit-ctx-control input[type="range"]:focus,
+.hwfit-ctx-control input[type="range"]:active {
+  background: var(--fg);
+}
+
+.hwfit-ctx-control input[type="range"]:hover,
+.hwfit-ctx-control input[type="range"]:focus,
+.hwfit-ctx-control input[type="range"]:active {
+  height: 10px;
+}
+
+.hwfit-ctx-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: width 0.12s ease, height 0.12s ease;
+}
+
+.hwfit-ctx-control input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: width 0.12s ease, height 0.12s ease;
+}
+
+.hwfit-ctx-control input[type="range"]:hover::-webkit-slider-thumb,
+.hwfit-ctx-control input[type="range"]:focus::-webkit-slider-thumb,
+.hwfit-ctx-control input[type="range"]:active::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+}
+
+.hwfit-ctx-control input[type="range"]:hover::-moz-range-thumb,
+.hwfit-ctx-control input[type="range"]:focus::-moz-range-thumb,
+.hwfit-ctx-control input[type="range"]:active::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+}
+
+.hwfit-ctx-control output {
+  min-width: 28px;
+  text-align: right;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.hwfit-sf {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 0 6px;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.hwfit-sf[data-field="backend"],
+.hwfit-sf[data-field="dtype"],
+.hwfit-sf[data-field="tp"] {
+  height: 32px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.hwfit-extra-env-label {
+  grid-column: 1 / -1;
+}
+
+.hwfit-serve-panel[data-backend-active="vllm"] .hwfit-extra-env-label {
+  grid-column: 2 / -1;
+}
+
+.hwfit-sf:focus {
+  border-color: var(--accent, var(--red));
+  outline: none;
+}
+
+.hwfit-sf[type="text"] { width: 100%; }
+
+.hwfit-sf.hwfit-sf-wide { width: 100%; }
+
+.hwfit-sf.hwfit-sf-full { grid-column: 1 / -1; }
+
+.hwfit-serve-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.hwfit-sf-cb {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  cursor: pointer;
+  padding: 3px 0;
+}
+
+.hwfit-sf-cb:hover { color: var(--fg); }
+
+/* Speculative method + tokens controls — render inline beside the checkbox */
+.hwfit-spec-group .hwfit-spec-method,
+.hwfit-spec-group .hwfit-spec-tokens {
+  height: 20px;
+  padding: 0 4px;
+  font-size: 11px;
+  /* Match the generic .hwfit-sf serve controls: inherit font + 4px radius
+     so the Speculative method/token widgets read as the same control
+     family as the rest of the panel (they were 'Fira Code'/3px before). */
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.hwfit-spec-group .hwfit-spec-method { min-width: 110px; }
+
+.hwfit-spec-group .hwfit-spec-tokens { width: 44px; text-align: center; }
+
+/* The vLLM Speculative input was a bare <input type="number"> with the
+   native browser up/down spinner showing. Hide the spinner so it
+   matches the cleaner MTP-spec input next to it. */
+.hwfit-spec-tokens-bare {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  /* Tighten + center now that the spinner column is gone — without this
+     the input still reserves the old 44px and the number floats with a
+     dead gutter on the right. !important beats the inline width=44px
+     that ships in the markup. */
+  width: 30px !important;
+  padding-right: 4px !important;
+  text-align: center;
+}
+
+.hwfit-spec-tokens-bare::-webkit-outer-spin-button,
+.hwfit-spec-tokens-bare::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
+/* Themed step buttons replacing the native number-input spinner. */
+.hwfit-numstep {
+  display: inline-flex;
+  align-items: stretch;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.hwfit-numstep:focus-within { border-color: var(--accent, var(--red)); }
+
+.hwfit-numstep .hwfit-spec-tokens {
+  border: none !important;
+  border-radius: 0 !important;
+  width: 38px;
+  height: 100%;
+  background: transparent;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  margin: 0;
+}
+
+.hwfit-numstep .hwfit-spec-tokens::-webkit-outer-spin-button,
+.hwfit-numstep .hwfit-spec-tokens::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hwfit-numstep-btn {
+  width: 16px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  border: none;
+  color: var(--accent, var(--red));
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  opacity: 1;
+  transition: background 0.12s, opacity 0.12s, color 0.12s;
+}
+
+.hwfit-numstep-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent, var(--red)) 18%, transparent);
+  color: var(--accent, var(--red));
+}
+
+.hwfit-numstep-btn:active {
+  background: color-mix(in srgb, var(--accent, var(--red)) 35%, transparent);
+}
+
+.hwfit-numstep-btn:focus { outline: none; }
+
+.hwfit-numstep-btn[data-step="-1"] { border-right: 1px solid var(--border); }
+
+.hwfit-numstep-btn[data-step="1"]  { border-left:  1px solid var(--border); }
+
+.hwfit-spec-group:has(input[type="checkbox"]:not(:checked)) .hwfit-spec-method,
+.hwfit-spec-group:has(input[type="checkbox"]:not(:checked)) .hwfit-spec-tokens,
+.hwfit-spec-group:has(input[type="checkbox"]:not(:checked)) .hwfit-numstep {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Custom toggle switch */
+.hwfit-sf-cb input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 14px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--fg) 15%, transparent);
+  position: relative;
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.hwfit-sf-cb input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #000;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.hwfit-sf-cb input[type="checkbox"]:checked {
+  background: var(--accent, var(--red));
+}
+
+.hwfit-sf-cb input[type="checkbox"]:checked::after {
+  transform: translateX(14px);
+  background: #fff;
+}
+
+.hwfit-serve-extra {
+  margin-bottom: 6px;
+}
+
+.hwfit-serve-extra label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--fg-muted);
+  letter-spacing: 0.3px;
+}
+
+.hwfit-serve-extra .hwfit-sf {
+  width: 100%;
+}
+
+.hwfit-serve-cmd-details {
+  margin: 4px 0 0;
+}
+
+.hwfit-serve-cmd-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+  color: var(--fg-muted);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+
+.hwfit-serve-cmd-summary::-webkit-details-marker {
+  display: none;
+}
+
+.hwfit-serve-cmd-summary::after {
+  content: '';
+  margin-left: auto;
+  width: 0;
+  height: 0;
+  border-left: 4px solid currentColor;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  opacity: 0.6;
+  transform: rotate(0deg);
+  transition: transform 0.18s ease;
+}
+
+.hwfit-serve-cmd-details[open] > .hwfit-serve-cmd-summary::after {
+  transform: rotate(90deg);
+}
+
+.hwfit-serve-cmd-details[open] > .hwfit-serve-cmd-summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.hwfit-serve-cmd {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 4px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  font-family: 'Berkeley Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 10px;
+  white-space: pre;
+  word-break: normal;
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  color: var(--fg);
+  line-height: 1.5;
+  min-height: 112px;
+  overflow: auto;
+}
+
+.hwfit-serve-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  align-items: center;
+}
+
+.hwfit-serve-actions .cookbook-btn {
+  padding: 5px 14px;
+  font-size: 11px;
+}
+
+.hwfit-serve-actions-spacer { flex: 1 1 auto; }
+
+.hwfit-serve-actions .cookbook-serve-slots {
+  margin: 0;
+  align-self: stretch;
+}
+
+.hwfit-serve-launch {
+  background: var(--accent-primary, var(--red));
+  color: #fff;
+  border: 1px solid var(--accent-primary, var(--red));
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.hwfit-serve-launch:hover {
+  opacity: 0.9;
+}
+
+/* Same z-index treatment as .cookbook-task-dropdown — cookbook modal's
+   auto-stack climbs past low values; popups append to body and need to
+   sit above the modal regardless. */
+.hwfit-cached-dropdown,
+.cookbook-gpu-split-menu,
+.cookbook-saved-menu,
+.cookbook-dep-menu {
+  z-index: 10000;
+}
+
+/* Launch-command textarea wrapper — Copy pill floats at the top-right
+   corner of the field (chat run-output pattern). */
+.hwfit-serve-cmd-wrap {
+  position: relative;
+}
+
+.hwfit-serve-cmd-title {
+  margin: 2px 0 3px;
+  font-size: 10px;
+  color: var(--fg-muted);
+  letter-spacing: 0.3px;
+}
+
+.hwfit-serve-cmd-wrap .hwfit-serve-cmd {
+  /* Just enough breathing room so a cursor at line-end doesn't actually
+     touch the Copy icon — text otherwise uses the full width of the box. */
+  padding-right: 32px;
+}
+
+.hwfit-serve-copy-inline {
+  position: absolute;
+  top: 4px; right: 4px;
+  z-index: 2;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.12s, color 0.12s;
+}
+
+.hwfit-serve-copy-inline:hover { opacity: 1; color: var(--accent-primary, var(--red)); }
+
+.hwfit-serve-copy-inline.copied { opacity: 1; color: var(--color-save-green, #4caf50); }
+
+.hwfit-serve-copy-inline svg { display: block; }
+
+/* HF link in search panel */
+.hwfit-panel-hf-link {
+  font-size: 10px;
+  color: var(--red);
+  text-decoration: none;
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+
+.hwfit-panel-hf-link:hover {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+
+/* Server selector in search toolbar */
+.hwfit-server-select {
+  min-width: 70px;
+}
+
+/* GPU toggle buttons */
+.hwfit-gpu-toggles {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  position: relative;
+  top: -3px;
+}
+
+.hwfit-gpu-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg-muted);
+  font-size: 10px;
+  padding: 0 5px;
+  cursor: pointer;
+  min-width: 20px;
+  height: 28px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  font-family: inherit;
+}
+
+.hwfit-gpu-btn:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+.hwfit-gpu-btn.active {
+  background: var(--accent, var(--red));
+  color: #fff;
+  border-color: var(--accent, var(--red));
+}
+
+/* Pool selector for heterogeneous GPU boxes — sits left of the RAM/GPU buttons */
+.hwfit-gpu-group {
+  background: var(--bg-elev, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  font-size: 10px;
+  height: 28px;
+  padding: 0 4px;
+  cursor: pointer;
+  box-sizing: border-box;
+  font-family: inherit;
+  max-width: 190px;
+}
+
+.hwfit-gpu-group:hover { border-color: var(--fg); }
+
+.hwfit-container { display: flex; flex-direction: column; gap: 8px; }
+
+.hwfit-toolbar {
+  display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
+}
+
+.hwfit-toolbar select,
+.hwfit-toolbar input {
+  height: 28px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.hwfit-toolbar select:focus,
+.hwfit-toolbar input:focus { outline: none; border-color: var(--red); }
+
+.hwfit-toolbar .hwfit-server-select { min-width: 70px; flex-shrink: 0; }
+
+.hwfit-toolbar .hwfit-usecase { min-width: 70px; flex-shrink: 0; }
+
+.hwfit-toolbar .hwfit-quant { min-width: 0; width: 78px; flex-shrink: 0; font-size: 10px; }
+
+.hwfit-toolbar .hwfit-engine { min-width: 0; width: 86px; flex-shrink: 0; font-size: 10px; }
+
+.hwfit-toolbar .hwfit-engine-btn { min-width: 0; width: 86px; flex-shrink: 0; font-size: 10px; }
+
+.hwfit-toolbar .hwfit-search { flex: 1; min-width: 80px; }
+
+/* Lower-opacity "Search models..." placeholder so it reads as a hint, not
+   a label — matches the muted form-field feel of the inline filters. */
+.hwfit-search::placeholder { opacity: 0.5; }
+
+.hwfit-search::-webkit-input-placeholder { opacity: 0.5; }
+
+.hwfit-search::-moz-placeholder { opacity: 0.5; }
+
+/* Dot inside the Fit column header — click to toggle the fit-only filter
+   (off = show too-tight rows; on = hide them). */
+.hwfit-fit-dot {
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 8px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--fg) 35%, transparent);
+  cursor: pointer;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;  /* nudge 1px up so the small dot sits centered with the "Fit" caps */
+  transition: color 0.12s ease, text-shadow 0.12s ease;
+}
+
+/* Quant suffix appended to model names when the storage format isn't in the
+   repo id — e.g. "(FP4-MoE-Mixed)" after DeepSeek-V4-Flash. Muted to read as
+   metadata, not part of the name. */
+.hwfit-name-quant {
+  font-size: 0.78em;
+  opacity: 0.55;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.hwfit-fit-dot:hover { color: var(--accent, var(--red)); }
+
+.hwfit-fit-dot.active {
+  color: var(--green, #50fa7b);
+  text-shadow: 0 0 4px color-mix(in srgb, var(--green, #50fa7b) 55%, transparent);
+}
+
+.hwfit-help-chip {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
+  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+  position: relative;
+  top: -1px;
+  margin-left: -1px;
+}
+
+.hwfit-help-chip:hover {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--fg) 45%, transparent);
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.hwfit-help-chip-inline {
+  margin-left: -2px;
+  margin-right: 0;
+  top: 0;  /* parent rule sets top:-1px; nudge inline variant 1px lower */
+}
+
+/* Quant select + inline ? wrapper — the ? sits inside the dropdown's bordered
+   box, anchored on the right just left of the chevron. */
+.hwfit-quant-wrap, .hwfit-engine-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hwfit-engine-btn {
+  height: 28px;
+  padding: 0 30px 0 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  top: -3px;
+}
+
+.hwfit-engine-btn-icon,
+.hwfit-engine-item-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent, var(--red));
+  flex-shrink: 0;
+}
+
+.hwfit-engine-btn-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hwfit-engine-caret {
+  position: absolute;
+  right: 6px;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.hwfit-engine-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 120;
+  padding: 4px;
+  background: var(--panel, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+}
+
+.hwfit-engine-item {
+  width: 100%;
+  min-height: 26px;
+  padding: 5px 7px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.hwfit-engine-item:hover,
+.hwfit-engine-item.active {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.hwfit-engine-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hwfit-quant-wrap .hwfit-quant,
+.hwfit-engine-wrap .hwfit-engine {
+  /* Make room for the ? on the right edge, in addition to the native chevron. */
+  padding-right: 32px;
+}
+
+.hwfit-quant-wrap .hwfit-quant-help,
+.hwfit-engine-wrap .hwfit-engine-help {
+  position: absolute;
+  right: 20px;   /* sits just left of the native select chevron */
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  margin: 0;
+}
+
+.hwfit-ctx-control {
+  height: 28px;
+  min-width: 134px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg-muted);
+  background: var(--bg);
+  font-size: 12px;  /* match .cookbook-field-input — was 10px and read smaller than siblings */
+  box-sizing: border-box;
+}
+
+.hwfit-ctx-control span {
+  /* Match Quant/Engine select label style: no uppercase, no letter-spacing. */
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.9;
+}
+
+.hwfit-ctx-control input[type="range"] {
+  width: 64px;
+  min-width: 64px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  /* Hardcoded grey rail — was background:transparent here, which was the
+     LATER-in-cascade override that kept making the rail invisible. */
+  background: rgba(150, 150, 150, 0.65) !important;
+  border-radius: 999px;
+  accent-color: var(--accent, var(--red));
+}
+
+.hwfit-ctx-control output {
+  min-width: 28px;
+  text-align: right;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.hwfit-server-toggle { flex-shrink: 0; font-size: 10px !important; padding: 3px 8px !important; white-space: nowrap; }
+
+.hwfit-toolbar .hwfit-host { width: 110px; flex-shrink: 0; }
+
+.hwfit-env-row { gap: 6px; flex-wrap: wrap; }
+
+.hwfit-env-row .hwfit-envtype { width: auto; min-width: 70px; flex-shrink: 0; }
+
+.hwfit-env-row .hwfit-envpath { flex: 1; min-width: 100px; }
+
+.hwfit-env-row .hwfit-gpus { width: 90px; flex-shrink: 0; }
+
+.hwfit-hw {
+  display: flex; flex-wrap: wrap; column-gap: 4px; row-gap: 7px; padding: 4px 0;
+}
+
+.hwfit-hw-chip {
+  font-size: 10px; padding: 0 8px; border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  color: var(--fg); opacity: 0.7; white-space: nowrap;
+  border: 0;
+  font-family: inherit;
+  line-height: 1;
+  height: 17px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  /* Cap chip width so a long label (e.g. heterogeneous GPU group
+     "1× RTX 4090 + 1× RTX 3060") wraps to the next row instead of
+     overflowing the modal. Full text stays in the tooltip. */
+  max-width: 100%;
+}
+
+.hwfit-hw-chip-toggle {
+  /* Allow the chip body to truncate with an ellipsis when the chip
+     itself is capped at its container's width. Without this, the
+     toggle button keeps its intrinsic width and pushes the × button
+     off-screen on narrow viewports. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hwfit-hw-chip button,
+.hwfit-hw-chip-dismiss,
+.hwfit-hw-chip-manual,
+.hwfit-hw-chip-toggle,
+.hwfit-hw-chip-x {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  /* Inherit the chip's line-height so a slightly larger × glyph
+     doesn't push past the 17px chip height (which was clipping the
+     text vertically in the multi-button layout). */
+  line-height: inherit;
+}
+
+.hwfit-chip-x {
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+.hwfit-hw-chip-dismiss { cursor: pointer; }
+
+.hwfit-hw-chip-dismiss:hover { opacity: 1; }
+
+/* Two-part chip: text body toggles dim on click, × removes the chip.
+   Visual minimal — just a slightly bigger × so it's easier to hit. */
+.hwfit-hw-chip-toggle {
+  cursor: pointer;
+  /* `!important` because the earlier `.hwfit-hw-chip button { font:
+     inherit }` reset (same specificity, defined later in source)
+     was winning over the plain rule and leaving the manual chip's
+     button at the browser-default ~13px. Forcing it locally so the
+     manual chip's text matches every other chip's text. */
+  font-size: 10px !important;
+  line-height: 1 !important;
+  transform: translateY(-3px);
+}
+
+.hwfit-hw-chip-x {
+  cursor: pointer;
+  /* `!important` for the same cascade reason as the toggle button —
+     the `.hwfit-hw-chip button { font: inherit }` reset was leaving
+     the regular chips' × inheriting the chip's 10px while the
+     manual chip's × landed on the browser default (~13px), making
+     manual look bigger. Lock every × at 13px. */
+  font-size: 13px !important;
+  line-height: 1 !important;
+  transform: translateY(-5px);
+}
+
+.hwfit-hw-chip-x:hover { opacity: 1; }
+
+.hwfit-hw-chip-off {
+  /* Ghosted: drop the pill background so it reads as "off" rather than
+     "selected but faded". Lower text opacity matches the muted feel. */
+  background: transparent !important;
+  opacity: 0.4;
+}
+
+.hwfit-hw-chip-manual {
+  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 45%, transparent);
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  color: var(--accent, var(--red));
+  opacity: 1;
+  cursor: pointer;
+  font-family: inherit;
+  margin-inline: 3px;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+.hwfit-hw-chip-manual:hover {
+  background: color-mix(in srgb, var(--accent, var(--red)) 22%, transparent);
+}
+
+.hwfit-hw-manual-btn {
+  min-width: 42px;
+}
+
+.hwfit-manual-panel {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.hwfit-manual-panel.hidden { display: none; }
+
+.hwfit-manual-panel label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  color: var(--fg-muted);
+}
+
+.hwfit-manual-panel select,
+.hwfit-manual-panel input,
+.hwfit-manual-panel button {
+  height: 24px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 10px;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+
+.hwfit-manual-panel input { width: 72px; }
+
+.hwfit-manual-panel button { cursor: pointer; }
+
+.hwfit-manual-panel .hwfit-hw-manual-save,
+.hwfit-manual-panel .hwfit-hw-manual-clear {
+  /* -3 (was -2) — 1px more up to optically align with the labeled
+     inputs to their left. */
+  transform: translateY(-3px);
+}
+
+.hwfit-manual-panel button:hover { border-color: var(--fg); }
+
+/* GPU driver error (e.g. NVML version mismatch) — stands out from the muted
+   chips and hints there's a real problem, with the full message on hover. */
+.hwfit-hw-chip-error {
+  background: color-mix(in srgb, var(--red) 16%, transparent);
+  color: var(--red); opacity: 1; cursor: help;
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+}
+
+.hwfit-list {
+  max-height: 52vh; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
+}
+
+.hwfit-loading {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fg-muted); padding: 16px 0; font-size: 12px;
+}
+
+.hwfit-hw-visibility-warning {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  margin-top: 8px;
+}
+
+.hwfit-hw-visibility-warning-title {
+  font-weight: 600;
+}
+
+.hwfit-hw-visibility-warning-body {
+  opacity: 0.78;
+  line-height: 1.45;
+}
+
+.hwfit-hw-visibility-warning-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hwfit-row {
+  display: flex; align-items: center; gap: 6px; padding: 5px 8px;
+  border-radius: 6px; cursor: pointer; font-size: 11px;
+  transition: background 0.1s;
+}
+
+.hwfit-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+
+/* Already-downloaded rows: dim slightly so attention falls on undownloaded
+   options. The green dot stays bright as the "this is local" cue. */
+.hwfit-row:has(.hwfit-dl-dot) { opacity: 0.55; }
+
+.hwfit-row:has(.hwfit-dl-dot):hover { opacity: 0.9; }
+
+.hwfit-row:has(.hwfit-dl-dot) .hwfit-dl-dot { opacity: 1; }
+
+.hwfit-header {
+  cursor: default; position: sticky; top: 0; z-index: 1;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  padding: 4px 8px; font-weight: 600;
+}
+
+.hwfit-header:hover { background: var(--panel); }
+
+.hwfit-header .hwfit-col { font-size: 9px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+
+.hwfit-header .hwfit-name { font-size: 9px; }
+
+.hwfit-sortable { cursor: pointer; user-select: none; }
+
+.hwfit-sortable:hover { color: var(--fg) !important; }
+
+.hwfit-sort-active { color: var(--red) !important; }
+
+.hwfit-col {
+  flex-shrink: 0; white-space: nowrap; text-align: left;
+  font-size: 9px; color: var(--fg-muted);
+}
+
+.hwfit-fit { width: 52px; font-weight: 700; text-transform: uppercase; }
+
+.hwfit-name {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 500; font-size: 11px; color: var(--fg);
+}
+
+.hwfit-c-params { width: 42px; }
+
+.hwfit-c-quant  { width: 52px; }
+
+.hwfit-c-vram   { width: 42px; }
+
+.hwfit-c-ctx    { width: 32px; }
+
+.hwfit-c-speed  { width: 44px; }
+
+.hwfit-c-score  { width: 40px; font-weight: 700; font-size: 11px; color: var(--fg); }
+
+.hwfit-c-mode   { width: 72px; }
+
+.hwfit-moe {
+  display: inline-block; padding: 0 4px; border-radius: 4px; margin-left: 4px;
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  color: var(--red); font-weight: 600; font-size: 8px;
+}
+
+.hwfit-sort, .hwfit-quant { width: auto; min-width: 70px; flex-shrink: 0; }
+
+.hwfit-row-active { background: color-mix(in srgb, var(--red) 8%, transparent); }
+
+/* ── Inline action panel (expands below a model row) ── */
+.hwfit-action-panel {
+  border: 1px solid var(--border); border-left: 3px solid var(--red);
+  border-radius: 0 6px 6px 6px; background: var(--panel);
+  padding: 10px 12px; margin: 2px 0 6px; font-size: 11px;
+  display: flex; flex-direction: column; gap: 8px;
+  animation: hwfit-panel-in 0.15s ease-out;
+}
+
+.hwfit-panel-header {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+}
+
+.hwfit-panel-model {
+  font-size: 11px; font-weight: 600; color: var(--fg);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
+}
+
+.hwfit-panel-badge {
+  font-size: 9px; padding: 2px 8px; border-radius: 10px;
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  color: var(--red); font-weight: 600; flex-shrink: 0;
+}
+
+.hwfit-panel-fields {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+
+.hwfit-panel-fields label, .hwfit-adv-grid label {
+  display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--fg-muted); white-space: nowrap;
+}
+
+.hwfit-panel-fields input, .hwfit-panel-fields select,
+.hwfit-adv-grid input, .hwfit-adv-grid select {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--fg); font-size: 11px; padding: 3px 6px; font-family: inherit;
+  outline: none; transition: border-color 0.15s;
+}
+
+.hwfit-panel-fields input:focus, .hwfit-adv-grid input:focus,
+.hwfit-panel-fields select:focus, .hwfit-adv-grid select:focus {
+  border-color: var(--red);
+}
+
+.hwfit-panel-fields input[type="text"] { width: 60px; }
+
+.hwfit-adv-grid input[type="text"] { width: 80px; }
+
+.hwfit-adv-grid {
+  display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 6px 0;
+}
+
+.hwfit-cb { cursor: pointer; }
+
+.hwfit-cb input[type="checkbox"] { margin: 0 2px 0 0; }
+
+.hwfit-panel-advanced, .hwfit-panel-settings {
+  font-size: 10px;
+}
+
+.hwfit-panel-advanced summary, .hwfit-panel-settings summary {
+  cursor: pointer; color: var(--fg-muted); font-size: 10px;
+  user-select: none; padding: 2px 0;
+}
+
+.hwfit-panel-advanced summary:hover, .hwfit-panel-settings summary:hover { color: var(--fg); }
+
+.hwfit-panel-cmd {
+  font-family: 'Berkeley Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 10px; padding: 6px 8px; border-radius: 4px;
+  background: var(--bg); border: 1px solid var(--border);
+  white-space: pre-wrap; word-break: break-all; max-height: 60px; overflow-y: auto;
+  color: var(--fg-muted);
+}
+
+.hwfit-panel-actions {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+
+.hwfit-panel-note {
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--fg-muted);
+  background: color-mix(in srgb, var(--yellow, #f1fa8c) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--yellow, #f1fa8c) 18%, var(--border));
+  border-radius: 4px;
+  padding: 5px 7px;
+}
+
+/* ── Saved presets ── */
+.hwfit-preset {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 6px; font-size: 11px;
+  transition: border-color 0.15s;
+}
+
+.hwfit-preset:hover { border-color: var(--red); }
+
+.hwfit-preset-name { font-weight: 600; color: var(--fg); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.hwfit-preset-model { font-size: 9px; color: var(--fg-muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.hwfit-preset-backend { font-size: 9px; padding: 1px 6px; border-radius: 8px; background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg-muted); }
+
+/* Cookbook serve param hints */
+.hwfit-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  color: var(--fg);
+  font-size: 8px;
+  font-weight: 600;
+  opacity: 0.35;
+  cursor: help;
+  margin-left: 2px;
+  vertical-align: middle;
+  transition: opacity 0.1s;
+}
+
+.hwfit-hint:hover {
+  opacity: 0.8;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.hwfit-dl-dot {
+  color: var(--green);
+  font-size: 8px;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
+.hwfit-parser-tag {
+  font-size: 9px;
+  opacity: 0.4;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 4px;
+  font-family: 'Berkeley Mono', 'SF Mono', 'Fira Code', monospace;
+}
+
+/* Cached model menu button */
+.hwfit-cached-menu-btn {
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+  position: relative;
+  top: -2px;
+}
+
+.hwfit-cached-menu-btn:hover { opacity: 1 !important; }
+
+.hwfit-cached-menu-btn svg { pointer-events: none; }
+
+#hwfit-cache-scan {
+  position: relative;
+  top: -1px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#hwfit-cache-scan.spinning svg {
+  animation: modelPickerRefreshSpin 0.75s linear infinite;
+}
+
+/* Cookbook serve optimizations */
+.hwfit-serve-opts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.hwfit-apply-opts {
+  font-size: 11px !important;
+  min-width: auto !important;
+  white-space: nowrap;
+}
+
+.hwfit-opts-desc {
+  font-size: 9px;
+  opacity: 0.4;
+  font-style: italic;
+}
+
+/* Cookbook Serve dropdown triggers (the cached-model kebab + the saved-config
+   arrow) — accent-colored to signal they open a menu, with a filled tint when
+   their dropdown is open. Matches the email reader More button pattern. */
+.hwfit-cached-menu-btn,
+.cookbook-saved-arrow {
+  color: var(--accent, var(--red));
+  /* Base .memory-item-btn is flex with align-items but no justify-content,
+     so the kebab SVG sat left-aligned inside the button instead of being
+     horizontally centered. Pin it center. */
+  justify-content: center;
+}
+
+.hwfit-cached-menu-btn svg { fill: currentColor; }
+
+.hwfit-cached-menu-btn.cookbook-menu-active,
+.cookbook-saved-arrow.cookbook-menu-active {
+  background: color-mix(in srgb, var(--accent, var(--red)) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 45%, transparent);
+  color: var(--accent, var(--red));
+}
+
+/* Launch-command Copy button morphs into Cancel once Launch has been clicked. */
+.hwfit-serve-copy.hwfit-serve-cancel {
+  border-color: var(--color-danger, #e06c75) !important;
+  color: var(--color-danger, #e06c75) !important;
+}
+
+.hwfit-serve-copy.hwfit-serve-cancel:hover {
+  background: color-mix(in srgb, var(--color-danger, #e06c75) 14%, transparent);
+}
+
+/* Cookbook serve panel: Launch + ^ split button pair */
+.hwfit-serve-launch-group {
+  display: inline-flex;
+  align-items: stretch;
+  vertical-align: middle;
+}
+
+.hwfit-serve-launch-group .hwfit-serve-launch {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  margin-right: 0 !important;
+}
+
+.hwfit-serve-launch-group .hwfit-serve-schedule-arrow {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-left: 1px solid var(--border) !important;
+  padding: 0 8px !important;
+  min-width: 26px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Schedule form — mounted inside the cookbook serve panel. Uses the
+   theme tokens (--bg, --panel, --border, --accent, --red) so it
+   matches the rest of the cookbook chrome instead of inline whites. */
+.hwfit-schedule-form {
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hwfit-schedule-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.95;
+  flex-wrap: wrap;
+}
+
+.hwfit-schedule-title svg { opacity: 0.7; flex-shrink: 0; }
+
+.hwfit-schedule-title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.hwfit-schedule-title-spacer { flex: 1; min-width: 8px; }
+
+.hwfit-schedule-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.hwfit-schedule-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.hwfit-schedule-field input[type="time"] {
+  font: inherit;
+  min-width: 90px;
+}
+
+.hwfit-schedule-label {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.hwfit-sched-days {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* Days field inline with From / Until — push it + the action buttons to
+   the right end of the row so the row reads: From | Until | …gap… | Days | Cancel | Save. */
+.hwfit-schedule-days-field {
+  margin-left: auto;
+}
+
+.hwfit-schedule-actions-inline {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 6px;
+  align-self: flex-end;
+  padding-bottom: 1px;
+}
+
+.hwfit-sched-day-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 10px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.hwfit-sched-day-chip:hover { border-color: var(--accent, var(--red)); }
+
+.hwfit-sched-day-chip.is-on {
+  background: var(--accent, var(--red));
+  color: var(--panel, #fff);
+  border-color: var(--accent, var(--red));
+}
+
+.hwfit-schedule-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hwfit-schedule-actions-spacer { flex: 1; }
+
+/* Days row hosts the day-chip strip on the left and the Cancel / Save
+   action buttons on the right. The spacer between them pushes the
+   actions to the right edge. */
+.hwfit-schedule-days-row {
+  align-items: center;
+}
+
+/* Cancel + Save sit on the right side of the days row with matching
+   icon-plus-label chrome. */
+.hwfit-sched-cancel,
+.hwfit-sched-save {
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.hwfit-schedule-mirror-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 0.9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hwfit-schedule-mirror-label { white-space: nowrap; }
+
+.hwfit-schedule-mirror-switch { transform: scale(0.85); transform-origin: left center; }
+
+.hwfit-sched-err {
+  font-size: 12px;
+  color: var(--red, #ff6b6b);
+  display: none;
+}
+
+.hwfit-sched-err.is-visible { display: block; }

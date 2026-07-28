@@ -4,11 +4,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-COOKBOOK = (ROOT / "static/js/cookbook.js").read_text(encoding="utf-8")
-HWFIT = (ROOT / "static/js/cookbook-hwfit.js").read_text(encoding="utf-8")
-DOWNLOAD = (ROOT / "static/js/cookbookDownload.js").read_text(encoding="utf-8")
-SERVE = (ROOT / "static/js/cookbookServe.js").read_text(encoding="utf-8")
-RUNNING = (ROOT / "static/js/cookbookRunning.js").read_text(encoding="utf-8")
+COOKBOOK = (ROOT / "web/lib/legacy/cookbook.js").read_text(encoding="utf-8")
+HWFIT = (ROOT / "web/lib/legacy/cookbook-hwfit.js").read_text(encoding="utf-8")
+DOWNLOAD = (ROOT / "web/lib/legacy/cookbookDownload.js").read_text(encoding="utf-8")
+SERVE = (ROOT / "web/lib/legacy/cookbookServe.js").read_text(encoding="utf-8")
+RUNNING = (ROOT / "web/lib/legacy/cookbookRunning.js").read_text(encoding="utf-8")
 
 
 def test_server_dropdown_options_use_profile_keys_not_hosts():
@@ -51,7 +51,7 @@ def test_serve_launch_preflights_use_selected_target_and_port():
     assert "const _portHost = (launchTarget.host || '').trim();" in SERVE
     assert "StrictHostKeyChecking=no ${_sshPrefix(launchTarget.port)}${_portHost}" in SERVE
     assert "const serveHost = launchTarget.host || '';" in SERVE
-    assert SERVE.index(launch_target) < SERVE.index("const _runningMod = await import('./cookbookRunning.js');")
+    assert SERVE.index(launch_target) < SERVE.index("const _runningMod = await import('$lib/legacy/cookbookRunning.js');")
 
 
 def test_running_tab_resolves_profile_key_not_first_host():

@@ -2,7 +2,7 @@
 button in the Documents library is grayed out, so the user can't reopen it.
 
 Root cause: closing/detaching a document nulls its session_id (the detach
-behaviour from #1238), and both Open controls in static/js/documentLibrary.js
+behaviour from #1238), and both Open controls in web/lib/legacy/documentLibrary.js
 (the card's expanded Open button AND the card dropdown's Open item) gated on
 `doc.session_id` — wiring `libraryOpenInSession` (which early-returns when there's
 no session) and DISABLING the control otherwise. But the module already has
@@ -17,7 +17,7 @@ guards the wiring at the source level (red→green via git-stash).
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "static/js/documentLibrary.js"
+SRC = Path(__file__).resolve().parent.parent / "web/lib/legacy/documentLibrary.js"
 
 
 def _src() -> str:

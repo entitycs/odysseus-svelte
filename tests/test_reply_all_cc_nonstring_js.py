@@ -1,4 +1,4 @@
-"""Pin buildReplyAllCc (static/js/emailLibrary/replyRecipients.js) against a
+"""Pin buildReplyAllCc (web/lib/legacy/emailLibrary/replyRecipients.js) against a
 non-string To/Cc. Driven through `node --input-type=module`; skips without node.
 """
 import json
@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_HELPER = _REPO / "static" / "js" / "emailLibrary" / "replyRecipients.js"
+_HELPER = _REPO / "web" / "lib" / "legacy" / "emailLibrary" / "replyRecipients.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

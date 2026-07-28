@@ -1,0 +1,628 @@
+/* Enabled/Disabled text label next to an admin toggle.
+   Matches the .memory-desc treatment (same color + 11px size) so it
+   visually belongs to the section description, not the switch. */
+.admin-toggle-state {
+  font-size: 10px;
+  line-height: 1.5;
+  font-weight: normal;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--fg) 65%, transparent);
+}
+
+.admin-card > div:has(.admin-switch input) .admin-toggle-state::before {
+  content: "Disabled";
+}
+
+.admin-card > div:has(.admin-switch input:checked) .admin-toggle-state::before {
+  content: "Enabled";
+}
+
+/* ===== ADMIN PANEL (inside settings modal) ===== */
+
+/* Cards */
+.admin-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-card h2 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.admin-danger-card {
+  border-color: color-mix(in srgb, var(--color-error) 27%, transparent);
+}
+
+/* Toggle switch */
+.admin-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-toggle-sub {
+  /* 65% mix keeps this helper text above WCAG AA 4.5:1 on the dark panel
+     (50% only reached ~3.9:1). */
+  color: color-mix(in srgb, var(--fg) 65%, transparent);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.admin-switch {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.admin-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.admin-slider {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--fg) 50%, transparent);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.08s;
+}
+
+.admin-slider::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 12px;
+  height: 12px;
+  background: var(--panel);
+  border-radius: 50%;
+  transition: transform 0.08s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+.admin-switch input:checked + .admin-slider {
+  background: var(--red);
+}
+
+.admin-switch input:checked + .admin-slider::before {
+  transform: translateX(14px);
+}
+
+/* User rows */
+.admin-user-row {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: border-color 0.15s;
+}
+
+.admin-user-row:hover {
+  border-color: color-mix(in srgb, var(--fg) 20%, var(--border));
+}
+
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-user-name { font-size: 13px; font-weight: 500; }
+
+/* Privilege panel */
+.admin-priv-panel {
+  max-height: 600px;
+  transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
+  overflow: hidden;
+}
+
+.admin-priv-panel.hidden {
+  max-height: 0 !important;
+  opacity: 0;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+}
+
+/* Privilege toggle rows */
+.admin-priv-panel [data-priv] {
+  accent-color: var(--accent, var(--red));
+}
+
+/* Section headers */
+.admin-priv-section {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.35;
+  font-weight: 600;
+  margin: 10px 0 4px;
+}
+
+.admin-priv-section:first-child {
+  margin-top: 0;
+}
+
+/* Disabled endpoints — dim the row but keep the toggle/delete buttons
+   at full opacity so the user can re-enable or remove without squinting. */
+.admin-user-row.admin-ep-disabled { opacity: 0.55; }
+
+.admin-user-row.adm-ep-just-added {
+  border-radius: 8px;
+  animation: adm-ep-just-added-glow 2.2s ease-out;
+}
+
+.admin-user-row.admin-ep-disabled .admin-btn-sm,
+.admin-user-row.admin-ep-disabled .admin-btn-delete,
+.admin-user-row.admin-ep-disabled .admin-badge-off { opacity: 1; }
+
+/* Badges */
+.admin-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--red) 20%, transparent);
+  color: var(--red);
+  font-weight: 600;
+}
+
+.admin-badge-off {
+  background: color-mix(in srgb, var(--color-error) 20%, transparent);
+  color: var(--color-error);
+}
+
+/* Buttons */
+.admin-btn-delete {
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--color-error) 27%, transparent);
+  color: var(--color-error);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.admin-btn-delete:hover {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #fff;
+}
+
+.admin-btn-add {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.admin-btn-add:hover {
+  background: color-mix(in srgb, var(--red) 80%, white);
+}
+
+.admin-btn-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn-sm {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.admin-btn-sm:hover {
+  background: var(--border);
+  border-color: var(--red);
+}
+
+.admin-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: admin-spin 0.6s linear infinite;
+  vertical-align: -2px;
+  margin-right: 2px;
+}
+
+/* Forms */
+.admin-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.admin-add-form input {
+  flex: 1;
+  min-width: 120px;
+  padding: 5px 8px;
+  height: 32px;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.admin-add-form input:focus { outline: none; border-color: var(--red); }
+
+.admin-switch-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  cursor: default;
+}
+
+.admin-model-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.admin-model-form input,
+.admin-model-form select {
+  padding: 5px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 12px;
+}
+
+.admin-model-form input:focus { outline: none; border-color: var(--red); }
+
+.admin-model-form-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;       /* let buttons drop to a new row on narrow widths
+                             instead of overflowing the modal */
+  align-items: center;
+}
+
+.admin-model-form-row input {
+  flex: 1 1 180px;       /* api-key input takes the long axis but allows
+                             dropping below the buttons at small widths */
+  min-width: 0;          /* don't refuse to shrink past content width */
+}
+
+.admin-model-form-row select {
+  flex: 0 0 auto;
+}
+
+.admin-model-form-row button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Endpoint items */
+.admin-ep-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.admin-ep-info { flex: 1; overflow: hidden; }
+
+.admin-ep-name { color: var(--fg); font-weight: 500; }
+
+.admin-ep-detail {
+  color: color-mix(in srgb, var(--fg) 40%, transparent);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: -4px;
+}
+
+.admin-ep-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Status messages */
+.admin-error { color: var(--color-error); font-size: 11px; margin-top: 4px; }
+
+.admin-success { color: var(--color-success); font-size: 11px; margin-top: 4px; }
+
+.admin-empty {
+  color: color-mix(in srgb, var(--fg) 40%, transparent);
+  font-size: 12px;
+  padding: 10px 0;
+  text-align: center;
+}
+
+/* RAG upload zone */
+.admin-rag-upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 8px;
+}
+
+.admin-rag-upload-zone:hover,
+.admin-rag-upload-zone.dragover {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 7%, transparent);
+}
+
+.admin-rag-upload-zone p {
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.admin-rag-icon { font-size: 18px; }
+
+.admin-rag-dir-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.admin-rag-dir-row input {
+  flex: 1;
+  padding: 5px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 12px;
+}
+
+.admin-rag-dir-row input:focus { outline: none; border-color: var(--red); }
+
+.admin-rag-dir-row button {
+  padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-rag-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.admin-rag-section-label {
+  font-size: 10px;
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 8px 0 4px;
+}
+
+.admin-rag-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--bg);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.admin-rag-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg);
+}
+
+.admin-rag-item-meta {
+  color: color-mix(in srgb, var(--fg) 40%, transparent);
+  font-size: 10px;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.admin-rag-item .admin-btn-delete { font-size: 10px; padding: 2px 6px; }
+
+.admin-rag-status {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  margin-top: 6px;
+}
+
+/* Token reveal */
+.admin-token-reveal {
+  margin-top: 8px;
+  padding: 8px;
+  background: color-mix(in srgb, var(--red) 8%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--red) 25%, var(--border));
+  border-radius: 8px;
+}
+
+/* Selects in admin cards */
+.admin-card select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 12px;
+}
+
+.admin-card input {
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.admin-card label {
+  font-size: 12px;
+}
+
+/* Hide everything except the grid when a card is expanded */
+.admin-card:has(.doclib-card-expanded) > *:not(.doclib-grid):not(.hwfit-cached-list) {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  margin: 0 !important;
+  padding: 0 !important;
+  transition: opacity 0.12s ease, max-height 0.2s ease;
+}
+
+.admin-card:has(.doclib-card-expanded) > .memory-bulk-bar {
+  display: none;
+}
+
+.admin-card:has(.doclib-card-expanded) > .doclib-grid,
+.admin-card:has(.doclib-card-expanded) > .hwfit-cached-list {
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* Override for chat-rows + research-rows: those expand inline with a
+   bounded preview (max-height: 60vh), so the grid must stay clipped
+   and scrollable. Without this scoping the overflow:visible above lets
+   the expanded chat preview escape the grid and overlap whatever's
+   underneath/beside the modal (e.g., a docked sibling panel) — what
+   the user calls "merging with other windows". */
+.admin-card:has(.doclib-chat-row.doclib-card-expanded) > .doclib-grid {
+  overflow: hidden auto !important;
+}
+
+/* :has()-free expand layout. skills.js adds .skills-has-expanded to the
+   skills admin-card when a skill opens, so this works on engines that don't
+   support :has() (e.g. older Firefox mobile, where the expand stuck at
+   ~50%). Hide everything but the list so the grid fills the card; the
+   absolutely-positioned expanded card (mobile) then fills the grid. */
+.admin-card.skills-has-expanded > *:not(#skills-list) {
+  display: none !important;
+}
+
+.admin-card.skills-has-expanded > #skills-list.doclib-grid {
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ── Admin: Built-in tools ── */
+.admin-tool-category {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.admin-tool-category:hover {
+  border-color: color-mix(in srgb, var(--fg) 20%, var(--border));
+}
+
+.admin-tool-cat-header {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 10px;
+  transition: background 0.15s;
+}
+
+.admin-tool-cat-header:hover {
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.admin-tool-cat-body {
+  border-top: 1px solid var(--border);
+  padding: 4px 0;
+}
+
+.admin-tool-cat-body.hidden {
+  display: none;
+}
+
+.admin-tool-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  padding-right: 28px; /* align toggles with header toggle (chevron 12px + gap 6px + padding) */
+  transition: background 0.08s;
+}
+
+.admin-tool-row:hover {
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.admin-tool-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.admin-tool-name {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.admin-tool-desc {
+  font-size: 10px;
+  opacity: 0.4;
+}
+
+.admin-tool-ctx {
+  font-size: 9px;
+  opacity: 0.3;
+  flex-shrink: 0;
+  min-width: 35px;
+  text-align: right;
+  font-family: 'Berkeley Mono', 'SF Mono', 'Fira Code', monospace;
+}

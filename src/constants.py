@@ -9,6 +9,19 @@ APP_VERSION = "1.0.2"
 # Base paths
 BASE_DIR = os.path.join(get_app_root(), "")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
+SVELTEKIT_BUILD_DIR = os.path.join(BASE_DIR, "web-build")
+
+# URLs whose HTML is served by SvelteKit (adapter-static build output) instead
+# of the legacy static/index.html shell. To migrate a page to SvelteKit: build
+# the SvelteKit route, add the URL path here, and (optionally) remove the legacy
+# SPA handler for that path. SvelteKit pages are served as a pure SPA — the
+# built index.html is returned for every matching path and client-side routing
+# takes over. The path set should contain the *prefix*, e.g. "/insights" (not
+# "/insights/"), since the catch-all checks request.url.path.startswith().
+# SVELTEKIT_PATHS: set[str] = set()
+# Example: once you build a SvelteKit route for /insights, flip it:
+SVELTEKIT_PATHS = {"/insights"}
+
 DATA_DIR = os.getenv("ODYSSEUS_DATA_DIR", get_default_data_dir())
 
 # Data file paths
@@ -94,8 +107,13 @@ WEB_FETCH_USER_AGENT = os.environ.get(
 DEFAULT_HOST = os.getenv("LLM_HOST", "localhost")
 LLM_HOSTS = [h.strip() for h in os.getenv("LLM_HOSTS", "").split(",") if h.strip()]
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-SEARXNG_INSTANCE = os.getenv("SEARXNG_INSTANCE", "http://localhost:8080")
 
+# SearchXNG coinfiguration
+SEARXNG_PORT = os.getenv("SEARXNG_PORT", "8080")
+SEARXNG_HOST = os.getenv("SEARXNG_HOST", "localhost")
+SEARXNG_INSTANCE = os.getenv(
+    "SEARXNG_INSTANCE", f"http://{SEARXNG_HOST}:{SEARXNG_PORT}"
+)
 
 # Cleanup configuration
 CLEANUP_ENABLED = os.getenv("CLEANUP_ENABLED", "True").lower() == "true"

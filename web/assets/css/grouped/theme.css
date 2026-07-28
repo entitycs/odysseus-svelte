@@ -1,0 +1,363 @@
+/* ---------- Theme popup (uses .modal > .modal-content frame) ---------- */
+    #theme-modal { z-index: 260; }
+
+#theme-popup .theme-popup-sub { color: color-mix(in srgb, var(--fg) 50%, transparent); font-size: 11px; margin-bottom: 10px; }
+
+/* `max-height` instead of a fixed height so the popup shrinks to fit its
+       content (avoids the leftover whitespace after the time-based switching
+       card was removed). The inner .theme-tab-panel keeps overflow:auto, so
+       any taller content still scrolls inside. */
+    #theme-popup { overflow-y: hidden; max-height: min(85vh, 600px); }
+
+#theme-popup .modal-header { flex-shrink: 0; }
+
+#theme-popup .admin-tabs { margin: 0 -10px 8px; padding: 0 10px; flex-shrink: 0; }
+
+.theme-tab-panel { overflow-y: auto; min-height: 0; flex: 1; padding-bottom: 10px; }
+
+.theme-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr));
+      gap: 6px; margin-bottom: 12px;
+    }
+
+.theme-swatch {
+      border: 2px solid var(--border); border-radius: 8px; cursor: pointer;
+      padding: 5px; text-align: center; font-size: 0.65rem; color: var(--fg);
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+.theme-swatch:hover { transform: scale(1.06); }
+
+.theme-swatch.active { border-color: var(--red); box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 33%, transparent); }
+
+.theme-swatch-colors {
+      display: flex; justify-content: center; margin-bottom: 3px;
+    }
+
+.theme-swatch-colors span {
+      width: 15px; height: 15px; border-radius: 50%;
+      margin-left: -5px;
+      border: 1.5px solid color-mix(in srgb, var(--fg) 12%, transparent);
+    }
+
+.theme-swatch-colors span:first-child { margin-left: 0; }
+
+.theme-custom-label { font-size: 11px; font-weight: 600; color: color-mix(in srgb, var(--fg) 50%, transparent); text-transform: uppercase; letter-spacing: 0.06em; margin: 10px 0 6px; }
+
+.theme-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+
+.theme-custom-divider {
+      grid-column: 1 / -1; font-size: 11px; color: var(--fg); opacity: 0.5;
+      text-transform: uppercase; letter-spacing: 0.04em; margin: 6px 0 2px;
+      border-top: 1px solid var(--border); padding-top: 6px;
+    }
+
+.theme-swatch[data-custom] { position: relative; overflow: visible; }
+
+/* Accent-coloured circular X — always visible (mobile-friendly), sits
+       INSIDE the swatch's top-right corner so it never crops into a
+       neighbouring swatch. */
+    .theme-delete-btn {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: var(--accent, var(--red, #d92534));
+      color: #fff;
+      cursor: pointer;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      transition: transform 0.12s, background 0.12s;
+    }
+
+.theme-delete-btn:hover {
+      background: color-mix(in srgb, var(--accent, var(--red)) 80%, white);
+      transform: scale(1.12);
+    }
+
+.theme-delete-btn:active { transform: scale(0.95); }
+
+.theme-delete-btn svg {
+      display: block;
+      /* Optical nudge — the X reads off-center inside the circle without it. */
+      position: relative;
+      left: 1px;
+      top: -1px;
+    }
+
+.theme-save-row {
+      display: flex; gap: 6px; margin-top: 8px;
+    }
+
+.theme-save-row input {
+      flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); color: var(--fg); font-size: 12px; font-family: inherit;
+    }
+
+.theme-save-row input:focus { outline: none; border-color: var(--red); }
+
+.theme-save-row input::placeholder { color: color-mix(in srgb, var(--fg) 35%, transparent); }
+
+.theme-save-row button {
+      padding: 6px 12px; border: 1px solid var(--red); border-radius: 6px;
+      background: transparent; color: var(--red); cursor: pointer;
+      font-size: 12px; font-family: inherit; white-space: nowrap; transition: all 0.15s;
+    }
+
+.theme-save-row button:hover { background: color-mix(in srgb, var(--red) 11%, transparent); }
+
+.theme-save-error {
+      font-size: 11px; color: var(--red); margin-top: 2px; display: none;
+    }
+
+/* Import/Export */
+    .theme-io-row { display: flex; gap: 6px; margin-top: 6px; }
+
+.theme-io-btn {
+      flex: 1; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+      background: transparent; color: var(--fg); cursor: pointer;
+      font-size: 12px; opacity: 0.7; transition: all 0.15s; font-family: inherit;
+    }
+
+.theme-io-btn:hover { opacity: 1; border-color: var(--fg); background: color-mix(in srgb, var(--fg) 5%, transparent); }
+
+.theme-import-area {
+      width: 100%; margin-top: 6px; padding: 6px 8px;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); color: var(--fg); font-size: 0.7rem;
+      font-family: inherit; resize: vertical; min-height: 48px;
+    }
+
+.theme-import-area:focus { outline: none; border-color: var(--red); }
+
+.theme-import-area.hidden { display: none; }
+
+.theme-import-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+.theme-import-actions.hidden { display: none; }
+
+/* Font & Density */
+    .theme-fd-row { display: flex; gap: 8px; margin-bottom: 8px; }
+
+.theme-fd-group { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+
+.theme-fd-label { font-size: 12px; font-weight: 500; color: var(--fg); opacity: 0.6; }
+
+.theme-fd-select {
+      padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); color: var(--fg); font-size: 12px;
+      font-family: inherit; cursor: pointer;
+    }
+
+.theme-fd-select:focus { outline: none; border-color: var(--red); }
+
+.theme-fd-range {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      height: 24px;
+      background: transparent;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      accent-color: var(--red);
+    }
+
+.theme-fd-range::-webkit-slider-runnable-track {
+      height: 4px; background: var(--border); border-radius: 2px;
+    }
+
+.theme-fd-range::-moz-range-track {
+      height: 4px; background: var(--border); border-radius: 2px;
+    }
+
+.theme-fd-range::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--red); border: none; margin-top: -5px; cursor: pointer;
+    }
+
+.theme-fd-range::-moz-range-thumb {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--red); border: none; cursor: pointer;
+    }
+
+.theme-fd-range:focus { outline: none; }
+
+/* Color Harmony Generator */
+    .theme-harmony-row { display: flex; gap: 8px; align-items: flex-end; }
+
+#theme-reset-btn {
+      margin-top: 6px; width: 100%; padding: 6px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer;
+      font-size: 12px; font-family: inherit; opacity: 0.7; transition: opacity 0.15s;
+    }
+
+#theme-reset-btn:hover { opacity: 1; }
+
+.theme-adv-toggle {
+      margin-top: 10px; margin-bottom: 10px;
+      padding: 6px 8px; cursor: pointer;
+      font-size: 11px; color: var(--red); opacity: 0.8;
+      border: 1px solid var(--border); border-radius: 6px;
+      transition: opacity 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+.theme-adv-toggle:hover { opacity: 1; background: color-mix(in srgb, var(--fg) 4%, transparent); }
+
+.theme-adv-toggle .theme-adv-arrow {
+      display: inline-block; transition: transform 0.2s; font-size: 10px;
+      margin-right: 4px;
+    }
+
+.theme-adv-toggle.open .theme-adv-arrow { transform: rotate(90deg); }
+
+.theme-adv-section { margin-top: 8px; margin-bottom: 10px; }
+
+.theme-adv-section.hidden { display: none; }
+
+.theme-adv-group { margin-bottom: 8px; }
+
+.theme-adv-group-label {
+      font-size: 10px; color: var(--fg); opacity: 0.5;
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;
+    }
+
+.theme-adv-clear-btn {
+      margin-top: 6px; width: 100%; padding: 5px; border: 1px solid var(--border);
+      border-radius: 6px; background: transparent; color: var(--fg); opacity: 0.5;
+      cursor: pointer; font-size: 12px; font-family: inherit; transition: opacity 0.15s;
+    }
+
+.theme-adv-clear-btn:hover { opacity: 1; }
+
+/* Opacity slider in the theme tabs row — lets the user see the page behind
+   the modal while tweaking colors. JS toggles .hidden based on active tab. */
+.theme-opacity-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  margin-right: 6px;
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  opacity: 0.65;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+  height: 22px;
+  align-self: center;
+  /* Now a <button> toggle, not a slider wrapper. */
+  cursor: pointer;
+  color: var(--fg);
+  font: inherit;
+  background: transparent;
+}
+
+.theme-opacity-wrap.hidden { display: none; }
+
+.theme-opacity-wrap:hover { opacity: 1; }
+
+/* On = peeking through; highlight with the accent so the state is obvious. */
+.theme-opacity-wrap.active {
+  opacity: 1;
+  border-color: var(--accent, var(--red));
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  color: var(--accent, var(--red));
+}
+
+.theme-opacity-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+
+.theme-opacity-wrap > svg { flex-shrink: 0; opacity: 0.7; }
+
+.theme-opacity-wrap input[type="range"] {
+  width: 92px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: 2px;
+  outline: none;
+  margin: 0;
+}
+
+.theme-opacity-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent, var(--red));
+  border: none;
+  cursor: pointer;
+}
+
+.theme-opacity-wrap input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent, var(--red));
+  border: none;
+  cursor: pointer;
+}
+
+/* ── Theme editor: hover-to-highlight zone ── */
+.theme-zone-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  border: 2px dashed var(--accent, var(--red));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent, var(--red)) 14%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, var(--red)) 40%, transparent),
+              0 0 18px color-mix(in srgb, var(--accent, var(--red)) 35%, transparent);
+  animation: theme-zone-pulse 1.4s ease-in-out infinite;
+}
+
+/* Highlight the color row itself too so the user has a strong visual link
+   between the input they're hovering and the zone overlay on the page. */
+#theme-tab-customize .color-row {
+  transition: background 0.15s, border-color 0.15s;
+  border-radius: 6px;
+}
+
+#theme-tab-customize .color-row:hover {
+  background: color-mix(in srgb, var(--accent, var(--red)) 8%, transparent);
+}
+
+/* "Auto-saved" pill that flashes after each color/font change. */
+.theme-autosaved-pill {
+  position: sticky;
+  bottom: 8px;
+  margin: 8px auto 0;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: color-mix(in srgb, var(--color-success, #4caf50) 18%, var(--bg));
+  color: var(--color-success, #4caf50);
+  border: 1px solid color-mix(in srgb, var(--color-success, #4caf50) 40%, transparent);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.theme-autosaved-pill.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,1609 @@
+/* Drafts bulk bar defaults to justify-content:flex-end (whole row hugs the
+   right). Reset it so All + count sit on the left and only the action button
+   is pushed right — matching every other bulk bar. */
+#gallery-editor-drafts-bulk {
+  justify-content: flex-start;
+}
+
+/* Gallery grid domino-in cascade on open — same recipe as the document/email
+   libraries. Applied to #gallery-grid in gallery.js on the first render after
+   each open, removed after the longest delay so re-renders feel instant. */
+.gallery-just-opened > .gallery-card {
+  animation: section-domino-in 0.36s cubic-bezier(0.22, 1.61, 0.36, 1) backwards;
+}
+
+.gallery-just-opened > :nth-child(1)  { animation-delay: 0.02s; }
+
+.gallery-just-opened > :nth-child(2)  { animation-delay: 0.04s; }
+
+.gallery-just-opened > :nth-child(3)  { animation-delay: 0.06s; }
+
+.gallery-just-opened > :nth-child(4)  { animation-delay: 0.08s; }
+
+.gallery-just-opened > :nth-child(5)  { animation-delay: 0.10s; }
+
+.gallery-just-opened > :nth-child(6)  { animation-delay: 0.12s; }
+
+.gallery-just-opened > :nth-child(7)  { animation-delay: 0.14s; }
+
+.gallery-just-opened > :nth-child(8)  { animation-delay: 0.16s; }
+
+.gallery-just-opened > :nth-child(9)  { animation-delay: 0.18s; }
+
+.gallery-just-opened > :nth-child(10) { animation-delay: 0.20s; }
+
+.gallery-just-opened > :nth-child(11) { animation-delay: 0.22s; }
+
+.gallery-just-opened > :nth-child(12) { animation-delay: 0.24s; }
+
+.gallery-just-opened > :nth-child(13) { animation-delay: 0.26s; }
+
+.gallery-just-opened > :nth-child(14) { animation-delay: 0.28s; }
+
+.gallery-just-opened > :nth-child(15) { animation-delay: 0.30s; }
+
+.gallery-just-opened > :nth-child(16) { animation-delay: 0.32s; }
+
+.gallery-just-opened > :nth-child(17) { animation-delay: 0.34s; }
+
+.gallery-just-opened > :nth-child(18) { animation-delay: 0.36s; }
+
+.gallery-just-opened > :nth-child(19) { animation-delay: 0.38s; }
+
+.gallery-just-opened > :nth-child(20) { animation-delay: 0.40s; }
+
+.gallery-just-opened > :nth-child(n+21) { animation-delay: 0.42s; }
+
+/* ── Gallery (image library) ── */
+
+.gallery-modal-content {
+  width: min(820px, 94vw);
+  max-height: 92vh;
+  font-size: 12px;
+}
+
+/* While the Edit tab is active the editor needs a *definite* height so
+   the right-side tool panel (`.ge-right-panel { overflow-y:auto }`)
+   scrolls INTERNALLY. Without this the modal only has `max-height`, so
+   `.gallery-editor { height:100% }` can't resolve — the editor grows to
+   its full content height, overflows the modal body, and the modal-body
+   scrollbar that appears can't be wheel-scrolled because the editor's
+   `overscroll-behavior:contain` blocks the chain. Pinning a real height
+   here makes the panel bounded and scrollable as designed. Scoped to
+   the editor view (matched via the container's inline `display:flex`)
+   so the Photos/Albums views keep sizing to their content. */
+.gallery-modal-content:has(#gallery-editor-container[style*="flex"]) {
+  height: 92vh;
+}
+
+/* Photo-detail view sizing (issue #314).
+   The detail view is rendered as a `position:absolute; inset:0` overlay
+   *inside* `.gallery-images-container`, painted over the photo grid. Because
+   it's absolutely positioned it can't contribute to the container's height —
+   the container (and therefore the overlay's `inset:0` box) collapses to the
+   height of the grid sitting behind it. When the library only has a few
+   photos that grid is short, so the detail view is crushed: the image is
+   clipped and the metadata sidebar (`overflow-y:auto`) is squeezed into a
+   tiny, internally-scrolling strip. (With a large library the grid is tall,
+   which is why it looked fine in the demo video but cramped for users with
+   few photos.)
+   Fix: when the detail view is open, hide the grid-view siblings and drop the
+   overlay into normal flow. The container — and the window, up to its 92vh
+   max-height — then sizes to the detail's own content (image + metadata), so
+   nothing is clipped or squeezed regardless of how many photos exist. Scoped
+   via the detail element's inline `display:flex` so the grid / albums views
+   keep sizing to their own content. Works on both desktop and the mobile
+   full-screen sheet. */
+#gallery-images-container:has(> #gallery-detail[style*="flex"]) > *:not(#gallery-detail) {
+  display: none !important;
+}
+
+#gallery-images-container:has(> #gallery-detail[style*="flex"]) > #gallery-detail {
+  position: static;
+}
+
+/* Containing block for the photo-detail overlay — keeps it inside the body
+   so it sits below the modal header and the tab strip instead of covering them. */
+.gallery-images-container { position: relative; }
+
+.gallery-modal-content .modal-header h4 {
+  font-size: 1rem;
+}
+
+.gallery-stats {
+  font-size: 10px;
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  margin-bottom: 4px;
+}
+
+.gallery-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+
+.gallery-toolbar-break { display: none; }
+
+/* Search input + its "↵ enter to tag" hint live in a relative wrapper that
+   carries the 2px down-shift, so input and hint move together. */
+.gallery-search-wrap { position: relative; flex: 1; min-width: 0; display: flex; top: 2px; }
+
+.gallery-search {
+  flex: 1;
+  width: 100%;
+  padding: 4px 8px;
+  padding-right: 78px;   /* room for the enter hint */
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.gallery-search-enter-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent, var(--red));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  white-space: nowrap;
+}
+
+/* Show the hint only once the user has typed something (placeholder gone). */
+.gallery-search:not(:placeholder-shown) ~ .gallery-search-enter-hint { opacity: 0.95; }
+
+#gallery-select-btn { position: relative; top: 2px; font-size: 12px; padding: 10px 11px 12px; }
+
+.gallery-search:focus {
+  border-color: var(--red);
+}
+
+.gallery-model-filter,
+.gallery-sort {
+  padding: 4px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.gallery-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.gallery-chip {
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 14px;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--fg);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.gallery-chip:hover {
+  border-color: var(--red);
+}
+
+.gallery-chip.active {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  border-color: color-mix(in srgb, var(--red) 40%, transparent);
+  color: var(--red);
+}
+
+/* Album chips row */
+.gallery-album-chips {
+  display: flex; gap: 4px; flex-wrap: wrap; padding: 0 0 3px;
+}
+
+.gallery-chip-fav { color: var(--red); }
+
+.gallery-chip-fav.active { background: color-mix(in srgb, var(--red) 15%, transparent); border-color: var(--red); }
+
+.gallery-chip-add { opacity: 0.5; font-size: 14px; padding: 2px 10px; }
+
+/* Active-album indicator — appears when the Photos grid is filtered to one album. */
+.gallery-chip-active-album {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+  border-color: color-mix(in srgb, var(--red) 45%, transparent);
+  position: relative;
+  top: 6px;
+}
+
+.gallery-chip-clear {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1px;
+  width: 12px;
+  height: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  position: relative;
+  top: -4px;
+}
+
+.gallery-chip-clear:hover { opacity: 1; }
+
+/* Favorite button on card */
+/* Video cards: <video> fills the same slot as <img>, plus a small play badge
+   so it's clear the thumbnail represents a video. */
+.gallery-card video {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #000;
+  display: block;
+}
+
+.gallery-card-play {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gallery-card-play svg { margin-left: 2px; }
+
+.gallery-detail-image video {
+  max-width: 100%;
+  max-height: 70vh;
+  display: block;
+}
+
+.gallery-fav-btn {
+  position: absolute; top: 0px; right: 4px; z-index: 2;
+  background: rgba(0,0,0,0.4); border: none; border-radius: 50%;
+  width: 26px; height: 26px; font-size: 14px;
+  color: rgba(255,255,255,0.6); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  padding: 0;
+}
+
+.gallery-card:hover .gallery-fav-btn { opacity: 1; }
+
+.gallery-fav-btn.gallery-fav-active { opacity: 1; color: var(--red); }
+
+.gallery-dl-btn {
+  position: absolute; top: 0px; left: 4px; z-index: 2;
+  background: rgba(0,0,0,0.4); border: none; border-radius: 50%;
+  width: 26px; height: 26px;
+  color: rgba(255,255,255,0.75); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s, background 0.15s;
+  padding: 0;
+}
+
+.gallery-card:hover .gallery-dl-btn { opacity: 1; }
+
+.gallery-dl-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
+
+/* AI tag chips in detail view */
+.gallery-ai-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* Space the user's tag chips off the "add tag" input below them. */
+#gallery-user-tag-chips { margin-bottom: 4px; }
+
+.gallery-ai-chip {
+  background: color-mix(in srgb, var(--accent, var(--red)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 25%, transparent);
+  border-radius: 10px; padding: 3px 8px; font-size: 10px;
+  color: var(--fg); opacity: 0.8;
+  font: inherit; font-size: 10px;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s, border-color 0.12s;
+}
+
+.gallery-ai-chip:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent, var(--red)) 22%, transparent);
+  border-color: color-mix(in srgb, var(--accent, var(--red)) 50%, transparent);
+}
+
+/* AI-generated tags: muted neutral with a tiny sparkle marker so the
+   user can tell at a glance these came from the model, not them. */
+.gallery-aitag-chip {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gallery-aitag-chip:hover {
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 35%, transparent);
+}
+
+.gallery-aitag-mark {
+  font-size: 8px;
+  opacity: 0.55;
+  color: var(--accent, var(--red));
+}
+
+/* User-applied tags keep the accent-colored chip — they're the personal/
+   curated tags, so they get the strongest visual weight. */
+.gallery-user-chip {
+  font-weight: 600;
+}
+
+/* × to remove a user tag (appears inside the chip). */
+.gallery-tag-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.55;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+
+.gallery-user-chip:hover .gallery-tag-x { opacity: 0.85; }
+
+.gallery-tag-x:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--red, #ff5555) 22%, transparent);
+  color: var(--red, #ff5555);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 2px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.gallery-grid.gallery-dragover {
+  border: 2px dashed var(--red);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--red) 5%, transparent);
+}
+
+.gallery-card {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.gallery-card.gallery-card-focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 36%, transparent);
+}
+
+/* Upload-affordance tile pinned to the top-left of the Photos grid. Matches
+   the Upload album tile in the Albums tab — dashed border, centered icon. */
+.gallery-card-upload {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--fg) 3%, var(--bg));
+  opacity: 0.75;
+  transition: opacity 0.12s, border-color 0.15s, transform 0.15s;
+}
+
+/* The "Start AI tag" button turns into a Cancel control during a tag run. */
+.gallery-tag-cancelling {
+  color: var(--red) !important;
+  border-color: color-mix(in srgb, var(--red) 45%, var(--border)) !important;
+}
+
+/* Skeleton/shimmer placeholder tiles shown while the first page of photos loads. */
+.gallery-card-skeleton {
+  cursor: default;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--fg) 4%, var(--panel)) 30%,
+    color-mix(in srgb, var(--fg) 12%, var(--panel)) 50%,
+    color-mix(in srgb, var(--fg) 4%, var(--panel)) 70%);
+  background-size: 200% 100%;
+  animation: gallery-skeleton-shimmer 1.25s ease-in-out infinite;
+}
+
+.gallery-card-skeleton:hover { transform: none; box-shadow: none; border-color: var(--border); }
+
+.gallery-card-upload:hover {
+  opacity: 1;
+  border-color: var(--red);
+  transform: translateY(-1px);
+}
+
+.gallery-card-upload-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--fg);
+}
+
+.gallery-card-upload-label {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.gallery-card:hover {
+  border-color: var(--red);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 15%, transparent);
+  transform: translateY(-1px);
+}
+
+.gallery-select-dot {
+  position: absolute; top: 6px; left: 6px; z-index: 2;
+  width: 10px; height: 10px; border-radius: 50%; cursor: pointer;
+  background: color-mix(in srgb, var(--fg) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 50%, transparent);
+  transition: background 0.15s;
+}
+
+.gallery-select-dot.selected { background: var(--red); border-color: var(--red); }
+
+.gallery-select-dot:hover { background: color-mix(in srgb, var(--red) 50%, transparent); }
+
+/* Strong accent ring on the whole photo when it's selected — inset
+   box-shadow (not outline) because outline-offset:-4px inside an
+   overflow:hidden rounded card renders sharp-cornered on Firefox.
+   box-shadow inset always respects the card's border-radius. */
+.gallery-card:has(.gallery-select-dot.selected) {
+  box-shadow: inset 0 0 0 7px var(--red);
+}
+
+.gallery-select-btn {
+  padding: 9px 10px 11px; background: transparent; color: var(--fg);
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+  font-size: 11px; font-family: inherit; opacity: 0.6; transition: all 0.15s;
+  margin-top: -4px !important;
+}
+
+.gallery-select-btn:hover { opacity: 1; }
+
+/* Match the library Select toggle's red tint (.memory-toolbar-btn.active).
+   Bumped contrast so the toggled state actually reads on mobile — the prior
+   15% red on transparent was nearly invisible against the page background. */
+.gallery-select-btn.active {
+  background: color-mix(in srgb, var(--red) 28%, transparent);
+  color: var(--red);
+  border-color: var(--red);
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Toolbar action buttons sit 2px lower than the generic select-btn so
+   they baseline-align with the toolbar's selects/inputs instead of
+   floating above them. */
+.gallery-toolbar-action {
+  margin-top: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.gallery-bulk-bar {
+  display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px;
+  justify-content: flex-end;
+}
+
+.gallery-bulk-bar.hidden { display: none; }
+
+.gallery-bulk-all {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; opacity: 0.75; cursor: pointer; margin-right: auto;
+}
+
+.gallery-bulk-all input { accent-color: var(--accent, var(--red)); cursor: pointer; }
+
+.gallery-bulk-delete {
+  padding: 3px 10px; background: transparent; color: var(--red);
+  border: 1px solid var(--red); border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-family: inherit;
+}
+
+.gallery-bulk-delete:hover { background: var(--red); color: #fff; }
+
+.gallery-bulk-cancel {
+  padding: 3px 10px; background: transparent; color: var(--fg);
+  border: 1px solid var(--border); border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-family: inherit; opacity: 0.6;
+}
+
+.gallery-bulk-cancel:hover { opacity: 1; }
+
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 8px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  color: #fff;
+}
+
+.gallery-card-prompt {
+  font-size: 10px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+.gallery-card-model {
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.15);
+}
+
+.gallery-empty {
+  text-align: center;
+  color: color-mix(in srgb, var(--fg) 35%, transparent);
+  padding: 32px 16px;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.gallery-load-more {
+  display: block;
+  margin: 10px auto 0;
+  padding: 6px 16px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.gallery-load-more:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Gallery detail overlay */
+.gallery-detail {
+  position: absolute;
+  inset: 0;
+  background: var(--panel);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.gallery-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px 4px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  /* Pin to top so a tall (portrait) photo can't cover the Back / ⋮
+     menu when the detail body grows past the visible area. */
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  /* Above the image's rotate/nav buttons (z-index:3) so they scroll cleanly
+     behind the header instead of colliding with it. */
+  z-index: 5;
+  min-height: 0;
+}
+
+.gallery-detail-back {
+  background: none;
+  border: none;
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  position: relative;
+  top: -2px;
+}
+
+/* Slightly larger header icons (back/edit/heart/⋮) — override the inline 14px. */
+.gallery-detail-header svg { width: 16px; height: 16px; }
+
+.gallery-detail-back:hover {
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+}
+
+.gallery-detail-action {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: border-color 0.15s;
+}
+
+.gallery-detail-action:hover {
+  border-color: var(--fg);
+}
+
+.gallery-detail-action.danger {
+  color: var(--color-error, #e55);
+}
+
+.gallery-detail-action.danger:hover {
+  border-color: var(--color-error, #e55);
+}
+
+/* Overflow menu — replaces the seven individual action buttons that used
+   to crowd the right side of the detail header. */
+.gallery-detail-menu-wrap { position: relative; }
+
+.gallery-detail-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  position: relative;
+  top: -2px;
+}
+
+.gallery-detail-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 150px;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--fg) 18%, transparent);
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.gallery-detail-menu[hidden] { display: none; }
+
+.gallery-detail-menu .dropdown-item-compact {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  font: inherit;
+  /* Tighter than the global default — the photo-detail menu has 8
+     items so every pixel of vertical padding adds up. */
+  padding: 4px 8px;
+  font-size: 11px;
+  gap: 8px;
+  line-height: 1.2;
+}
+
+.gallery-detail-menu .dropdown-item-compact .dropdown-icon,
+.gallery-detail-menu .dropdown-item-compact .dropdown-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.gallery-detail-body {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.gallery-detail-image {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Shrink-wraps the actual image so overlay children (heart, face boxes)
+   anchor to the IMAGE bounds, not the wider letterboxed wrapper. */
+.gallery-detail-img-frame {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  max-height: 80vh;
+}
+
+.gallery-detail-image img,
+.gallery-detail-image video,
+.gallery-detail-img-frame img,
+.gallery-detail-img-frame video {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 6px;
+  object-fit: contain;
+  display: block;
+}
+
+.gallery-detail-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 3;
+  padding: 0;
+}
+
+.gallery-detail-image:hover .gallery-detail-nav { opacity: 0.85; }
+
+.gallery-detail-nav:hover { opacity: 1 !important; background: rgba(0, 0, 0, 0.7); }
+
+.gallery-detail-nav-prev { left: 8px; }
+
+.gallery-detail-nav-next { right: 8px; }
+
+/* Rotate buttons — same pattern as the prev/next arrows but pinned to the
+   top corners. Hover-revealed so they don't clutter the image. */
+.gallery-detail-rotate {
+  position: absolute;
+  top: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 3;
+  padding: 0;
+}
+
+.gallery-detail-image:hover .gallery-detail-rotate { opacity: 0.85; }
+
+.gallery-detail-rotate:hover { opacity: 1 !important; background: rgba(0, 0, 0, 0.7); }
+
+.gallery-detail-rotate-ccw { left: 8px; }
+
+.gallery-detail-rotate-cw  { right: 8px; }
+
+/* Inline heart that lives next to the "Date" label in the sidebar.
+   Tiny outline icon by default; fills red when favorited. */
+.gallery-detail-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.gallery-detail-fav-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  /* Nudge up 8px so the heart sits visually above the Date label
+     baseline rather than centred on it. */
+  margin-top: -8px;
+  border-radius: 4px;
+  color: var(--fg-muted);
+  opacity: 0.6;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+/* Shrink the SVG so the heart matches the height of the small uppercase
+   Date label sitting next to it. */
+.gallery-detail-fav-inline svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.gallery-detail-fav-inline:hover {
+  opacity: 1;
+}
+
+.gallery-detail-fav-inline.active {
+  opacity: 1;
+  color: var(--red);
+}
+
+.gallery-detail-nav-disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.gallery-detail-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  /* Vertical scroll for long metadata, but never horizontal — overflow:auto
+     alone would let a wide child (e.g. long album name in the select) push
+     the sidebar into horizontal-scroll mode. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* Constrain any child that could otherwise stretch the sidebar wider than
+   its declared width (selects with long option text, long URLs, etc.). */
+.gallery-detail-sidebar select,
+.gallery-detail-sidebar input,
+.gallery-detail-sidebar .gallery-detail-prompt {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.gallery-detail-section {
+  margin-bottom: 12px;
+}
+
+.gallery-date-rel {
+  opacity: 0.55;
+  margin-left: 4px;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.gallery-detail-section label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.6;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gallery-detail-section div {
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.gallery-detail-prompt {
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+.gallery-tag-input,
+.gallery-detail-name-input {
+  width: 100%;
+  padding: 5px 8px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.gallery-tag-input:focus,
+.gallery-detail-name-input:focus {
+  border-color: var(--red);
+  outline: none;
+}
+
+/* ↵ enter hint inside the Add-a-tag field (accent), replacing the "press Enter"
+   placeholder text. */
+.gallery-tag-input-wrap { position: relative; }
+
+.gallery-tag-input-wrap .gallery-tag-input { padding-right: 24px; }
+
+.gallery-tag-enter-hint {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: -2px;  /* the input has 4px bottom margin; center on the box */
+  color: var(--accent, var(--red));
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.gallery-detail-name-input { font-size: 13px; font-weight: 500; }
+
+/* ↵ enter hint on the image name field — accent, shown while editing to signal
+   that Enter saves. */
+.gallery-name-wrap { position: relative; }
+
+.gallery-name-enter {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: -2px;
+  color: var(--accent, var(--red));
+  opacity: 0.85;
+  pointer-events: none;
+  display: none;
+}
+
+.gallery-name-wrap:focus-within .gallery-name-enter { display: inline-flex; }
+
+.gallery-name-wrap:focus-within .gallery-detail-name-input { padding-right: 28px; }
+
+.gallery-tag-save {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.gallery-tag-save:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Gallery Editor
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tab bar */
+.gallery-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  background: var(--panel);
+}
+
+.gallery-tab {
+  padding: 8px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--fg);
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.gallery-tab:hover { opacity: 0.85; }
+
+.gallery-tab.active {
+  opacity: 1;
+  border-bottom-color: var(--red);
+}
+
+.gallery-tab {
+  gap: 6px;
+}
+
+/* Icon + label layout inside each tab. */
+.gallery-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gallery-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.85;
+}
+
+.gallery-tab.active .gallery-tab-icon { opacity: 1; }
+
+/* Close × on the Edit tab — appears on hover. */
+.gallery-tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+  /* Use a slightly larger glyph at a larger line-height so the × sits
+     visually centered — the U+00D7 character has uneven em-box metrics. */
+  font-size: 16px;
+  line-height: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  padding-bottom: 2px;
+  box-sizing: border-box;
+}
+
+.gallery-tab:hover .gallery-tab-close,
+.gallery-tab.active .gallery-tab-close { opacity: 0.65; }
+
+/* Hide the close × entirely on the Edit tab when there's no edit open. */
+.gallery-tab[data-tab="editor"]:not(.has-edit) .gallery-tab-close { display: none !important; }
+
+.gallery-tab-close:hover { opacity: 1 !important; background: color-mix(in srgb, var(--red) 25%, transparent); color: var(--red); }
+
+/* Inline rename input shown when the Edit tab is double-clicked. */
+.gallery-tab-rename-input {
+  background: var(--bg);
+  border: 1px solid var(--red);
+  border-radius: 3px;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  padding: 1px 4px;
+  width: 140px;
+  outline: none;
+}
+
+/* Albums tab — grid of album cards with cover thumbnails. */
+.gallery-albums-container {
+  padding: 12px 4px;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.gallery-settings-container {
+  padding: 8px 4px;
+  max-height: 72vh;
+  overflow-y: auto;
+}
+
+.gallery-albums-container.gallery-dragover {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 5%, transparent);
+}
+
+.gallery-albums-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 48px 16px;
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.gallery-albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.gallery-album-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+
+.gallery-album-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--red);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--fg) 12%, transparent);
+}
+
+.gallery-album-menu-btn {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  color: var(--fg);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  /* Plain "…" text — the previous SVG was rendering as a flat black
+     block on some themes when its currentColor didn't contrast. */
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 600;
+  padding: 0 0 4px;
+}
+
+.gallery-album-card:hover .gallery-album-menu-btn,
+.gallery-album-menu-btn:focus-visible { opacity: 1; }
+
+.gallery-album-menu-btn:hover { background: var(--bg); }
+
+.gallery-album-menu-pop {
+  position: absolute;
+  top: 34px; right: 6px;
+  min-width: 140px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--fg) 18%, transparent);
+  display: flex; flex-direction: column;
+  padding: 4px;
+  z-index: 3;
+}
+
+.gallery-album-menu-pop[hidden] { display: none; }
+
+.gallery-album-cover {
+  aspect-ratio: 4 / 3;
+  background: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+.gallery-album-cover img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-album-placeholder {
+  opacity: 0.4;
+  font-size: 40px;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+}
+
+.gallery-album-info {
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.gallery-album-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.gallery-album-count {
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+.gallery-album-card-add {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.gallery-album-card-add:hover { opacity: 1; }
+
+/* Edit-tab empty state — shown before any image is loaded. */
+.gallery-editor-landing {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px;
+  padding: 64px 16px;
+  flex: 1;
+  text-align: center;
+  color: var(--fg);
+}
+
+.gallery-editor-landing h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.gallery-editor-landing p {
+  margin: 0;
+  opacity: 0.6;
+  font-size: 13px;
+  max-width: 320px;
+}
+
+.gallery-editor-landing-actions {
+  display: flex; gap: 10px;
+  margin-top: 8px;
+}
+
+/* Bigger primary action buttons specifically inside the editor landing —
+   the gallery-wide .gallery-select-btn is a compact toolbar style which is
+   too small for the empty-state hero. */
+.gallery-editor-landing-actions .gallery-select-btn {
+  padding: 7px 22px 17px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.gallery-editor-landing-actions .gallery-select-btn:hover { opacity: 1; }
+
+/* Template picker — native <select> so it renders reliably across browsers
+   without fighting our custom flex layouts. */
+.gallery-editor-template-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  font-size: 11px;
+  opacity: 0.55;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gallery-editor-template-select {
+  min-width: 240px;
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.gallery-editor-template-select:hover { border-color: var(--red); }
+
+.gallery-editor-template-select:focus { outline: none; border-color: var(--red); }
+
+/* Saved-drafts grid on the editor landing. Surfaces every persisted
+   in-progress project so the user can resume without re-opening the
+   original photo. Each card: thumbnail + name + last-saved hint + ×. */
+.gallery-editor-drafts {
+  width: min(720px, 92%);
+  margin: 28px auto 0;   /* centered */
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gallery-editor-drafts {
+  position: relative;
+}
+
+.gallery-editor-drafts-loading {
+  position: absolute;
+  inset: 30px 0 0 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border-radius: 6px;
+  min-height: 80px;
+}
+
+.gallery-editor-drafts-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* center the title / search / select */
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* In select mode the bulk bar drops in below the header — pull it up. */
+#gallery-editor-drafts-bulk { margin-top: -12px; }
+
+.gallery-editor-drafts-title {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  font-weight: 600;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.gallery-editor-drafts-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 280px;
+  height: 26px;          /* same thickness as the Select button */
+  box-sizing: border-box;
+  padding: 0 8px;
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.gallery-editor-drafts-search:focus { outline: none; border-color: var(--red); }
+
+/* The shared .gallery-select-btn has a -4px top margin + tall asymmetric padding
+   meant for the main gallery toolbar; in this header it makes the button a
+   different height / offset from the search box. Normalize so it lines up. */
+.gallery-editor-drafts-header .gallery-select-btn {
+  margin-top: 0 !important;
+  height: 26px;          /* match the search bar */
+  box-sizing: border-box;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+#gallery-editor-drafts-select { margin-left: auto; flex-shrink: 0; }
+
+#gallery-editor-drafts-select.active {
+  background: color-mix(in srgb, var(--accent, var(--red)) 18%, transparent);
+  border-color: var(--accent, var(--red));
+  color: var(--accent, var(--red));
+}
+
+.gallery-editor-draft-card.selected {
+  outline: 2px solid var(--accent, var(--red));
+  outline-offset: -2px;
+}
+
+.gallery-editor-draft-card.select-mode { cursor: pointer; }
+
+/* Graceful exit when a project card is deleted — fade + shrink before re-render. */
+.gallery-editor-draft-card.gallery-draft-removing {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.24s ease, transform 0.24s ease;
+  pointer-events: none;
+}
+
+/* Draft select dot uses the standard small .gallery-select-dot look (same as the
+   photo grid) — no oversized white-ring checkbox. */
+.gallery-editor-drafts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.gallery-editor-draft-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  text-align: left;
+}
+
+.gallery-editor-draft-card:hover {
+  border-color: var(--accent, var(--red));
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+}
+
+.gallery-editor-draft-card:focus-visible {
+  outline: 2px solid var(--accent, var(--red));
+  outline-offset: 2px;
+}
+
+.gallery-editor-draft-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--bg);
+  display: block;
+}
+
+.gallery-editor-draft-thumb-empty {
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--fg) 4%, transparent),
+    color-mix(in srgb, var(--fg) 4%, transparent) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.gallery-editor-draft-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gallery-editor-draft-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-editor-draft-meta {
+  font-size: 10px;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-editor-draft-delete {
+  position: absolute;
+  top: -2px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+}
+
+.gallery-editor-draft-card:hover .gallery-editor-draft-delete { opacity: 1; }
+
+.gallery-editor-draft-delete:hover { background: var(--red); }
+
+/* Editor layout */
+.gallery-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  /* Prevent the editor's own scroll/touch from chaining out to the
+     gallery modal or the page body — critical on mobile so touching
+     the canvas doesn't slide the whole page. */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.gallery-editor-container {
+  flex: 1;
+  min-height: 0;
+  display: none;
+}
+
+/* Detail-header heart toggle — sits next to the icon Edit button. */
+.gallery-detail-fav-header { opacity: 0.7; transition: opacity 0.15s, color 0.15s; }
+
+.gallery-detail-fav-header:hover { opacity: 1; }
+
+.gallery-detail-fav-header.active { color: var(--red); opacity: 1; }
+
+/* All sliders inside the image editor share the same visual language as
+   the layer opacity slider — rounded pill, dim track, red thumb. Track
+   AND thumb grow when interacting for finer tweaking. */
+.gallery-editor-container input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: color-mix(in srgb, var(--fg) 25%, transparent);
+  border-radius: 999px;
+  accent-color: var(--red);
+  cursor: pointer;
+  transition: height 0.15s ease;
+}
+
+.gallery-editor-container input[type="range"]:hover,
+.gallery-editor-container input[type="range"]:focus,
+.gallery-editor-container input[type="range"]:active {
+  height: 10px;
+}
+
+.gallery-editor-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: width 0.12s ease, height 0.12s ease;
+}
+
+.gallery-editor-container input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: width 0.12s ease, height 0.12s ease;
+}
+
+.gallery-editor-container input[type="range"]:hover::-webkit-slider-thumb,
+.gallery-editor-container input[type="range"]:focus::-webkit-slider-thumb,
+.gallery-editor-container input[type="range"]:active::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+}
+
+.gallery-editor-container input[type="range"]:hover::-moz-range-thumb,
+.gallery-editor-container input[type="range"]:focus::-moz-range-thumb,
+.gallery-editor-container input[type="range"]:active::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+}

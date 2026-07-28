@@ -7,9 +7,9 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CALENDAR_JS = ROOT / "static" / "js" / "calendar.js"
+CALENDAR_JS = ROOT / "web" / "lib" / "legacy" / "calendar.js"
 STYLE_CSS = ROOT / "static" / "style.css"
-UTILS_JS = ROOT / "static" / "js" / "calendar" / "utils.js"
+UTILS_JS = ROOT / "web" / "lib" / "legacy" / "calendar" / "utils.js"
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="node binary not on PATH")
 
@@ -28,7 +28,7 @@ def _node_eval(source: str):
 def test_calendar_readable_text_color_prefers_dark_ink_for_pastels():
     values = _node_eval(
         """
-        import { _calReadableTextColor } from './static/js/calendar/utils.js';
+        import { _calReadableTextColor } from './web/lib/legacy/calendar/utils.js';
         console.log(JSON.stringify({
           blue: _calReadableTextColor('#b0d7f7'),
           yellow: _calReadableTextColor('#f2dfbd'),
@@ -47,7 +47,7 @@ def test_calendar_readable_text_color_prefers_dark_ink_for_pastels():
 def test_calendar_readable_text_color_keeps_light_text_for_dark_colors():
     values = _node_eval(
         """
-        import { _calReadableTextColor } from './static/js/calendar/utils.js';
+        import { _calReadableTextColor } from './web/lib/legacy/calendar/utils.js';
         console.log(JSON.stringify({
           navy: _calReadableTextColor('#1f3552'),
           red: _calReadableTextColor('#78252d'),

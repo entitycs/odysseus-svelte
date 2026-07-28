@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
-_SRC = _REPO / "static" / "js" / "providers.js"
+_SRC = _REPO / "web" / "lib" / "legacy" / "providers.js"
 _HAS_NODE = shutil.which("node") is not None
 
 

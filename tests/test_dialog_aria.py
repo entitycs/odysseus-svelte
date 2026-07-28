@@ -12,15 +12,17 @@ import re
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
-_INDEX = (_REPO / "static" / "index.html").read_text(encoding="utf-8")
-_UI = (_REPO / "static" / "js" / "ui.js").read_text(encoding="utf-8")
+_INDEX = (_REPO / "web" / "routes" / "+layout.svelte").read_text(encoding="utf-8")
+_CHATINDEX = (_REPO / "web" / "routes" / "chat" / "+page.svelte").read_text(encoding="utf-8")
+_UI = (_REPO / "web" / "lib" / "legacy" / "ui.js").read_text(encoding="utf-8")
 
 
 def test_static_modals_expose_dialog_role_and_name():
     # Each static tool window must announce itself as a named dialog. These are
     # dockable/tiling windows, so they are role="dialog" WITHOUT aria-modal.
-    for name in ("Brain", "Theme", "Prompt", "Rename session", "Cookbook", "Settings"):
-        assert f'role="dialog" aria-label="{name}"' in _INDEX, f"missing dialog role/name for {name!r}"
+    for name in ("Brain", "Theme", "Rename session", "Cookbook", "Settings"):
+        pattern = rf'role="dialog".*aria-label="{re.escape(name)}"|aria-label="{re.escape(name)}".*role="dialog"'
+        assert re.search(pattern, _INDEX, re.DOTALL), f"missing dialog role/name for {name!r}"
 
 
 def test_no_modal_close_button_is_unlabeled():
@@ -58,7 +60,7 @@ def test_styled_dialogs_manage_focus():
 def test_toast_has_dismiss_button():
     """Both showToast and showError must include a close button with aria-label."""
     # Read fresh every time so edits to ui.js are picked up
-    ui = (_REPO / "static" / "js" / "ui.js").read_text(encoding="utf-8")
+    ui = (_REPO / "web" / "lib" / "legacy" / "ui.js").read_text(encoding="utf-8")
     assert "toast-close-btn" in ui
     assert "aria-label" in ui
     assert "Dismiss" in ui

@@ -1,11 +1,12 @@
 """Static regressions for Add Models provider device-flow UX."""
 
 from pathlib import Path
-
+import re
 
 _REPO = Path(__file__).resolve().parent.parent
-_INDEX = (_REPO / "static" / "index.html").read_text(encoding="utf-8")
-_ADMIN = (_REPO / "static" / "js" / "admin.js").read_text(encoding="utf-8")
+# _INDEX = (_REPO / "static" / "index.html").read_text(encoding="utf-8")
+_INDEX = (_REPO / "web" / "routes" / "+layout.svelte").read_text(encoding="utf-8")
+_ADMIN = (_REPO / "web" / "lib" / "legacy" / "admin.js").read_text(encoding="utf-8")
 
 
 def _between(src: str, start: str, end: str) -> str:
@@ -15,8 +16,18 @@ def _between(src: str, start: str, end: str) -> str:
 
 
 def test_copilot_and_chatgpt_subscription_are_dropdown_device_auth_options():
-    assert 'value="copilot" data-logo="github" data-auth-flow="copilot">GitHub Copilot' in _INDEX
-    assert 'value="chatgpt-subscription" data-logo="openai" data-auth-flow="chatgpt-subscription">ChatGPT Subscription' in _INDEX
+    pattern = re.compile(
+        r"value=['\"]copilot['\"]\s*data-logo=['\"]github['\"]\s*data-auth-flow=['\"]copilot['\"]\s*>\s*GitHub Copilot",
+        re.MULTILINE
+    )
+    assert pattern.search(_INDEX)
+
+    pattern = re.compile(
+        r"value=['\"]chatgpt-subscription['\"]\s*data-logo=['\"]openai['\"]\s*data-auth-flow=['\"]chatgpt-subscription['\"]\s*>\s*ChatGPT Subscription",
+        re.MULTILINE
+    )
+    assert pattern.search(_INDEX)
+
     assert 'id="adm-deviceAuthStatus"' in _INDEX
 
 

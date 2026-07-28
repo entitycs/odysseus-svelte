@@ -1,8 +1,8 @@
 from pathlib import Path
+import re
 
-
-APP_JS = Path("static/app.js")
-SESSIONS_JS = Path("static/js/sessions.js")
+APP_JS = Path("web/lib/legacy/app.js")
+SESSIONS_JS = Path("web/lib/legacy/sessions.js")
 
 
 def test_rail_delete_uses_hard_delete_endpoint():
@@ -10,7 +10,13 @@ def test_rail_delete_uses_hard_delete_endpoint():
     rail_block = source[source.index("const railDelete = el('rail-delete-session');"):]
     rail_block = rail_block[:rail_block.index("// Textarea auto-resize")]
 
-    assert "fetch(`${API_BASE}/api/session/${currentId}`, { method: 'DELETE' })" in rail_block
+    pattern = re.compile(
+        r"fetch\(`\$\{API_BASE\}\/api\/session\/\$\{currentId\}`,\s*\{\s*method:\s*'DELETE'[,]?\s*\}\s*\);",
+        re.DOTALL,
+    )
+    assert pattern.search(rail_block), (
+        "Rail delete uses hard delete endpoint"
+    )
     assert "api/session/${currentId}/archive" not in rail_block
 
 
@@ -18,8 +24,16 @@ def test_deleted_sessions_are_pruned_from_local_sidebar_state():
     source = SESSIONS_JS.read_text()
 
     assert "function _removeSessionFromLocalState(sid)" in source
-    assert "sessions = sessions.filter(s => String(s.id) !== id);" in source
-    assert "Storage.set('session-order', JSON.stringify(orderIds.filter(x => String(x) !== id)))" in source
+    pattern = re.compile(
+        r"sessions = sessions\.filter\(\s*[(]?s[)]?\s*=>\s*String\(s.id\) !== id\)",
+        re.MULTILINE
+    )
+    assert pattern.search(source)
+    pattern = re.compile(
+        r"Storage\.set\(\s*'session-order',\s*JSON.stringify\(\s*orderIds.filter\(\s*\(x\)\s*=>\s*String\(x\) !== id\s*\)\s*\)[,]?\s*\)",
+        re.MULTILINE
+    )
+    assert pattern.search(source)
     assert "_removeSessionFromLocalState(s.id);" in source
 
 

@@ -7,7 +7,7 @@ and the streamed-blocks renderings of the setup guide must carry the example.
 """
 from pathlib import Path
 
-_SRC = Path(__file__).resolve().parent.parent / "static" / "js" / "slashCommands.js"
+_SRC = Path(__file__).resolve().parent.parent / "web" / "lib" / "legacy" / "slashCommands.js"
 
 
 def test_setup_guide_offers_llamacpp_local_example():
