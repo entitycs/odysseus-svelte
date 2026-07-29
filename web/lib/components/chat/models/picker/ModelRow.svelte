@@ -1,5 +1,5 @@
 <script module lang="ts">
-    let favoriteGroup : ModelItem[];
+    let favoriteGroup: ModelItem[];
     let startOfGroup = $state(false);
 </script>
 
@@ -7,7 +7,7 @@
     import { onMount } from "svelte";
     import ModelSection from "./ModelSection.svelte";
     import type { ModelItem } from "../modelItemStore.svelte";
-
+    import { HorizontalPan } from "$lib/classes/HorizontalPan";
     interface Props {
         model: any;
         favorites: string[];
@@ -35,22 +35,37 @@
             : "",
     );
 
-    onMount(() =>{
-        if (favorites.includes(model.mid)){
-            if (!favoriteGroup){
+    let modelName : HTMLElement;
+    let modelNameText : HTMLElement;
+    let horizontalPan : HorizontalPan;
+
+    let endpointName: HTMLElement;
+    let endpointNameText: HTMLElement;
+    let horizontalPan2 : HorizontalPan;
+
+    onMount(() => {
+        horizontalPan = new HorizontalPan(modelName, modelNameText, {
+            speed: 0.75,
+            mode: "bounce",
+        });
+        horizontalPan2 = new HorizontalPan(endpointName, endpointNameText, {
+            speed: 0.75,
+            mode: "bounce",
+        });
+        if (favorites.includes(model.mid)) {
+            if (!favoriteGroup) {
                 favoriteGroup = [model];
                 startOfGroup = true;
-            }
-            else{
+            } else {
                 startOfGroup = false;
                 favoriteGroup.push(model);
             }
         }
     });
-
 </script>
 
 <div
+
     role="button"
     tabindex="0"
     class="model-switch-item"
@@ -58,8 +73,27 @@
     onclick={() => onPick(model)}
     onkeydown={() => onPick(model)}
 >
-    <span class="mp-model-name">{model.display}</span>
-    <span class="model-switch-ep">{epDisplay}</span>
+    <span bind:this={modelName}
+    onmouseenter={() => horizontalPan.start()}
+    onmouseleave={() => horizontalPan.stop()}
+    ontouchstart={() => horizontalPan.start()}
+    ontouchend={() => horizontalPan.stop()}
+    onfocus={() => horizontalPan.start()}
+    onblur={() => horizontalPan.stop()}
+    style="overflow:hidden; white-space:nowrap;"
+    class="mp-model-name"
+    role="contentinfo"><span bind:this={modelNameText} style="display:inline-block;">{model.display}</span></span>
+
+    <span bind:this={endpointName}
+    onmouseenter={() => horizontalPan2.start()}
+    onmouseleave={() => horizontalPan2.stop()}
+    ontouchstart={() => horizontalPan2.start()}
+    ontouchend={() => horizontalPan2.stop()}
+    onfocus={() => horizontalPan2.start()}
+    onblur={() => horizontalPan2.stop()}
+    style="overflow:hidden; white-space:nowrap;"
+    class="model-switch-ep"
+    role="contentinfo"><span bind:this={endpointNameText} style="display:inline-block">{epDisplay}</span></span>
 
     <button
         class="mp-fav-dot"
@@ -73,5 +107,6 @@
     </button>
 </div>
 <hr style="border-top-style: inset;" />
+
 <style>
 </style>

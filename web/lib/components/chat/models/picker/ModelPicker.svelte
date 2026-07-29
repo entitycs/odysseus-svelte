@@ -9,7 +9,6 @@
   import helper from "$lib/components/chat/models/picker/helpers.svelte";
   import ModelRow from "$lib/components/chat/models/picker/ModelRow.svelte";
   import ModelSection from "$lib/components/chat/models/picker/ModelSection.svelte";
-  import { shortModel } from "$lib/legacy/model/models";
   import { refreshModels } from "$lib/legacy/models.js";
   import { providerLogo } from "$lib/legacy/providers";
   import sessionModule, * as _deps from "$lib/legacy/sessions";
@@ -299,9 +298,13 @@
     return modelId;
   }
 
-  function toggleModelPicker(e: Event) {
+  async function toggleModelPicker(e: Event) {
     e.stopPropagation();
     isModelPickerOpen = !isModelPickerOpen;
+    if (isModelPickerOpen){
+      // await refreshModels();// still handled through legacy
+      allModels = helper.getAllModels();
+    }
     if (isModelPickerOpen && window.innerWidth >= 768) {
       const searchInput = document.getElementById(
         "model-picker-search",

@@ -585,7 +585,7 @@ function initializeEventListeners() {
   }
 
   /* Svelte * - moved to Export.svelte component */
-  
+
   // // Export: Copy all messages
   // const exportCopyBtn = el('export-copy-btn');
   // if (exportCopyBtn) {
@@ -5494,11 +5494,11 @@ export function startOdysseusApp() {
 
   // Non-critical startup work must not compete with first paint, chat send, or
   // chat switching. Panels load their own data when opened; these are only warmups.
-  runNonCriticalStartup(() => {
-    modelsModule.refreshModels(false).then(() => {
-      try { sessionModule.updateModelPicker(); } catch (_) {}
-    }).catch(() => {});
-  }, 3500);
+  // runNonCriticalStartup(() => {
+  //   modelsModule.refreshModels(false).then(() => {
+  //     try { sessionModule.updateModelPicker(); } catch (_) {}
+  //   }).catch(() => {});
+  // }, 3500);
   runNonCriticalStartup(() => modelsModule.refreshProviders(), 6500);
   runNonCriticalStartup(() => ragModule.loadPersonalDocs(), 9000);
 	  runNonCriticalStartup(() => memoryModule.loadMemories(), 12000);
