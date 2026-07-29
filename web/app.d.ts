@@ -9,6 +9,7 @@ declare global {
     interface PageData {}
     interface PageState {
       sessionId: string | null;
+	  readonly mode?: "agent" | "chat";
     }
     interface Platform {}
   }
