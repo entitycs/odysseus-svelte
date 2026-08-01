@@ -39,6 +39,7 @@ import * as tourHints from '$lib/legacy/tourHints.js';
 import * as ttsAi from '$lib/legacy/tts-ai.js';
 import * as ui from '$lib/legacy/ui.js';
 import * as voiceRecorder from '$lib/legacy/voiceRecorder.js';
+// end legacy
 
 let { children } = $props();
 

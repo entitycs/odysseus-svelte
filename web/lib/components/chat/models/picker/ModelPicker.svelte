@@ -108,11 +108,11 @@
   let currentModelId = $state("");
   let currentModelLogo: string | RegExp | null = $state("");
 
-  $effect(() => {
-    updateModelLabel(sessionModel);
-    const modelItem = allModels.find(m => m.mid == sessionModel);
-    if (modelItem) _pick(modelItem);
-  });
+  // $effect(() => {
+  //   updateModelLabel(sessionModel);
+  //   const modelItem = allModels.find(m => m.mid == sessionModel);
+  //   if (modelItem) _pick(modelItem);
+  // });
 
   $effect(() => {
     if (shouldUpdatePicker) {
@@ -121,9 +121,6 @@
     }
   });
 
-  // $inspect(currentModelId);
-  // $inspect(selectedModelId);
-  // $inspect(_modelList);
   $inspect(searchQuery);
   $inspect(searchedModels);
   function handleGlobalKeyDown(e: KeyboardEvent) {
@@ -135,8 +132,6 @@
   }
 
   onMount(async () => {
-    // modelsModule.init();
-    // modelsModule.refreshModels();
     await refreshModels();
     unsubscribeModelItems = modelItems.subscribe(async (value) => {
       _modelList = value;
@@ -155,10 +150,6 @@
 
     // Global keyboard handlers
     document.addEventListener("keydown", handleGlobalKeyDown);
-
-    // return () => {
-    //   document.removeEventListener("keydown", handleGlobalKeyDown);
-    // };
   });
   //---------------------------------------------------------------------------
 
@@ -200,12 +191,6 @@
     const logo = modelId ? providerLogo(modelId) : null;
     currentModelId = modelId;
     currentModelLogo = logo;
-    // if (logo) {
-    //   // label.innerHTML =
-    //   //   '<span class="model-picker-logo">' + logo + "</span> " + displayName;
-    // } else {
-    //   label.textContent = displayName;
-    // }
   }
 
   /**
@@ -214,23 +199,7 @@
    * Called after selectSession, createDirectChat, and model switch.
    */
   export function updateModelPicker() {
-    // if (!_deps) return;
-    // const label = document.getElementById("model-picker-label");
-    // if (!label) return;
-    // // Hide model picker when group chat is active
-    // const wrap = document.getElementById('model-picker-wrap');
-    // if (window.groupModule && window.groupModule.isActive()) {
-    //   if (wrap) {
-    //     wrap.style.display = 'none';
-    //   }
-    //   return;
-    // }
-    // // Reset inline visibility (may have been hidden by typing in previous session)
-    // if (wrap) {
-    //   wrap.style.display = '';
-    //   wrap.style.opacity = '';
-    //   wrap.style.pointerEvents = '';
-    // }
+
     const currentSessionId = sessionId;
     const sessions = _deps.getSessions();
     const _pendingChat = _deps.getPendingChat();
@@ -565,3 +534,4 @@
     </div>
   {/if}
 </div>
+

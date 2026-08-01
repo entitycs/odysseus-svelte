@@ -17,7 +17,7 @@
   } from "$lib/input/textareaUtils.js";
   import chatModule from "$lib/legacy/chat";
   import fileHandlerModule from "$lib/legacy/fileHandler";
-  import { pushRecent } from "$lib/legacy/modelPicker";
+  // import { pushRecent } from "$lib/legacy/modelPicker";
   import { createDirectChat, getPendingChat, getSessions, setPendingChat } from "$lib/legacy/sessions";
   import { modelItems } from "./models/modelItemStore.svelte";
   import QueuedMessageItem from "./QueuedMessageItem.svelte";
@@ -26,7 +26,6 @@
   interface Props {
     sessionId: string | null;
     onSubmit?: (message: string, files: any[]) => void;
-    onModelChange?: (model: any) => void;
     placeholder?: string;
     disabled?: boolean;
   }
@@ -34,7 +33,6 @@
   let {
     sessionId = null,
     onSubmit = () => {},
-    onModelChange = handleModelPicked,
     placeholder = "Message Odysseus...",
     disabled = false,
   }: Props = $props();
@@ -295,79 +293,79 @@
     show(`Using ${model.display}`);
   }
 
-  async function handleModelPicked(model: any) {
-    console.log("made it 3");
-    console.log(model);
+  // async function handleModelPicked(model: any) {
+  //   console.log("made it 3");
+  //   console.log(model);
 
-    const currentSessionId = sessionId;//_deps.getCurrentSessionId();
-    const _pendingChat = getPendingChat();
+  //   const currentSessionId = sessionId;//_deps.getCurrentSessionId();
+  //   const _pendingChat = getPendingChat();
 
-    // Remember this pick so it surfaces under "Recent" next time the picker
-    // opens — the whole point of quick-switch.
-    if (model && model.mid) pushRecent(model.mid);
+  //   // Remember this pick so it surfaces under "Recent" next time the picker
+  //   // opens — the whole point of quick-switch.
+  //   if (model && model.mid) pushRecent(model.mid);
 
-    // Broadcast immediately so listeners (e.g. the tour) can advance without
-    // waiting for the async session-create/PATCH that follows.
-    try {
-      document.dispatchEvent(
-        new CustomEvent('odysseus:model-picked', { detail: model }),
-      );
-    } catch {}
+  //   // Broadcast immediately so listeners (e.g. the tour) can advance without
+  //   // waiting for the async session-create/PATCH that follows.
+  //   try {
+  //     document.dispatchEvent(
+  //       new CustomEvent('odysseus:model-picked', { detail: model }),
+  //     );
+  //   } catch {}
 
-    // Blur search input before closing to dismiss keyboard on mobile
-    if (document.activeElement) document.activeElement.blur();
-    // isModelPickerOpen = false;// _close();
-    // Refocus main textarea — skip on mobile to avoid keyboard bounce
-    if (window.innerWidth >= 768) {
-      const _ta = document.getElementById('message');
-      if (_ta) setTimeout(() => _ta.focus(), 50);
-    }
-    if (!currentSessionId && _pendingChat) {
-      // Already have a deferred session — just update the model
-      setPendingChat({
-        url: model.url,
-        modelId: model.mid,
-        endpointId: model.endpointId,
-        source: 'manual',
-      });
-      // Header stays as session name — model switch only updates picker
-      // updateModelPicker();
-      return;
-    } else if (!currentSessionId) {
-      // No session yet — create one with this model
-      await createDirectChat(model.url, model.mid, model.endpointId);
-    } else {
-      // Existing session with no model — PATCH it
-      const fd = new FormData();
-      fd.append('model', model.mid);
-      fd.append('endpoint_url', model.url);
-      if (model.endpointId) fd.append('endpoint_id', model.endpointId);
-      try {
-        const res = await fetch(`/api/session/${currentSessionId}`, {
-          method: 'PATCH',
-          body: fd,
-        });
-        if (!res.ok) {
-          // uiModule.showError('Failed to set model');
-          return;
-        }
-        const sessions = getSessions();
-        const s = sessions.find((x) => x.id === currentSessionId);
-        if (s) {
-          s.model = model.mid;
-          s.endpoint_url = model.url;
-        }
-        // Header stays as session name — model info shown in picker only
-      } catch (e) {
-        // uiModule.showError('Failed to set model: ' + e);
-        return;
-      }
-    }
+  //   // Blur search input before closing to dismiss keyboard on mobile
+  //   if (document.activeElement) document.activeElement.blur();
+  //   // isModelPickerOpen = false;// _close();
+  //   // Refocus main textarea — skip on mobile to avoid keyboard bounce
+  //   if (window.innerWidth >= 768) {
+  //     const _ta = document.getElementById('message');
+  //     if (_ta) setTimeout(() => _ta.focus(), 50);
+  //   }
+  //   if (!currentSessionId && _pendingChat) {
+  //     // Already have a deferred session — just update the model
+  //     setPendingChat({
+  //       url: model.url,
+  //       modelId: model.mid,
+  //       endpointId: model.endpointId,
+  //       source: 'manual',
+  //     });
+  //     // Header stays as session name — model switch only updates picker
+  //     // updateModelPicker();
+  //     return;
+  //   } else if (!currentSessionId) {
+  //     // No session yet — create one with this model
+  //     await createDirectChat(model.url, model.mid, model.endpointId);
+  //   } else {
+  //     // Existing session with no model — PATCH it
+  //     const fd = new FormData();
+  //     fd.append('model', model.mid);
+  //     fd.append('endpoint_url', model.url);
+  //     if (model.endpointId) fd.append('endpoint_id', model.endpointId);
+  //     try {
+  //       const res = await fetch(`/api/session/${currentSessionId}`, {
+  //         method: 'PATCH',
+  //         body: fd,
+  //       });
+  //       if (!res.ok) {
+  //         // uiModule.showError('Failed to set model');
+  //         return;
+  //       }
+  //       const sessions = getSessions();
+  //       const s = sessions.find((x) => x.id === currentSessionId);
+  //       if (s) {
+  //         s.model = model.mid;
+  //         s.endpoint_url = model.url;
+  //       }
+  //       // Header stays as session name — model info shown in picker only
+  //     } catch (e) {
+  //       // uiModule.showError('Failed to set model: ' + e);
+  //       return;
+  //     }
+  //   }
 
-    show(`Using ${model.display}`);
-    // currentModelId = model.mid
-    // isModelPickerOpen = false;
-  }
+  //   show(`Using ${model.display}`);
+  //   // currentModelId = model.mid
+  //   // isModelPickerOpen = false;
+  // }
 
   function handleAttachFiles() {
     if (fileInputElement) {
@@ -571,7 +569,6 @@
       // bind:isOpen={isModelPickerOpen}
       // bind:selectedModelId={currentModelId}
       placeholder="Select Model..."
-      onModelChange={handleModelPicked}
     />
   </div>
 

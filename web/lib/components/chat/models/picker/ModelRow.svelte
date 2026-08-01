@@ -71,7 +71,7 @@
     class="model-switch-item"
     class:model-switch-stale={model.stale}
     onclick={() => onPick(model)}
-    onkeydown={() => onPick(model)}
+    onkeydown={(e) =>  {if (e.key == 'Enter') onPick(model)}}
 >
     <span bind:this={modelName}
     onmouseenter={() => horizontalPan.start()}
@@ -109,4 +109,7 @@
 <hr style="border-top-style: inset;" />
 
 <style>
+.mp-fav-dot:focus-visible {
+    border: 1px dashed;
+}
 </style>

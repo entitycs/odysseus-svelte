@@ -1,10 +1,13 @@
 <script lang="ts">
-   import { onMount } from "svelte";
+   import { onMount, tick } from "svelte";
    import { afterNavigate, pushState } from "$app/navigation";
+   import { page } from "$app/state";
    import { syncGroupIndicator } from "$lib/chat/group";
    import { handleSubmit } from "$lib/chat/helpers";
    import MessageInput from "$lib/components/chat/MessageInput.svelte";
    import ScrollChatBottom from "$lib/components/chat/ScrollChatBottom.svelte";
+   import Export from "$lib/components/chat/sessions/Export.svelte";
+   import UserMsgScrollMarker from "$lib/components/UserMsgScrollMarker.svelte";
    import { deEmojify } from "$lib/emoji";
    import chatModule from "$lib/legacy/chat";
    import documentModule from "$lib/legacy/document";
@@ -15,9 +18,10 @@
    import * as sessionModule from "$lib/legacy/sessions";
    import uiModule from "$lib/legacy/ui";
    import { updatePlusDot } from "$lib/overflow";
-   import UserMsgScrollMarker from "$lib/components/UserMsgScrollMarker.svelte";
-   import { page } from "$app/state";
-    import Export from "$lib/components/chat/sessions/Export.svelte";
+
+   import type { PageProps } from "./$types";
+
+   let { data }: PageProps = $props();
 
    let chatHistory: HTMLElement;
 
@@ -30,7 +34,7 @@
       return document.getElementById(id);
    }
 
-   function setSessionIdFromHash(){
+   function setSessionIdFromHash() {
       const hashId = window.location.hash.replace("#", "");
       if (hashId) sessionModule.selectSession(hashId);
       pageState.sessionId = hashId;
@@ -293,7 +297,9 @@
       chatForm.onsubmit = handleSubmit;
 
       setSessionIdFromHash();
-      pushState('',{sessionId: window.location.hash.replace("#","")});
+      tick().then(() => {
+         pushState("", { sessionId: window.location.hash.replace("#", "") });
+      });
    });
 </script>
 
@@ -729,9 +735,9 @@
       width: 3px;
    }
 
-   :global(.chat-history .msg){
-      animation:none !important;
-      transition: padding
+   :global(.chat-history .msg) {
+      animation: none !important;
+      transition: padding;
    }
 
    @media (width>=480px) {

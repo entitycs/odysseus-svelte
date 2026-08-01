@@ -1119,6 +1119,8 @@ import uiModule from '$lib/legacy/ui.js';
    */
   export async function handleChatSubmit(e) {
     e.preventDefault();
+    const active = _getForegroundStreamState();
+    const abortCtrl = active ? active.abortCtrl : currentAbort;
     // Cancel research clarification timeout if active
     if (window._researchTimeoutTimer) {
       clearTimeout(window._researchTimeoutTimer);
