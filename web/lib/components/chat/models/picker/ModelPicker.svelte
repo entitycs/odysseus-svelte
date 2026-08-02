@@ -108,11 +108,12 @@
   let currentModelId = $state("");
   let currentModelLogo: string | RegExp | null = $state("");
 
-  // $effect(() => {
-  //   updateModelLabel(sessionModel);
-  //   const modelItem = allModels.find(m => m.mid == sessionModel);
-  //   if (modelItem) _pick(modelItem);
-  // });
+  $effect(() => {
+
+    // updateModelLabel(sessionModel);
+    const modelItem = allModels.find(m => m.mid == sessionModel);
+    if (modelItem) _pick(modelItem);
+  });
 
   $effect(() => {
     if (shouldUpdatePicker) {
@@ -123,8 +124,11 @@
 
   $inspect(searchQuery);
   $inspect(searchedModels);
+
   function handleGlobalKeyDown(e: KeyboardEvent) {
     if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
       if (isModelPickerOpen) {
         isModelPickerOpen = false;
       }
@@ -147,9 +151,6 @@
     favorites = helper.loadFavorites();
     recent = helper.loadRecent();
     if (_modelList[0]?.models?.length > 0) allModels = helper.getAllModels();
-
-    // Global keyboard handlers
-    document.addEventListener("keydown", handleGlobalKeyDown);
   });
   //---------------------------------------------------------------------------
 
@@ -429,7 +430,7 @@
   }}
 />
 
-<div class="model-picker-wrap" bind:this={modelPickerElement}>
+<div class="model-picker-wrap" bind:this={modelPickerElement} onkeydown={handleGlobalKeyDown} role="none">
   <button
     type="button"
     class="model-picker-btn"
@@ -442,7 +443,7 @@
       {#if currentModelLogo}
         <span class="model-picker-logo">{@html currentModelLogo}</span>
       {/if}
-      {currentModelId}
+      {sessionModel ?? currentModelId}
     </span>
     <svg
       width="10"
@@ -486,7 +487,7 @@
         {#each searchedModels as model (model)}
           <ModelRow
             {model}
-            {favorites}
+            isFavorite={favorites.includes(model.mid)}
             onPick={_pick}
             onToggleFavorite={toggleFavorite}
           />
@@ -500,7 +501,7 @@
             {#each favModels as model (model)}
               <ModelRow
                 {model}
-                {favorites}
+                isFavorite={favorites.includes(model.mid)}
                 onPick={_pick}
                 onToggleFavorite={toggleFavorite}
               />
@@ -512,7 +513,7 @@
             {#each recentModels as model (model)}
               <ModelRow
                 {model}
-                {favorites}
+                isFavorite={favorites.includes(model.mid)}
                 onPick={_pick}
                 onToggleFavorite={toggleFavorite}
               />
@@ -522,7 +523,7 @@
           {#each otherModels as model (model)}
             <ModelRow
               {model}
-              {favorites}
+              isFavorite={favorites.includes(model.mid)}
               onPick={_pick}
               onToggleFavorite={toggleFavorite}
             />

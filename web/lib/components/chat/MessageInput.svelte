@@ -270,9 +270,9 @@
     }
 
     // Escape key
-    if (handleEscapeKey(e)) {
-      return;
-    }
+    // if (handleEscapeKey(e)) {
+    //   return;
+    // }
   }
 
   function handleTextareaPaste(e: ClipboardEvent) {
