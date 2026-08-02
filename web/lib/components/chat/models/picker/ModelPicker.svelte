@@ -98,29 +98,15 @@
   let pointer = $state({ x: 0, y: 0 });
 
   let isModelPickerOpen = $state(true);
-  let shouldUpdatePicker = $derived(() => {
-    if (_prevSessionId != sessionId) {
-      _prevSessionId = sessionId;
-      return true;
-    }
-    return false;
-  });
+
   let currentModelId = $state("");
   let currentModelLogo: string | RegExp | null = $state("");
 
-  $effect(() => {
-
-    // updateModelLabel(sessionModel);
-    const modelItem = allModels.find(m => m.mid == sessionModel);
-    if (modelItem) _pick(modelItem);
-  });
-
-  $effect(() => {
-    if (shouldUpdatePicker) {
-      updateModelPicker();
-      shouldUpdatePicker = false;
-    }
-  });
+  // $effect(() => {
+  //   // updateModelLabel(sessionModel);
+  //   const modelItem = allModels.find((m) => m.mid == sessionModel);
+  //   if (modelItem) _pick(modelItem);
+  // });
 
   $inspect(searchQuery);
   $inspect(searchedModels);
@@ -144,8 +130,7 @@
       isModelPickerOpen = false;
       await sessionModule.loadSessions();
       sessionId = sessionModule.getCurrentSessionId();
-      shouldUpdatePicker = true;
-      updateModelPicker();
+       updateModelPicker();
     });
     // models = helper.loadModels();
     favorites = helper.loadFavorites();
@@ -200,7 +185,6 @@
    * Called after selectSession, createDirectChat, and model switch.
    */
   export function updateModelPicker() {
-
     const currentSessionId = sessionId;
     const sessions = _deps.getSessions();
     const _pendingChat = _deps.getPendingChat();
@@ -271,7 +255,7 @@
   async function toggleModelPicker(e: Event) {
     e.stopPropagation();
     isModelPickerOpen = !isModelPickerOpen;
-    if (isModelPickerOpen){
+    if (isModelPickerOpen) {
       // await refreshModels();// still handled through legacy
       allModels = helper.getAllModels();
     }
@@ -430,7 +414,12 @@
   }}
 />
 
-<div class="model-picker-wrap" bind:this={modelPickerElement} onkeydown={handleGlobalKeyDown} role="none">
+<div
+  class="model-picker-wrap"
+  bind:this={modelPickerElement}
+  onkeydown={handleGlobalKeyDown}
+  role="none"
+>
   <button
     type="button"
     class="model-picker-btn"
@@ -535,4 +524,3 @@
     </div>
   {/if}
 </div>
-

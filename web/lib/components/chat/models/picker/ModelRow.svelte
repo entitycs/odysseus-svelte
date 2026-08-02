@@ -64,6 +64,7 @@
     onkeydown={(e) => {
         if (e.key == "Enter") onPick(model);
     }}
+    title={model.display}
 >
     <span
         bind:this={modelName}
