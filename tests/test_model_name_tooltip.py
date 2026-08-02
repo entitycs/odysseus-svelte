@@ -9,8 +9,7 @@ it can't be imported under node; this guards the two title assignments at source
 import re
 from pathlib import Path
 
-SRC = (Path(__file__).resolve().parent.parent / "web/lib/legacy/modelPicker.js").read_text(encoding="utf-8")
-
+SRC = (Path(__file__).resolve().parent.parent / "web/lib/components/chat/models/picker/helpers.svelte.ts").read_text(encoding="utf-8")
 
 def test_dropdown_item_has_title_tooltip():
     # The dropdown item name span must carry a title with the full display name.

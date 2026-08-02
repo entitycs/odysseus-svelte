@@ -7,10 +7,10 @@ _REPO = Path(__file__).resolve().parents[1]
 
 
 def test_oauth_redirect_uses_the_module_local_settings_api():
-    source = (_REPO / "static" / "js" / "settings.js").read_text(encoding="utf-8")
+    source = (_REPO / "web" / "lib" / "legacy" / "settings.js").read_text(encoding="utf-8")
     handler = source[
-        source.index("(function _handleOauthRedirect"):
-        source.index("const settingsModule =")
+        source.index("export function init()"):
+        source.index("_showResult();")
     ]
 
     assert "open('integrations');" in handler
