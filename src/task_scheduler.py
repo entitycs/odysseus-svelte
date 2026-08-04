@@ -693,8 +693,15 @@ class TaskScheduler:
             now = _utcnow()
             foreground_active = False
             try:
-                from src.interactive_gate import has_foreground_activity
-                foreground_active = has_foreground_activity()
+                # Use a narrower gate for scheduling decisions: only block on
+                # active HTTP requests or an active chat stream. A browser
+                # heartbeat alone (the user has the tab open but is not actively
+                # using it) should not prevent scheduled tasks from ever running.
+                # The broader has_foreground_activity() (which also checks browser
+                # heartbeats) is still used inside the in-flight monitor to cancel
+                # a running task when the user starts interacting.
+                from src.interactive_gate import _ACTIVE_REQUESTS, _has_active_chat_stream
+                foreground_active = (_ACTIVE_REQUESTS > 0) or _has_active_chat_stream()
             except Exception:
                 foreground_active = False
             async with self._executing_lock:
@@ -721,7 +728,7 @@ class TaskScheduler:
                 asyncio.create_task(self._execute_task(task_id))
         finally:
             db.close()
-    async def _run_locked_with_timeout(self, task_id: str, run_id: str, release_executing: bool):
+    async def _run_locked_with_timeout(self, task_id: str, run_id: str, release_executing: bool, *, gate_foreground: bool = True):
         """Run the model-slot body under a wall-clock cap.
 
         The scheduler serializes all model-backed tasks through a single slot
@@ -743,7 +750,7 @@ class TaskScheduler:
             task_id,
             run_id,
             release_executing=release_executing,
-            gate_foreground=True,
+            gate_foreground=gate_foreground,
         )
         if timeout_s <= 0:
             await coro
@@ -763,7 +770,7 @@ class TaskScheduler:
             self._mark_run_aborted(task_id, run_id, message="Timed out — exceeded max runtime")
             self._defer_immediately_due_task(task_id, delay=timedelta(minutes=15))
 
-    async def _execute_task(self, task_id: str, *, bypass_model_slot: bool = False, release_executing: bool = True):
+    async def _execute_task(self, task_id: str, *, bypass_model_slot: bool = False, release_executing: bool = True, gate_foreground: bool = True):
         # Create the run record with status="queued" BEFORE waiting on the
         # semaphore so the UI can show that a manually-triggered task is in
         # line behind another. Once we acquire the slot, flip to "running"
@@ -795,12 +802,12 @@ class TaskScheduler:
                     task_id,
                     run_id,
                     release_executing=release_executing,
-                    gate_foreground=not bypass_model_slot,
+                    gate_foreground=gate_foreground and not bypass_model_slot,
                 )
                 return
 
             async with self._run_semaphore:
-                await self._run_locked_with_timeout(task_id, run_id, release_executing)
+                await self._run_locked_with_timeout(task_id, run_id, release_executing, gate_foreground=gate_foreground)
         except asyncio.CancelledError:
             # If cancellation happens while queued behind the semaphore,
             # _execute_task_locked never runs and cannot update the Activity row.
@@ -928,15 +935,16 @@ class TaskScheduler:
 
                 async def _cancel_if_foreground_active():
                     # Give the just-finished quiet gate a tiny grace window,
-                    # then keep enforcing "background means background" while
-                    # a long email/LLM action is already running.
+                    # then cancel only when there is genuine model-level
+                    # contention: an active chat stream. Browser heartbeats and
+                    # ordinary GET reads should not interrupt a running task.
                     await asyncio.sleep(0.1)
-                    from src.interactive_gate import has_foreground_activity
+                    from src.interactive_gate import _has_active_chat_stream
                     while True:
                         await asyncio.sleep(0.25)
-                        if has_foreground_activity():
+                        if _has_active_chat_stream():
                             foreground_cancel["hit"] = True
-                            logger.info("Task '%s' interrupted because Odysseus became active", task.name)
+                            logger.info("Task '%s' interrupted because an active chat stream started", task.name)
                             if current_task:
                                 current_task.cancel()
                             return
@@ -2250,15 +2258,21 @@ class TaskScheduler:
             logger.error(f"Task {task.id} MCP delivery failed: {e}")
 
     async def run_task_now(self, task_id: str, *, force: bool = False):
-        """Manually trigger a task execution."""
+        """Manually trigger a task execution.
+
+        Manual runs always bypass the foreground gate — the user has explicitly
+        asked for the task to run now, so waiting for "Odysseus to be idle" is
+        wrong. The in-flight foreground monitor (which yields to an active chat
+        stream) still applies so we don't stomp an actively-generating model.
+        """
         if force:
-            asyncio.create_task(self._execute_task(task_id, bypass_model_slot=True, release_executing=False))
+            asyncio.create_task(self._execute_task(task_id, bypass_model_slot=True, release_executing=False, gate_foreground=False))
             return True
         async with self._executing_lock:
             if task_id in self._executing:
                 return False
             self._executing.add(task_id)
-        asyncio.create_task(self._execute_task(task_id))
+        asyncio.create_task(self._execute_task(task_id, gate_foreground=False))
         return True
 
     async def stop_task(self, task_id: str) -> bool:

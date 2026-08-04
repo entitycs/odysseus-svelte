@@ -206,12 +206,10 @@ class _InteractiveActivityMiddleware(_BaseHTTPMiddleware):
         path = request.url.path or ""
         if not should_track_interactive_request(path, request.method):
             return await call_next(request)
-        async def _stop_background():
-            try:
-                await task_scheduler.stop_background_tasks_for_foreground(reason=f"foreground request {request.method} {path}")
-            except Exception:
-                logging.getLogger("app.foreground_gate").debug("foreground task stop failed", exc_info=True)
-        asyncio.create_task(_stop_background())
+        # Track this request as "foreground active" so the scheduler's dispatch
+        # gate sees it. Running tasks are cancelled by the per-task in-flight
+        # monitor (_cancel_if_foreground_active) rather than here, which prevents
+        # ordinary GET reads (e.g. /api/research/library) from killing tasks.
         async with track_interactive_request(path, request.method):
             return await call_next(request)
 
@@ -663,18 +661,18 @@ async def activity_heartbeat():
 
     await mark_browser_activity()
 
-    async def _stop_background():
-        try:
-            await maybe_stop_background_tasks_for_heartbeat(
-                task_scheduler.stop_background_tasks_for_foreground
-            )
-        except Exception:
-            logging.getLogger("app.foreground_gate").debug(
-                "heartbeat task stop failed",
-                exc_info=True,
-            )
+    # async def _stop_background():
+    #     try:
+    #         await maybe_stop_background_tasks_for_heartbeat(
+    #             task_scheduler.stop_background_tasks_for_foreground
+    #         )
+    #     except Exception:
+    #         logging.getLogger("app.foreground_gate").debug(
+    #             "heartbeat task stop failed",
+    #             exc_info=True,
+    #         )
 
-    asyncio.create_task(_stop_background())
+    # asyncio.create_task(_stop_background())
     return {"ok": True}
 
 
