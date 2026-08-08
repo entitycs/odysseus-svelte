@@ -68,14 +68,14 @@ export function init() {
 
   // Redirect to login on 401 from any fetch
   // handle w/ backend + sveltekit
-  // const _origFetch = window.fetch;
-  // window.fetch = async function(...args) {
-  //   const res = await _origFetch.apply(this, args);
-  //   if (res.status === 401 && !String(args[0]).includes('/api/auth/')) {
-  //     window.location.href = '/login';
-  //   }
-  //   return res;
-  // };
+  const _origFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const res = await _origFetch.apply(this, args);
+    if (res.status === 401 && !String(args[0]).includes('/api/auth/')) {
+      window.location.href = '/login';
+    }
+    return res;
+  };
 
   // // Prime the cache once at load for initial paint paths that read _defaultChat
   // // synchronously; later reads should call _refreshDefaultChat() first.

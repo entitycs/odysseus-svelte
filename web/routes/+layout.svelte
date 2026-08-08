@@ -446,7 +446,7 @@
     var tips = mobile ? phone : desktop;
     var el = document.getElementById("welcome-tip");
     if (el) {
-      el.textContent = "Type /setup, then choose Local models or API.";
+      el.textContent = tips[Math.floor(Math.random() * tips.length)];
     }
     fetch("/api/version")
       .then(function (r) {
@@ -912,6 +912,31 @@
                   class="memory-edit-cat-select"
                   aria-label="Memory category"
                 ></select>
+                <button
+                  type="button"
+                  id="new-memory-add-btn"
+                  class="theme-io-btn"
+                  title="Save this memory"
+                  style="flex:none;height:28px;font-size:12px;"
+                  ><svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="vertical-align:-2px;margin-right:4px;"
+                    aria-hidden="true"
+                    ><line x1="12" y1="5" x2="12" y2="19" /><line
+                      x1="5"
+                      y1="12"
+                      x2="19"
+                      y2="12"
+                    /></svg
+                  >Add</button
+                >
               </div>
             </div>
             <div class="admin-card">
@@ -2151,9 +2176,9 @@
               console.log("has NO chat notif");
               e.stopPropagation();
               if (window.sessionModule)
-              window.sessionModule.openLibrary("chats");
-          }
-        }}
+                window.sessionModule.openLibrary("chats");
+            }
+          }}
           // style="display:none"
           ><svg
             width="16"
@@ -2168,9 +2193,9 @@
               d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
             /></svg
           ></button
-          >
-          <!-- Dynamic contextual indicators (shown only while active) -->
-          <button
+        >
+        <!-- Dynamic contextual indicators (shown only while active) -->
+        <button
           class="icon-rail-btn rail-dynamic"
           id="rail-documents"
           title="Documents"
