@@ -1120,7 +1120,7 @@ import uiModule from '$lib/legacy/ui.js';
   export async function handleChatSubmit(e) {
     e.preventDefault();
     const active = _getForegroundStreamState();
-    const abortCtrl = active ? active.abortCtrl : currentAbort;
+    let abortControl = active ? active.abortCtrl : currentAbort;
     // Cancel research clarification timeout if active
     if (window._researchTimeoutTimer) {
       clearTimeout(window._researchTimeoutTimer);
@@ -1557,7 +1557,7 @@ import uiModule from '$lib/legacy/ui.js';
         [120000, 'Still working - no tokens yet from the model'],
       ];
       firstTokenWaitTimers = steps.map(([ms, text]) => setTimeout(() => {
-        if (!accumulated && spinner && spinner.element && !(abortCtrl && abortCtrl.signal.aborted)) {
+        if (!accumulated && spinner && spinner.element && !(abortControl && abortControl.signal.aborted)) {
           spinner.updateMessage(text);
         }
       }, ms));
@@ -1577,7 +1577,6 @@ import uiModule from '$lib/legacy/ui.js';
     currentAccumulated = '';
     currentHolder = null;
 
-    let abortCtrl = null;
     let streamingTTS = false;
     try {
       // Re-enable auto-scroll when user sends a message
@@ -1920,7 +1919,7 @@ import uiModule from '$lib/legacy/ui.js';
       // Timeout: 6 min for research and agent mode, 3 min otherwise
       const timeoutMs = el('research-toggle').checked || _isAgent ? RESEARCH_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
       timeoutId = setTimeout(() => {
-        if (!abortCtrl.signal.aborted) {
+        if (!abortControl.signal.aborted) {
           timedOut = true;
           abortCtrl._reason = 'timeout';
           if (_streamGenerations.get(streamSessionId) !== streamGeneration) {
@@ -2051,7 +2050,7 @@ import uiModule from '$lib/legacy/ui.js';
         method: 'POST',
         body: fd,
         headers: { 'X-Tz-Offset': String(_tzOffsetMin), 'X-Tz-Name': _tzName },
-        signal: abortCtrl.signal
+        signal: abortControl.signal
       });
       _sendPerf.mark('chat_stream_headers');
       _sendPerf.report('headers_received');
@@ -2749,7 +2748,7 @@ import uiModule from '$lib/legacy/ui.js';
                 accumulated: accumulated,
                 sourcesHtml: _sourcesHtml,
                 findingsData: null,
-                abortCtrl,
+                abortCtrl: abortControl,
                 query: streamQuery,
                 metrics: null,
               });
@@ -4354,8 +4353,8 @@ import uiModule from '$lib/legacy/ui.js';
         // Stop streaming TTS on any error/abort
         if (streamingTTS && window.aiTTSManager) window.aiTTSManager.stop();
 
-        if (abortCtrl && abortCtrl.signal.aborted) {
-          const abortReason = abortCtrl._reason || '';
+        if (abortControl && abortControl.signal.aborted) {
+          const abortReason = abortControl._reason || '';
           // Timeout-triggered aborts should remain visible instead of disappearing.
           if (timedOut || abortReason === 'timeout') {
             const timeoutMsg = _isAgent
@@ -4372,7 +4371,7 @@ import uiModule from '$lib/legacy/ui.js';
                 `<span style="color: var(--color-error);">[${timeoutMsg}]</span>`;
               _catchViewHolder.querySelector('.body').appendChild(timeoutNote);
             }
-            if (currentAbort === abortCtrl) currentAbort = null;
+            if (currentAbort === abortControl) currentAbort = null;
             return;
           }
 
@@ -4388,7 +4387,7 @@ import uiModule from '$lib/legacy/ui.js';
                 `<span style="color: var(--color-error);">[${offlineMsg}]</span>`;
               _catchViewHolder.querySelector('.body').appendChild(offlineNote);
             }
-            if (currentAbort === abortCtrl) currentAbort = null;
+            if (currentAbort === abortControl) currentAbort = null;
             return;
           }
 
@@ -4404,7 +4403,7 @@ import uiModule from '$lib/legacy/ui.js';
                 `<span style="color: var(--color-error);">[${recoveryMsg}]</span>`;
               _catchViewHolder.querySelector('.body').appendChild(recoveryNote);
             }
-            if (currentAbort === abortCtrl) currentAbort = null;
+            if (currentAbort === abortControl) currentAbort = null;
             return;
           }
 
@@ -4419,7 +4418,7 @@ import uiModule from '$lib/legacy/ui.js';
               staleNote.innerHTML = `<span style="opacity:0.7;">[${staleMsg}]</span>`;
               _catchViewHolder.querySelector('.body').appendChild(staleNote);
             }
-            if (currentAbort === abortCtrl) currentAbort = null;
+            if (currentAbort === abortControl) currentAbort = null;
             return;
           }
 
@@ -4471,7 +4470,7 @@ import uiModule from '$lib/legacy/ui.js';
           }
 
           // Now clear the abort controller
-          if (currentAbort === abortCtrl) currentAbort = null;
+          if (currentAbort === abortControl) currentAbort = null;
         } else {
           console.error(err);
           // Stream died with a tool node still spinning. Its per-node tickers
