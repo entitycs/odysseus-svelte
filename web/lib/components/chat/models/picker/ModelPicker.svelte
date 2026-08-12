@@ -3,12 +3,13 @@
   import { page } from "$app/state";
   import {
     isLoading,
-    type ModelItem,
+    type ModelInfo,
     modelItems,
   } from "$lib/components/chat/models/modelItemStore.svelte";
   import helper from "$lib/components/chat/models/picker/helpers.svelte";
   import ModelRow from "$lib/components/chat/models/picker/ModelRow.svelte";
   import ModelSection from "$lib/components/chat/models/picker/ModelSection.svelte";
+  import { sortedFolders } from "$lib/legacy/emailInbox";
   import { refreshModels } from "$lib/legacy/models.js";
   import { providerLogo } from "$lib/legacy/providers";
   import sessionModule, * as _deps from "$lib/legacy/sessions";
@@ -27,7 +28,7 @@
     isOpen?: boolean;
     selectedModelId?: string | null;
     placeholder?: string;
-    onModelChange?: (modelItem: ModelItem) => void;
+    onModelChange?: (modelItem: ModelInfo) => void;
   }
 
   let {
@@ -35,7 +36,7 @@
     isOpen = $bindable(false),
     selectedModelId = $bindable(null),
     placeholder = "Search models...",
-    onModelChange = (modelItem: ModelItem) => {
+    onModelChange = (modelItem: ModelInfo) => {
       console.log("made it");
     },
   }: Props = $props();
@@ -64,13 +65,13 @@
   $inspect(sessionModel);
 
   let _prevSessionId = null;
-  let unsubscribeModelItems;
+  let unsubscribeModelInfos;
 
   let searchQuery = $state("");
 
   // Store for models and favorites
   let _modelList: any[] = [];
-  let allModels: ModelItem[] = $state([]);
+  let allModels: ModelInfo[] = $state([]);
   let otherModels = $derived(
     allModels.filter(
       (m) => !favorites.includes(m.mid) && !recent.includes(m.mid),
@@ -83,7 +84,35 @@
   let recent = $state<string[]>([]);
   let recentModels = $derived(allModels.filter((m) => recent.includes(m.mid)));
 
-  let searchedModels: ModelItem[] = $derived(
+  let groups: Map<string, ModelInfo[]> = $derived.by(() => {
+    const g = new Map<string, ModelInfo[]>();
+    if (!allModels) return g;
+    const rest = allModels.filter(
+      (m) => !favorites.includes(m.mid) && !recent.includes(m.mid),
+    );
+    rest.forEach((m) => {
+      const slug = helper.providerGroupKey(m);
+      if (!g.has(slug)) g.set(slug, []);
+      g.get(slug)?.push(m);
+    });
+    return g;
+  });
+
+  let modelGroups: string[] = $derived(
+    [...groups.keys()].sort((a, b) =>
+      helper.providerGroupName(a).localeCompare(helper.providerGroupName(b)),
+    )
+  );
+
+  let groupedModels: [{ String: ModelInfo[] }] = $derived(
+    modelGroups.map((gid) => {
+      gid: groups.get(gid);
+    }),
+  );
+
+  $inspect(groups);
+
+  let searchedModels: ModelInfo[] = $derived(
     searchQuery == ""
       ? []
       : allModels.filter((m) => {
@@ -123,14 +152,14 @@
 
   onMount(async () => {
     await refreshModels();
-    unsubscribeModelItems = modelItems.subscribe(async (value) => {
+    unsubscribeModelInfos = modelItems.subscribe(async (value) => {
       _modelList = value;
       allModels = _modelList[0]?.models;
       allModels = helper.getAllModels();
       isModelPickerOpen = false;
       await sessionModule.loadSessions();
       sessionId = sessionModule.getCurrentSessionId();
-       updateModelPicker();
+      updateModelPicker();
     });
     // models = helper.loadModels();
     favorites = helper.loadFavorites();
@@ -213,12 +242,12 @@
     // Never override an existing session's model — the user explicitly chose it
     if (modelId && !currentSessionId && _pendingChat && _modelList) {
       const items = _modelList;
-      const allAvailable: ModelItem[] = [];
+      const allAvailable: ModelInfo[] = [];
       items.forEach((item) => {
         if (item.offline) return;
         (item.models || [])
           .concat(item.models_extra || [])
-          .forEach((m: ModelItem) => allAvailable.push(m));
+          .forEach((m: ModelInfo) => allAvailable.push(m));
       });
       if (allAvailable.length > 0 && !allAvailable.includes(modelId)) {
         // Model no longer available — switch to first available
@@ -286,7 +315,7 @@
     return `${m.endpointId || m.url || m.epName || "model"}::${m.mid || ""}`;
   }
   let _defaultPendingSeq = 0;
-  async function _pick(m: ModelItem): Promise<void> {
+  async function _pick(m: ModelInfo): Promise<void> {
     _defaultPendingSeq++;
     try {
       window.__odysseusLastPickedRoute = {
@@ -427,7 +456,11 @@
     aria-label="Switch model"
     aria-expanded={isModelPickerOpen}
   >
-    <span id="model-picker-label" bind:this={label}>
+    <span
+      id="model-picker-label"
+      title={sessionModel ?? currentModelId}
+      bind:this={label}
+    >
       <!-- test: assure currentModelLogo does not come from LLM output or user input -->
       {#if currentModelLogo}
         <span class="model-picker-logo">{@html currentModelLogo}</span>
@@ -509,13 +542,17 @@
             {/each}
           {/if}
           <ModelSection label="Models" />
-          {#each otherModels as model (model)}
+          {#each groups as [groupId, models] (groupId)}
+            <ModelSection label={groupId} />
+            {#each models as model}
+          <!-- {#each otherModels as model (model)} -->
             <ModelRow
               {model}
               isFavorite={favorites.includes(model.mid)}
               onPick={_pick}
               onToggleFavorite={toggleFavorite}
             />
+            {/each}
           {:else}
             <div class="model-switch-empty">No models connected</div>
           {/each}

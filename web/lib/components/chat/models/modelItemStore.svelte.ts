@@ -3,15 +3,19 @@ import { SvelteSet } from 'svelte/reactivity';
 import { writable } from 'svelte/store';
 import helper from '$lib/components/chat/models/picker/helpers.svelte';
 import { compareModelObjects } from '$lib/legacy/modelSort';
-export interface ModelItem {
-  mid: string;
-  display: string;
-  epName?: string;
-  stale?: boolean;
-  staleReason?: string;
-}
 
-export const modelItems = writable<ModelItem[]>([]);
+export interface ModelInfo {
+  category: string | null;
+  display: string | null;
+  epName: string;
+  mid: string;
+  offline: boolean;
+  providerText: string;
+  stale: boolean;
+  staleReason: string | null;
+  url: string;
+}
+export const modelItems = writable<ModelInfo[]>([]);
 export const isLoading = writable(false);
 // export const favorites = $derived(
 //   modelItems.filter(m => favoriteIds.includes(m.mid))
@@ -77,7 +81,7 @@ export async function refreshModels(force = false) {
     _lastFetchTime = Date.now();
 
     let seen = new SvelteSet();
-    let result : ModelItem[] = [];
+    let result : ModelInfo[] = [];
     let _localProbe = {};
     data.items.forEach((item) => {
       // Previously: offline endpoints were skipped entirely, so a server

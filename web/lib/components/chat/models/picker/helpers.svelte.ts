@@ -1,20 +1,10 @@
 import {
   isLoading, //?
+  type ModelInfo,
   modelItems,
   refreshModels, //f
 } from '$lib/components/chat/models/modelItemStore.svelte';
 import { sortModelObjects } from '$lib/legacy/modelSort.js';
-
-interface ModelInfo {
-  display: string | null;
-  epName: string;
-  mid: string;
-  offline: boolean;
-  providerText: string;
-  stale: boolean;
-  staleReason: string | null;
-  url: string;
-}
 
 // Provider display names
 const PROVIDER_NAMES: Record<string, string> = {
@@ -159,6 +149,17 @@ function modelExists(modelId, url) {
     return models.includes(modelId) && (!targetUrl || itemUrl === targetUrl);
   });
 }
+
+export  function providerGroupKey(m : ModelInfo) {
+    if (m && m.category && m.category !== 'local' && m.epName) {
+      return `~endpoint:${m.epName}`;
+    }
+    return providerSlug((m && m.mid) || '');
+  }
+export function providerGroupName(key) {
+    if (String(key || '').startsWith('~endpoint:')) return String(key).slice('~endpoint:'.length);
+    return providerDisplayName(key);
+  }
 
 function providerDisplayName(slug: string): string {
   return (
@@ -306,7 +307,10 @@ const helper = {
   modelExists,
   PROVIDER_NAMES,
   providerDisplayName,
+  providerGroupKey,
+  providerGroupName,
   providerSlug,
+  pushRecent,
   saveRecent,
   sortModelObjects,
   toggleFavorite
