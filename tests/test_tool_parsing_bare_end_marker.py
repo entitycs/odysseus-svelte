@@ -23,7 +23,7 @@ import src.agent_tools  # noqa: F401  (break agent_tools<->tool_parsing import c
 from src.tool_parsing import strip_tool_blocks
 
 _REPO = Path(__file__).resolve().parent.parent
-_CHAT_RENDERER = _REPO / "static" / "js" / "chatRenderer.js"
+_CHAT_RENDERER = _REPO / "web" / "lib" / "legacy" / "chatRenderer.js"
 
 # Inputs that must survive untouched, and the substring that proves they did.
 KEPT = [

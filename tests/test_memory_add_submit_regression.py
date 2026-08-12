@@ -11,8 +11,8 @@ platforms — leaving the form with no working submit path. Pins:
 """
 from pathlib import Path
 
-APP_JS = Path("static/app.js")
-INDEX_HTML = Path("static/index.html")
+APP_JS = Path("web/lib/legacy/app.js")
+INDEX_HTML = Path("web/routes/+layout.svelte")
 
 
 def _add_memory_row(html):

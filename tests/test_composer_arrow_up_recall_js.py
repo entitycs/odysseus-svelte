@@ -317,7 +317,7 @@ def test_prompt_recall_is_not_duplicated_in_app_js():
     regardless of registration order — so a typed multi-line prompt was replaced
     by the last sent one instead of the caret moving up a line.
     """
-    app_js = (_REPO / "static" / "app.js").read_text(encoding="utf-8")
+    app_js = (_REPO / "web" / "lib" / "legacy" / "app.js").read_text(encoding="utf-8")
     for marker in (
         "_odysseusPromptRecallCapture",
         "_readComposerPromptHistory",
