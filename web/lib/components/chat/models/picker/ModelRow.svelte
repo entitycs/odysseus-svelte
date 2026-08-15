@@ -115,4 +115,8 @@
     .mp-fav-dot:focus-visible {
         border: 1px dashed;
     }
+    .model-switch-stale, .model-switch-stale:hover {
+        color: lightgray;
+        background-color:#333;
+    }
 </style>

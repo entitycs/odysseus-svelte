@@ -1,10 +1,17 @@
 import {
+  type EndpointInfo,
   isLoading, //?
   type ModelInfo,
   modelItems,
   refreshModels, //f
 } from '$lib/components/chat/models/modelItemStore.svelte';
 import { sortModelObjects } from '$lib/legacy/modelSort.js';
+
+interface LocalProbeResult {
+  alive: boolean;
+  latency_ms?: number;
+  error?: string;
+}
 
 // Provider display names
 const PROVIDER_NAMES: Record<string, string> = {
@@ -111,34 +118,24 @@ let unsubscribeModelItems = modelItems.subscribe((value) => {
 // cloud APIs are essentially always up. Cached briefly on the
 // server side too (8s TTL). Picker opens do not probe; the refresh button
 // is the explicit network/probe action.
-let _localProbe = {};            // {endpoint_id: {alive, latency_ms, error}}
-let _localProbeFetchedAt = 0;
-const _LOCAL_PROBE_TTL_MS = 5000;
-let _pickerLoading = false;
-let _pickerLoadSeq = 0;
+let localProbe = $state<Record<string,LocalProbeResult>>({});
 
-let favorites = $state([]);
-let recent = $state([]);
-
-async function _refreshLocalProbe() {
-  try {
-    if (window.__odysseusChatBusy || Date.now() < (window.__odysseusChatBusyUntil || 0)) return;
-  } catch (_) {}
-  const now = Date.now();
-  if (now - _localProbeFetchedAt < _LOCAL_PROBE_TTL_MS) return;
-  _localProbeFetchedAt = now;
-  try {
-    const r = await fetch('/api/model-endpoints/probe-local', { credentials: 'same-origin' });
-    if (r.ok) _localProbe = (await r.json()) || {};
-  } catch (_) { /* leave stale data; picker still works */ }
+export function getLocalProbe() {
+  return localProbe;
 }
-export function pushRecent(mid) {
+
+export function setLocalProbe(val: Record<string,LocalProbeResult>) {
+  localProbe = val;
+}
+
+export function pushRecent(mid: string) {
   if (!mid) return;
   const next = _loadRecent().filter((x) => x !== mid);
   next.unshift(mid);
   _saveList(RECENT_KEY, next.slice(0, RECENT_MAX));
 }
-function modelExists(modelId, url) {
+
+function modelExists(modelId: string, url: string) {
   const items = _modelList;
   if (!items.length) return true; // ???
   const targetUrl = (url || '').replace(/\/+$/, '');
@@ -150,16 +147,17 @@ function modelExists(modelId, url) {
   });
 }
 
-export  function providerGroupKey(m : ModelInfo) {
-    if (m && m.category && m.category !== 'local' && m.epName) {
-      return `~endpoint:${m.epName}`;
-    }
-    return providerSlug((m && m.mid) || '');
+export function providerGroupKey(m: ModelInfo) {
+  if (m && m.category && m.category !== 'local' && m.epName) {
+    return `~endpoint:${m.epName}`;
   }
-export function providerGroupName(key) {
-    if (String(key || '').startsWith('~endpoint:')) return String(key).slice('~endpoint:'.length);
-    return providerDisplayName(key);
-  }
+  return providerSlug((m && m.mid) || '');
+}
+export function providerGroupName(key: string) {
+  if (String(key || '').startsWith('~endpoint:'))
+    return String(key).slice('~endpoint:'.length);
+  return providerDisplayName(key);
+}
 
 function providerDisplayName(slug: string): string {
   return (
@@ -242,7 +240,7 @@ function getAllModels(): any[] {
       : [];
   const result = [];
   const seen = new Set();
-  items.forEach((item) => {
+  items.forEach((item : EndpointInfo) => {
     // Previously: offline endpoints were skipped entirely, so a server
     // that briefly went down disappeared from the picker — confusing
     // when the user can still see it (offline-tagged) in Settings.
@@ -256,7 +254,7 @@ function getAllModels(): any[] {
       item.models_extra_display || [],
     );
     // Mark local endpoints whose live probe failed.
-    const probeResult = item.endpoint_id ? _localProbe[item.endpoint_id] : null;
+    const probeResult = item.endpoint_id ? localProbe[item.endpoint_id] : null;
     const isLocalDead = !!(probeResult && probeResult.alive === false);
     const isApiEndpoint = item.category && item.category !== 'local';
     allModels.forEach((mid, i) => {
@@ -313,6 +311,6 @@ const helper = {
   pushRecent,
   saveRecent,
   sortModelObjects,
-  toggleFavorite
+  toggleFavorite,
 };
 export default helper;

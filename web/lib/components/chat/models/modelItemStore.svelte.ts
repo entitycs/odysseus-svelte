@@ -1,12 +1,13 @@
 // models.ts
 import { SvelteSet } from 'svelte/reactivity';
 import { writable } from 'svelte/store';
-import helper from '$lib/components/chat/models/picker/helpers.svelte';
 import { compareModelObjects } from '$lib/legacy/modelSort';
 
 export interface ModelInfo {
+  key: string | null;
   category: string | null;
   display: string | null;
+  endpointId: string;
   epName: string;
   mid: string;
   offline: boolean;
@@ -15,22 +16,28 @@ export interface ModelInfo {
   staleReason: string | null;
   url: string;
 }
+
+export interface EndpointInfo {
+  host: string;
+  port: number;
+  url: string;
+  models: any[];
+  models_display: string[];
+  models_extra: string[];
+  models_extra_display: string[];
+  endpoint_id: string;
+  endpoint_name: string;
+  category: string;
+  endpoint_kind: string;
+  model_type: string;
+  status: string;
+  ping_error: string | null;
+  offline: Boolean;
+}
+
 export const modelItems = writable<ModelInfo[]>([]);
 export const isLoading = writable(false);
-// export const favorites = $derived(
-//   modelItems.filter(m => favoriteIds.includes(m.mid))
-// );
 
-// export const recents = $derived(
-//   modelItems.filter(m => recentIds.includes(m.mid))
-// );
-
-// export const rest = $derived(
-//   modelItems.filter(m =>
-//     !favoriteIds.includes(m.mid) &&
-//     !recentIds.includes(m.mid)
-//   )
-// );
 let _lastFetchTime = 0;
 let _fetchInflight: Promise<any> | null = null;
 let _fetchSeq = 0;
@@ -38,7 +45,7 @@ let _fetchSeq = 0;
 const API_BASE = '';
 const _FETCH_CACHE_TTL = 30_000; // 30s
 
-function sortModelObjects(models) {
+function sortModelObjects(models: ModelInfo[]) {
   return (Array.isArray(models) ? models : [])
     .slice()
     .sort(compareModelObjects);
@@ -81,9 +88,8 @@ export async function refreshModels(force = false) {
     _lastFetchTime = Date.now();
 
     let seen = new SvelteSet();
-    let result : ModelInfo[] = [];
-    let _localProbe = {};
-    data.items.forEach((item) => {
+    let result: ModelInfo[] = [];
+    data.items.forEach((item: EndpointInfo) => {
       // Previously: offline endpoints were skipped entirely, so a server
       // that briefly went down disappeared from the picker — confusing
       // when the user can still see it (offline-tagged) in Settings.
@@ -140,7 +146,7 @@ export async function refreshModels(force = false) {
       });
     });
 
-    modelItems.set(data.items);//helper.sortModelObjects(result) || []);
+    modelItems.set(data.items);
   } catch (err) {
     console.error(err);
     modelItems.set([]);
