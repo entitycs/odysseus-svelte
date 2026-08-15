@@ -48,6 +48,7 @@ const _replySeparator = '---------- Previous message ----------';
 
 export function init() {
   API_BASE = window.location.origin;
+  _showEmailTags = localStorage.getItem('odysseus.email.showTags') !== '0';
   // Replying to an email marks the source \Answered server-side and fires
   // `email-answered`. Reflect it live in the inbox list so it shows as done
   // immediately (no manual refresh needed).
@@ -225,7 +226,7 @@ let _listSpinner = null;
 let _openEmailRequestSeq = 0;
 let _senderFilter = null;       // email address (lowercased) to filter by, or null
 let _senderFilterLabel = null;  // display label for the active filter chip
-let _showEmailTags = localStorage.getItem('odysseus.email.showTags') !== '0';
+let _showEmailTags;
 
 export function initLegacy(documentModule) {
   _docModule = documentModule;

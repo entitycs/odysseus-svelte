@@ -930,15 +930,6 @@ function _emailReaderForSelectAllTarget(target) {
   return _activeEmailReaderForSelectAll;
 }
 
-document.addEventListener('keydown', (e) => {
-  if (!(e.ctrlKey || e.metaKey) || String(e.key || '').toLowerCase() !== 'a') return;
-  const reader = _emailReaderForSelectAllTarget(e.target);
-  if (!_selectEmailReaderContents(reader)) return;
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation?.();
-}, true);
-
 function _emailReadContextKey(context) {
   return [context.accountId, context.folder, context.uid].map(value => String(value || '')).join('\u0000');
 }
