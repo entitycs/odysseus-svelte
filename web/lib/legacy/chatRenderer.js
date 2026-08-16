@@ -19,7 +19,7 @@ import {
   sameModelName,
   shortModel,
 } from '$lib/legacy/model/models.js';
-import { getImageCost, getModelCost } from '$lib/legacy/model/pricing.js';
+import { getImageCost, getModelCost, metricsBillableCost } from '$lib/legacy/model/pricing.js';
 import { providerLabel, providerLogo } from '$lib/legacy/providers.js';
 import settingsModule from '$lib/legacy/settings.js';
 import spinnerModule from '$lib/legacy/spinner.js';
@@ -954,7 +954,7 @@ export function updateSessionCostUI() {
 /** Record one metrics payload in a session ledger at most once. */
 export function recordSessionMetricsCost(metrics, sessionId, selectedEndpointUrl) {
   if (!metrics || typeof metrics !== 'object') return null;
-  const cost = _metricsBillableCost(
+  const cost = metricsBillableCost(
     metrics,
     metrics.model || 'Unknown',
     metrics.input_tokens || 0,
